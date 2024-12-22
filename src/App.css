@@ -1,0 +1,19 @@
+body {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+.gradient-background {
+  background: rgb(25,25,25);
+  background: linear-gradient(90deg, rgba(25,25,25,1) 0%, rgba(14,42,108,1) 35%, rgba(203,31,31,1) 100%);
+}
+
+.gradient-background-light {
+  background: linear-gradient(90deg,
+    rgba(25,25,25,0.85) 0%,
+    rgba(14,42,108,0.85) 35%,
+    rgba(203,31,31,0.85) 100%
+  );
+}
