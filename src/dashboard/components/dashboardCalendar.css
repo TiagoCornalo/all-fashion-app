@@ -1,0 +1,90 @@
+/* Estilos para el header del calendario */
+@media (max-width: 768px) {
+  .fc .fc-toolbar.fc-header-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .fc-header-toolbar .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  /* Ajustar el orden de los elementos */
+  .fc-header-toolbar .fc-toolbar-chunk:nth-child(1) { order: 2; }
+  .fc-header-toolbar .fc-toolbar-chunk:nth-child(2) { order: 1; }
+  .fc-header-toolbar .fc-toolbar-chunk:nth-child(3) { order: 3; }
+
+  /* Ajustar el grupo de botones */
+  .fc .fc-button-group {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  /* Hacer los botones más pequeños en móvil */
+  .fc .fc-button {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Estilos para mejorar la visualización en móvil */
+@media (max-width: 768px) {
+  /* Ajustar el tamaño de las celdas */
+  .fc .fc-daygrid-day {
+    min-height: 100px !important;
+  }
+
+  /* Mejorar la legibilidad de los encabezados de días */
+  .fc .fc-col-header-cell {
+    padding: 8px 4px !important;
+  }
+
+  .fc .fc-col-header-cell-cushion {
+    font-weight: 600;
+    padding: 4px;
+    white-space: normal;
+    word-wrap: break-word;
+  }
+
+  /* Mejorar la visualización de los números de día */
+  .fc .fc-daygrid-day-number {
+    padding: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  /* Ajustar eventos */
+  .fc-daygrid-event {
+    margin: 2px 4px !important;
+    padding: 2px 4px !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* Mejorar el espaciado general */
+  .fc-daygrid-day-frame {
+    padding: 4px !important;
+  }
+
+  /* Ajustar el contenedor de eventos */
+  .fc-daygrid-day-events {
+    margin-top: 4px !important;
+  }
+}
+
+/* Estilos generales para mejorar la legibilidad */
+.calendar-header {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.calendar-cell {
+  background-color: white;
+}
+
+.calendar-event {
+  border-radius: 4px;
+  padding: 2px 4px;
+}

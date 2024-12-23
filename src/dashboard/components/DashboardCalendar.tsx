@@ -17,6 +17,8 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import { EventClickArg } from '@fullcalendar/core'
 import esLocale from '@fullcalendar/core/locales/es'
+import { useIsMobile } from '../../hooks'
+import './dashboardCalendar.css'
 
 interface CalendarEvent {
   id: string
@@ -33,6 +35,7 @@ interface CalendarEvent {
 }
 
 const DashboardCalendar = () => {
+  const isMobile = useIsMobile()
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
@@ -126,15 +129,37 @@ const DashboardCalendar = () => {
         <CardContent>
           <FullCalendar
             plugins={[dayGridPlugin, interactionPlugin]}
-            initialView='dayGridWeek'
+            initialView={isMobile ? 'dayGridThreeDay' : 'dayGridWeek'}
             events={events}
             eventClick={handleEventClick}
             locale={esLocale}
             headerToolbar={{
-              left: 'prev,next today',
+              left: isMobile ? 'prev,next' : 'prev,next today',
               center: 'title',
               right: 'dayGridMonth,dayGridWeek,dayGridDay'
             }}
+            views={{
+              dayGridMonth: {
+                titleFormat: { month: 'long', year: 'numeric' },
+                dayHeaderFormat: { weekday: 'short' }
+              },
+              dayGridWeek: {
+                titleFormat: { month: 'long', year: 'numeric' },
+                dayHeaderFormat: { weekday: 'short', day: 'numeric' }
+              },
+              dayGridDay: {
+                dayHeaderFormat: { weekday: 'long', day: 'numeric' }
+              },
+              dayGridThreeDay: {
+                type: 'dayGrid',
+                duration: { days: 3 },
+                buttonText: '3 días',
+                dayHeaderFormat: { weekday: 'short', day: 'numeric' }
+              }
+            }}
+            dayHeaderClassNames="calendar-header"
+            dayCellClassNames="calendar-cell"
+            eventClassNames="calendar-event"
             buttonText={{
               today: 'Hoy',
               month: 'Mes',
@@ -144,6 +169,8 @@ const DashboardCalendar = () => {
             editable={true}
             selectable={true}
             height='auto'
+            handleWindowResize={true}
+            aspectRatio={1.5}
           />
         </CardContent>
       </Card>

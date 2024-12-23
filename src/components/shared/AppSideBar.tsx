@@ -30,7 +30,8 @@ const AppSideBar = ({ items }: AppSidebarProps) => {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <a href={item.url}>
-                      <item.icon />
+                      {/* @ts-ignore */}
+                      <item.icon className='drop-shadow-lg'/>
                       <span>{item.title}</span>
                     </a>
                   </SidebarMenuButton>
