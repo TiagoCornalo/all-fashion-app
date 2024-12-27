@@ -12,7 +12,7 @@ import {
 } from "../../components";
 import { validateEmail } from '../../utils';
 
-const SignIn = () => {
+const AuthSignIn = () => {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [password, setPassword] = useState('');
@@ -130,4 +130,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default AuthSignIn;
