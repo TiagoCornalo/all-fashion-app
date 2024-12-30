@@ -1,3 +1,4 @@
+import { useInventory } from '../../../context/InventoryContext'
 import {
   Dialog,
   DialogContent,
@@ -21,11 +22,18 @@ const DeleteProductDialog = ({
   isOpen,
   onOpenChange
 }: DeleteProductDialogProps) => {
+  const { refreshTable } = useInventory()
+
   const handleDelete = async () => {
     if (!product) return
 
-    await deleteProduct(product._id)
-    onOpenChange(false)
+    try {
+      await deleteProduct(product._id)
+      onOpenChange(false)
+      refreshTable()
+    } catch (error) {
+      console.error('Error al eliminar el producto:', error)
+    }
   }
 
   return (

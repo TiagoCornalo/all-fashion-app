@@ -10,10 +10,12 @@ interface DataTableToolbarProps {
   table: Table<Product>
   onSearch: (value: string) => void
   onAdd?: () => void
+  onBulkDelete: (products: Product[]) => void
 }
 
-export function DataTableToolbar({ table, onAdd }: DataTableToolbarProps) {
+export function DataTableToolbar({ table, onSearch, onAdd, onBulkDelete }: DataTableToolbarProps) {
   const isFiltered = table.getState().columnFilters.length > 0
+  const selectedRows = table.getSelectedRowModel().rows
 
   return (
     <div className='flex items-center justify-between'>
@@ -34,6 +36,16 @@ export function DataTableToolbar({ table, onAdd }: DataTableToolbarProps) {
           >
             Resetear
             <X className='ml-2 h-4 w-4' />
+          </Button>
+        )}
+        {selectedRows.length > 0 && (
+          <Button
+            variant='destructive'
+            size='sm'
+            onClick={() => onBulkDelete(selectedRows.map(row => row.original))}
+            className='h-8'
+          >
+            Eliminar ({selectedRows.length})
           </Button>
         )}
       </div>

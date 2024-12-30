@@ -145,10 +145,27 @@ export function DataTable({
     [onSearchChange]
   )
 
+  const handleBulkDelete = async (products: Product[]) => {
+    if (window.confirm(`¿Está seguro de eliminar ${products.length} productos?`)) {
+      try {
+        // Aquí deberías implementar la llamada al backend para eliminar múltiples productos
+        await Promise.all(products.map(product => deleteProduct(product._id)))
+        setRowSelection({})  // Limpiar selección
+        refreshTable()  // Actualizar la tabla
+      } catch (error) {
+        console.error('Error al eliminar productos:', error)
+      }
+    }
+  }
+
   return (
     <>
       <div className='space-y-4'>
-        <DataTableToolbar table={table} onSearch={handleSearch} />
+        <DataTableToolbar
+          table={table}
+          onSearch={handleSearch}
+          onBulkDelete={handleBulkDelete}
+        />
         <div className='rounded-md border'>
           <Table>
             <TableHeader>
@@ -175,8 +192,10 @@ export function DataTable({
                     data-state={row.getIsSelected() && 'selected'}
                     className={
                       row.original.stock <= row.original.stockMinimum
-                        ? 'bg-red-100 hover:bg-red-200'
-                        : undefined
+                        ? 'bg-red-200 hover:bg-red-300'
+                        : row.original.stock <= row.original.stockMinimum * 2
+                        ? 'bg-yellow-200 hover:bg-yellow-300'
+                        : ''
                     }
                   >
                     {row.getVisibleCells().map((cell) => (

@@ -1,4 +1,5 @@
 import LayoutAdmin from '../layout/LayoutAdmin'
+import { InventoryProvider } from './context/InventoryContext'
 import { useState, useEffect } from 'react'
 import {
   Product,
@@ -45,8 +46,13 @@ const InventoryContainer = () => {
     }))
   }
 
+  const handleRefresh = () => {
+    fetchProductsData(filters)
+  }
+
   return (
     <LayoutAdmin>
+      <InventoryProvider onRefresh={handleRefresh}>
       <section className='w-full p-4'>
         <h1 className='text-3xl font-bold mb-6'>Inventario</h1>
         <InventoryAlerts />
@@ -76,9 +82,10 @@ const InventoryContainer = () => {
             })
           }
           initialPage={tableData.meta.page - 1}
-          initialPageSize={tableData.meta.pageSize}
-        />
-      </section>
+            initialPageSize={tableData.meta.pageSize}
+          />
+        </section>
+      </InventoryProvider>
     </LayoutAdmin>
   )
 }

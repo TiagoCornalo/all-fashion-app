@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useInventory } from '../../../context/InventoryContext'
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,7 @@ const EditProductDialog = ({
 }: EditProductDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState<Product | null>(null)
+  const { refreshTable } = useInventory()
 
   useEffect(() => {
     if (product) {
@@ -43,6 +45,7 @@ const EditProductDialog = ({
     } catch (error) {
       console.error('Error al actualizar el producto:', error)
     } finally {
+      refreshTable()
       setIsSubmitting(false)
     }
   }

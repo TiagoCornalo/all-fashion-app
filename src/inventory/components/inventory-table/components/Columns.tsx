@@ -3,12 +3,32 @@ import { Product } from '../../../../types/inventory.types'
 import { DataTableColumnHeader } from './DataTableColumnHeader'
 import { DataTableRowActions } from './DataTableRowActions'
 import { formatCurrency, formatDateTime } from '../../../../utils'
-import { Badge } from '../../../../components'
+import { Badge, Checkbox } from '../../../../components'
 
 export const columns = (handlers: {
   onEdit: (product: Product) => void
   onDelete: (product: Product) => void
+  onBulkDelete: (products: Product[]) => void
 }): ColumnDef<Product>[] => [
+  {
+    id: 'select',
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Seleccionar todo"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Seleccionar fila"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: 'code',
     header: ({ column }) => (
@@ -32,11 +52,17 @@ export const columns = (handlers: {
       const stock = row.getValue('stock') as number
       const stockMinimum = row.original.stockMinimum
 
+      let variant: 'destructive' | 'warning' | 'default' = 'default'
+
+      if (stock <= stockMinimum) {
+        variant = 'destructive'
+      } else if (stock <= stockMinimum * 2) {
+        variant = 'warning'
+      }
+
       return (
         <div className='text-center'>
-          <Badge variant={stock <= stockMinimum ? 'destructive' : 'secondary'}>
-            {stock}
-          </Badge>
+          <Badge variant={variant}>{stock}</Badge>
         </div>
       )
     }
