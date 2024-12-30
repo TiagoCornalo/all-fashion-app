@@ -36,6 +36,13 @@ export const validatePassword = (password: string) => {
   return { isValid: true, error: '' };
 };
 
+export const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'ARS'
+  }).format(amount);
+};
+
 export const formatDateTime = (date: Date) => {
   return date.toLocaleString('es-ES', {
     year: 'numeric',
