@@ -1,4 +1,4 @@
-import * as React from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -28,6 +28,8 @@ import { DataTableToolbar } from './components/DataTableToolbar'
 import DeleteProductDialog from './components/DeleteProductDialog'
 import EditProductDialog from './components/EditProductDialog'
 import { Product } from '../../../types/inventory.types'
+import BulkDeleteDialog from './components/BulkDeleteDialog'
+import AddProductDialog from './components/AddProductDialog'
 
 interface DataTableProps {
   columns: (handlers: {
@@ -40,6 +42,7 @@ interface DataTableProps {
   onSortingChange: (sortBy: string, sortOrder: 'asc' | 'desc') => void
   onFilterChange: (filters: Record<string, string>) => void
   onSearchChange: (search: string) => void
+  onRefresh: () => Promise<void>
   initialPage: number
   initialPageSize: number
 }
@@ -52,23 +55,23 @@ export function DataTable({
   onSortingChange,
   onFilterChange,
   onSearchChange,
+  onRefresh,
   initialPage,
   initialPageSize
 }: DataTableProps) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
-  const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(
-    null
-  )
-  const [isEditOpen, setIsEditOpen] = React.useState(false)
-  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false)
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = useState({})
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false)
+  const [isAddOpen, setIsAddOpen] = useState(false)
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([])
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const tableColumns = React.useMemo(
+  const tableColumns = useMemo(
     () =>
       columns({
         onEdit: (product) => {
@@ -138,24 +141,26 @@ export function DataTable({
   })
 
   // Manejar cambios en la búsqueda
-  const handleSearch = React.useCallback(
+  const handleSearch = useCallback(
     (value: string) => {
       onSearchChange(value)
     },
     [onSearchChange]
   )
 
-  const handleBulkDelete = async (products: Product[]) => {
-    if (window.confirm(`¿Está seguro de eliminar ${products.length} productos?`)) {
-      try {
-        // Aquí deberías implementar la llamada al backend para eliminar múltiples productos
-        await Promise.all(products.map(product => deleteProduct(product._id)))
-        setRowSelection({})  // Limpiar selección
-        refreshTable()  // Actualizar la tabla
-      } catch (error) {
-        console.error('Error al eliminar productos:', error)
-      }
-    }
+  const handleBulkDeleteClick = (products: Product[]) => {
+    setSelectedProducts(products)
+    setIsBulkDeleteOpen(true)
+  }
+
+  const handleBulkDeleteSuccess = () => {
+    setRowSelection({})
+  }
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    await onRefresh()
+    setIsRefreshing(false)
   }
 
   return (
@@ -164,7 +169,10 @@ export function DataTable({
         <DataTableToolbar
           table={table}
           onSearch={handleSearch}
-          onBulkDelete={handleBulkDelete}
+          onBulkDelete={handleBulkDeleteClick}
+          onAdd={() => setIsAddOpen(true)}
+          onRefresh={handleRefresh}
+          isRefreshing={isRefreshing}
         />
         <div className='rounded-md border'>
           <Table>
@@ -235,6 +243,15 @@ export function DataTable({
         isOpen={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
       />
+
+      <BulkDeleteDialog
+        products={selectedProducts}
+        isOpen={isBulkDeleteOpen}
+        onOpenChange={setIsBulkDeleteOpen}
+        onSuccess={handleBulkDeleteSuccess}
+      />
+
+      <AddProductDialog isOpen={isAddOpen} onOpenChange={setIsAddOpen} />
     </>
   )
 }

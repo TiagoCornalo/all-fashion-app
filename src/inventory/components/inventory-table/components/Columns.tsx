@@ -8,26 +8,30 @@ import { Badge, Checkbox } from '../../../../components'
 export const columns = (handlers: {
   onEdit: (product: Product) => void
   onDelete: (product: Product) => void
-  onBulkDelete: (products: Product[]) => void
 }): ColumnDef<Product>[] => [
   {
     id: 'select',
     header: ({ table }) => (
       <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
+        }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Seleccionar todo"
+        aria-label='Seleccionar todo'
+        className='translate-y-[2px]'
       />
     ),
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Seleccionar fila"
+        aria-label='Seleccionar fila'
+        className='translate-y-[2px]'
       />
     ),
     enableSorting: false,
-    enableHiding: false,
+    enableHiding: false
   },
   {
     accessorKey: 'code',

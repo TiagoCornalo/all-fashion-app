@@ -1,4 +1,5 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Button,
   Input,
@@ -9,125 +10,126 @@ import {
   CardContent,
   CardFooter,
   Separator
-} from "../../components";
-import { validateEmail } from '../../utils';
+} from '../../components'
+import { validateEmail } from '../../utils'
+import api from '../../services/config/axios'
+import { AxiosError } from 'axios'
 
 const AuthSignIn = () => {
-  const [email, setEmail] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [emailError, setEmailError] = useState('')
+  const [loginError, setLoginError] = useState('')
 
-  const handleValidateEmail = async (email: string) => {
+  const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setLoginError('')
+
+    // Validación básica del email
+    const emailValidation = validateEmail(email)
+    if (!emailValidation.isValid) {
+      setEmailError(emailValidation.error)
+      return
+    }
+
+    if (!password) {
+      setLoginError('Por favor ingresa tu contraseña')
+      return
+    }
+
     try {
-      const response = await fetch('/api/validate-email', {
-        method: 'POST',
-        body: JSON.stringify({ email }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const { data } = await api.post('/auth/login', { email, password })
 
-      if (!response.ok) {
-        setEmailError('No existe una cuenta con este correo electrónico');
-        setShowPassword(false);
-        return false;
+      localStorage.setItem('token', data.token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+
+      if (data.user.role === 'ADMIN') {
+        navigate('/admin/dashboard')
+      } else {
+        navigate('/dashboard')
       }
-
-      setEmailError('');
-      setShowPassword(true);
-      return true;
-    } catch (error) {
-      setEmailError('Error al validar el correo electrónico');
-      return false;
-    }
-  };
-
-  const handleEmailLogin = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!showPassword) {
-      const emailValidation = validateEmail(email);
-      if (!emailValidation.isValid) {
-        setEmailError(emailValidation.error);
-        return;
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        setLoginError(error.response?.data?.error || 'Error al iniciar sesión')
+      } else {
+        setLoginError('Error al iniciar sesión')
       }
-
-      await handleValidateEmail(email);
-    } else {
-
-      console.log(`Logging in with email: ${email} and password: ${password}`);
     }
-  };
+  }
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newEmail = e.target.value;
-    setEmail(newEmail);
-
-    if (newEmail) {
-      const { isValid, error } = validateEmail(newEmail);
-      setEmailError(isValid ? '' : error);
-    } else {
-      setEmailError('');
-    }
-  };
+    const newEmail = e.target.value
+    setEmail(newEmail)
+    setEmailError('')
+    setLoginError('')
+  }
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newPassword = e.target.value;
-    setPassword(newPassword);
-  };
+    const newPassword = e.target.value
+    setPassword(newPassword)
+    setLoginError('')
+  }
 
   return (
-    <div className="flex items-center justify-center h-screen gradient-background">
-      <Card className="w-[400px] bg-white shadow-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-lg font-bold">Iniciar sesión en All Fashion</CardTitle>
-          <CardDescription className="text-sm text-gray-600">
+    <div className='flex items-center justify-center h-screen gradient-background'>
+      <Card className='w-[400px] bg-white shadow-md'>
+        <CardHeader className='text-center'>
+          <CardTitle className='text-lg font-bold'>
+            Iniciar sesión en All Fashion
+          </CardTitle>
+          <CardDescription className='text-sm text-gray-600'>
             Bienvenido de nuevo! Por favor inicia sesión para continuar.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Separator />
-          <form onSubmit={handleEmailLogin} className="space-y-4 mt-4">
-            <div className="space-y-2">
+          <form onSubmit={handleLogin} className='space-y-4 mt-4'>
+            <div className='space-y-2'>
               <Input
-                type="email"
-                name="email"
-                placeholder="Correo electrónico"
-                className={`w-full ${emailError ? 'border-red-500' : ''}`}
+                type='email'
+                name='email'
+                placeholder='Correo electrónico'
+                className={`w-full ${
+                  emailError || loginError ? 'border-red-500' : ''
+                }`}
                 value={email}
                 onChange={handleEmailChange}
               />
               {emailError && (
-                <p className="text-red-500 text-sm">{emailError}</p>
+                <p className='text-red-500 text-sm'>{emailError}</p>
               )}
             </div>
 
-            {showPassword && (
-              <div className="space-y-2">
-                <Input
-                  type="password"
-                  name="password"
-                  placeholder="Contraseña"
-                  required
-                  className={`w-full`}
-                  value={password}
-                  onChange={handlePasswordChange}
-                />
-              </div>
-            )}
+            <div className='space-y-2'>
+              <Input
+                type='password'
+                name='password'
+                placeholder='Contraseña'
+                className={`w-full ${loginError ? 'border-red-500' : ''}`}
+                value={password}
+                onChange={handlePasswordChange}
+              />
+              {loginError && (
+                <p className='text-red-500 text-sm'>{loginError}</p>
+              )}
+            </div>
 
-            <Button type="submit" className="w-full">
-              {showPassword ? 'Iniciar sesión' : 'Continuar'}
+            <Button
+              type='submit'
+              className='w-full'
+              disabled={!email || !password}
+            >
+              Iniciar sesión
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="text-center text-sm text-gray-500">
+        <CardFooter className='text-center text-sm text-gray-500'>
           All Fashion © 2025
         </CardFooter>
       </Card>
     </div>
-  );
-};
+  )
+}
 
-export default AuthSignIn;
+export default AuthSignIn

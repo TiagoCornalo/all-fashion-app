@@ -9,33 +9,34 @@ import {
   Button
 } from '../../../../components'
 import { Product } from '../../../../types/inventory.types'
-import { deleteProduct } from '../../../../services'
+import { bulkDeleteProducts } from '../../../../services'
 import { toast } from 'react-toastify'
 
-interface DeleteProductDialogProps {
-  product: Product | null
+interface BulkDeleteDialogProps {
+  products: Product[]
   isOpen: boolean
   onOpenChange: (open: boolean) => void
+  onSuccess?: () => void
 }
 
-const DeleteProductDialog = ({
-  product,
+const BulkDeleteDialog = ({
+  products,
   isOpen,
-  onOpenChange
-}: DeleteProductDialogProps) => {
+  onOpenChange,
+  onSuccess
+}: BulkDeleteDialogProps) => {
   const { refreshTable } = useInventory()
 
   const handleDelete = async () => {
-    if (!product) return
-
     try {
-      await deleteProduct(product._id)
+      await bulkDeleteProducts(products.map((product) => product._id))
       onOpenChange(false)
       refreshTable()
-      toast.success('Producto eliminado correctamente')
+      onSuccess?.()
+      toast.success('Productos eliminados correctamente')
     } catch (error) {
-      console.error('Error al eliminar el producto:', error)
-      toast.error('Error al eliminar el producto')
+      console.error('Error al eliminar productos:', error)
+      toast.error('Error al eliminar productos')
     }
   }
 
@@ -43,9 +44,9 @@ const DeleteProductDialog = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className='sm:max-w-[425px]'>
         <DialogHeader>
-          <DialogTitle>Confirmar Eliminación</DialogTitle>
+          <DialogTitle>Confirmar Eliminación Masiva</DialogTitle>
           <DialogDescription>
-            ¿Está seguro que desea eliminar el producto {product?.name}? Esta
+            ¿Está seguro que desea eliminar {products.length} productos? Esta
             acción no se puede deshacer.
           </DialogDescription>
         </DialogHeader>
@@ -62,4 +63,4 @@ const DeleteProductDialog = ({
   )
 }
 
-export default DeleteProductDialog
+export default BulkDeleteDialog

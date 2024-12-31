@@ -1,4 +1,4 @@
-import { TableFilters, Product } from '../types/inventory.types'
+import { TableFilters, Product, CreateProduct } from '../types/inventory.types'
 import api from './config/axios'
 
 /**
@@ -25,6 +25,11 @@ export const fetchProducts = async (filters: TableFilters) => {
   return response.data
 }
 
+export const addProduct = async (product: CreateProduct) => {
+  const response = await api.post('/products', product)
+  return response.data
+}
+
 export const editProduct = async (product: Product) => {
   const response = await api.put(`/products/${product._id}`, product)
   return response.data
@@ -32,5 +37,12 @@ export const editProduct = async (product: Product) => {
 
 export const deleteProduct = async (productId: string) => {
   const response = await api.delete(`/products/${productId}`)
+  return response.data
+}
+
+export const bulkDeleteProducts = async (productIds: string[]) => {
+  const response = await api.delete(`/products/bulk`, {
+    data: { ids: productIds }
+  })
   return response.data
 }

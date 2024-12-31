@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useInventory } from '../../../context/InventoryContext'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
   Button,
   Input,
   Form,
@@ -16,8 +17,7 @@ import {
   FormMessage
 } from '../../../../components'
 import { ComboboxSuppliers } from '../../../../components/ui/combobox-suppliers'
-import { Product } from '../../../../types/inventory.types'
-import { editProduct } from '../../../../services'
+import { addProduct } from '../../../../services'
 import { toast } from 'react-toastify'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -31,23 +31,17 @@ const formSchema = z.object({
     .union([z.string(), z.number()])
     .transform((val) => Number(val || 0)),
   price: z.union([z.string(), z.number()]).transform((val) => Number(val || 0)),
-  supplierId: z.string().min(1, 'El proveedor es requerido'),
-  description: z.string().optional()
+  supplierId: z.string().min(1, 'El proveedor es requerido')
 })
 
 type FormValues = z.infer<typeof formSchema>
 
-interface EditProductDialogProps {
-  product: Product | null
+interface AddProductDialogProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
 }
 
-const EditProductDialog = ({
-  product,
-  isOpen,
-  onOpenChange
-}: EditProductDialogProps) => {
+const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
   const { refreshTable } = useInventory()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -59,48 +53,29 @@ const EditProductDialog = ({
       stock: 0,
       stockMinimum: 0,
       price: 0,
-      supplierId: '',
-      description: ''
+      supplierId: ''
     }
   })
 
-  useEffect(() => {
-    if (product) {
-      form.reset({
-        code: product.code,
-        name: product.name,
-        stock: product.stock,
-        stockMinimum: product.stockMinimum,
-        price: product.price,
-        supplierId: product.supplier._id,
-        description: product.description || ''
-      })
-    }
-  }, [product, form])
-
   const onSubmit = async (values: FormValues) => {
-    if (!product?._id) return
-
     try {
       setIsSubmitting(true)
-      await editProduct({
-        _id: product._id,
+      await addProduct({
         ...values,
-        description: values.description || '',
+        description: '',
         supplier: {
           _id: values.supplierId,
           name: '',
           contact: { email: '', phone: '' }
-        },
-        createdAt: product.createdAt,
-        updatedAt: new Date().toISOString()
+        }
       })
-      toast.success('Producto actualizado exitosamente')
-      refreshTable()
       onOpenChange(false)
+      form.reset()
+      refreshTable()
+      toast.success('Producto agregado correctamente')
     } catch (error) {
-      toast.error('Error al actualizar el producto')
-      console.error(error)
+      console.error('Error al agregar el producto:', error)
+      toast.error('Error al agregar el producto')
     } finally {
       setIsSubmitting(false)
     }
@@ -108,9 +83,12 @@ const EditProductDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[425px]'>
+      <DialogContent className='sm:max-w-[500px]'>
         <DialogHeader>
-          <DialogTitle>Editar Producto</DialogTitle>
+          <DialogTitle>Agregar Producto</DialogTitle>
+          <DialogDescription>
+            Complete la información del nuevo producto
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
@@ -246,4 +224,4 @@ const EditProductDialog = ({
   )
 }
 
-export default EditProductDialog
+export default AddProductDialog

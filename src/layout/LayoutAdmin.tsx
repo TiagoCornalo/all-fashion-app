@@ -12,7 +12,7 @@ const LayoutAdmin = ({ children }: { children: React.ReactNode }) => {
   }> = [
     {
       title: 'Inventario',
-      url: '#',
+      url: '/inventory',
       icon: Package
     },
     {

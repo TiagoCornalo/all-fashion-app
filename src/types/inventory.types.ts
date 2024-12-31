@@ -38,3 +38,7 @@ export interface TableFilters {
   search?: string
   filters?: Record<string, string>
 }
+
+export type CreateProduct = Omit<Product, '_id' | 'createdAt' | 'updatedAt'> & {
+  description?: string
+}

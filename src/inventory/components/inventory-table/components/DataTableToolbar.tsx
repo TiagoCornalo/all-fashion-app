@@ -1,5 +1,5 @@
 import { Table } from '@tanstack/react-table'
-import { X, Plus } from 'lucide-react'
+import { X, Plus, RotateCcw } from 'lucide-react'
 import { Product } from '../../../../types/inventory.types'
 
 import { Button } from '../../../../components/ui/button'
@@ -11,9 +11,17 @@ interface DataTableToolbarProps {
   onSearch: (value: string) => void
   onAdd?: () => void
   onBulkDelete: (products: Product[]) => void
+  onRefresh: () => void
+  isRefreshing: boolean
 }
 
-export function DataTableToolbar({ table, onSearch, onAdd, onBulkDelete }: DataTableToolbarProps) {
+export function DataTableToolbar({
+  table,
+  onAdd,
+  onBulkDelete,
+  onRefresh,
+  isRefreshing = false
+}: DataTableToolbarProps) {
   const isFiltered = table.getState().columnFilters.length > 0
   const selectedRows = table.getSelectedRowModel().rows
 
@@ -42,7 +50,9 @@ export function DataTableToolbar({ table, onSearch, onAdd, onBulkDelete }: DataT
           <Button
             variant='destructive'
             size='sm'
-            onClick={() => onBulkDelete(selectedRows.map(row => row.original))}
+            onClick={() =>
+              onBulkDelete(selectedRows.map((row) => row.original))
+            }
             className='h-8'
           >
             Eliminar ({selectedRows.length})
@@ -50,6 +60,17 @@ export function DataTableToolbar({ table, onSearch, onAdd, onBulkDelete }: DataT
         )}
       </div>
       <div className='flex items-center space-x-2'>
+        <Button
+          variant='outline'
+          size='sm'
+          onClick={onRefresh}
+          disabled={isRefreshing}
+          className='h-8'
+        >
+          <RotateCcw
+            className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+          />
+        </Button>
         <Button variant='outline' size='sm' className='h-8' onClick={onAdd}>
           <Plus className='mr-2 h-4 w-4' />
           Agregar Producto
