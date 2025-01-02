@@ -22,6 +22,7 @@ import { toast } from 'react-toastify'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { AxiosError } from 'axios'
 
 const formSchema = z.object({
   code: z.string().min(1, 'El código es requerido'),
@@ -73,9 +74,12 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
       form.reset()
       refreshTable()
       toast.success('Producto agregado correctamente')
-    } catch (error) {
-      console.error('Error al agregar el producto:', error)
-      toast.error('Error al agregar el producto')
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        toast.error(
+          `Error al agregar el producto: ${error.response?.data?.details}`
+        )
+      }
     } finally {
       setIsSubmitting(false)
     }

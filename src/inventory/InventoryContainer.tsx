@@ -9,8 +9,12 @@ import {
 import { InventoryAlerts, DataTable } from './components'
 import { columns } from './components/inventory-table/components/Columns'
 import { fetchProducts } from '../services/index'
+import { authService } from '../services/auth.service'
+import { useNavigate } from 'react-router-dom'
+import { LOGIN_PATH } from '../consts'
 
 const InventoryContainer = () => {
+  const navigate = useNavigate()
   const [filters, setFilters] = useState<TableFilters>({
     page: 1,
     pageSize: 10
@@ -27,6 +31,11 @@ const InventoryContainer = () => {
   })
 
   const fetchProductsData = async (tableFilters: TableFilters) => {
+    if (!authService.hasValidToken()) {
+      navigate(LOGIN_PATH)
+      return
+    }
+
     try {
       const data = await fetchProducts(tableFilters)
       setTableData(data)

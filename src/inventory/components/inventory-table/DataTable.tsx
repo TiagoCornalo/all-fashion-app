@@ -201,7 +201,7 @@ export function DataTable({
                     className={
                       row.original.stock <= row.original.stockMinimum
                         ? 'bg-red-200 hover:bg-red-300'
-                        : row.original.stock <= row.original.stockMinimum * 2
+                        : row.original.stock <= row.original.stockMinimum * 1.2
                         ? 'bg-yellow-200 hover:bg-yellow-300'
                         : ''
                     }

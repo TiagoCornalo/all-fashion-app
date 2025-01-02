@@ -1,4 +1,4 @@
-import { Warning } from '../../assets'
+import { Warning, Cross, ChartDecreasing, YellowCircle, Package } from '../../assets'
 import { Card, CardContent } from '..'
 import { Button } from '../ui/button'
 import { formatDateTime } from '../../utils'
@@ -35,8 +35,34 @@ const AlertCard = ({
     }
   }
 
+  const getIcon = () => {
+    switch (type) {
+      case 'NO_STOCK':
+        return (
+          <div className='flex items-center gap-2'>
+            <Cross />
+            <Package />
+          </div>
+        )
+      case 'BELOW_MINIMUM':
+        return (
+          <div className='flex items-center gap-2'>
+            <Warning />
+            <ChartDecreasing />
+          </div>
+        )
+      case 'NEAR_MINIMUM':
+        return (
+          <div className='flex items-center gap-2'>
+            <YellowCircle />
+            <Package />
+          </div>
+        )
+    }
+  }
+
   const handleResolve = (productId: string) => {
-    // Por ahora pasamos una nota vacía, podrías agregar un modal para capturar la nota
+    // TODO: Por ahora pasamos una nota vacía, podrías agregar un modal para capturar la nota
     onResolve(productId, '')
   }
 
@@ -45,13 +71,13 @@ const AlertCard = ({
       <CardContent className='flex items-center justify-between gap-4 p-4'>
         <div className='flex items-center gap-4'>
           <div className='text-2xl drop-shadow-lg'>
-            <Warning />
+            {getIcon()}
           </div>
           <div className='flex flex-col'>
             <p className='font-medium'>{message}</p>
-            <p className='text-sm'>
+            {/* <p className='text-sm'>
               Producto: {product?.name} ({product?.code})
-            </p>
+            </p> */}
             <p className='text-sm'>{formatDateTime(new Date(createdAt))}hs</p>
           </div>
         </div>

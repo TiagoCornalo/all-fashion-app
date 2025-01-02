@@ -5,6 +5,11 @@ import Package from './icons/package.svg';
 import Warning from './icons/warning.svg';
 import Gear from './icons/gear.svg';
 import MoneyBag from './icons/moneybag.svg';
+import Door from './icons/door.svg';
+import ManRunning from './icons/man-running.svg';
+import ChartDecreasing from './icons/chart-decreasing.svg';
+import YellowCircle from './icons/yellow-circle.svg';
+import Cross from './icons/cross.svg';
 
 // Usamos el tipo del módulo SVG directamente
 type SvgComponent = typeof Bill;
@@ -17,5 +22,10 @@ export {
   Package,
   Warning,
   Gear,
-  MoneyBag
+  MoneyBag,
+  Door,
+  ManRunning,
+  ChartDecreasing,
+  YellowCircle,
+  Cross
 };
