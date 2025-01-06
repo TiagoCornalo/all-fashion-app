@@ -1,10 +1,16 @@
 import BaseLayout from './BaseLayout'
 import { MENU_ITEMS } from '../config/menuItems'
 
-const LayoutAdmin = ({ children }: { children: React.ReactNode }) => {
+const LayoutMultiRole = ({
+  children,
+  allowedRoles
+}: {
+  children: React.ReactNode
+  allowedRoles: string[]
+}) => {
   return (
     <BaseLayout
-      requiredRoles={['ADMIN']}
+      requiredRoles={allowedRoles}
       menuItems={MENU_ITEMS}
     >
       {children}
@@ -12,4 +18,4 @@ const LayoutAdmin = ({ children }: { children: React.ReactNode }) => {
   )
 }
 
-export default LayoutAdmin
+export default LayoutMultiRole
