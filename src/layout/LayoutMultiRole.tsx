@@ -6,13 +6,10 @@ const LayoutMultiRole = ({
   allowedRoles
 }: {
   children: React.ReactNode
-  allowedRoles: string[]
+  allowedRoles: ('ADMIN' | 'SELLER' | 'MANAGER')[]
 }) => {
   return (
-    <BaseLayout
-      requiredRoles={allowedRoles}
-      menuItems={MENU_ITEMS}
-    >
+    <BaseLayout requiredRoles={allowedRoles} menuItems={MENU_ITEMS}>
       {children}
     </BaseLayout>
   )

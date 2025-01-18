@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import {
   Button,
   Input,
@@ -12,11 +12,15 @@ import {
   Separator
 } from '../../components'
 import { validateEmail } from '../../utils'
-import api from '../../services/config/axios'
-import { AxiosError } from 'axios'
+import { useAuth } from '../../context/auth/useAuth'
 
 const AuthSignIn = () => {
+  const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const from = location.state?.from?.pathname || '/dashboard'
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [emailError, setEmailError] = useState('')
@@ -39,22 +43,11 @@ const AuthSignIn = () => {
     }
 
     try {
-      const { data } = await api.post('/auth/login', { email, password })
-
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
-
-      if (data.user.role === 'ADMIN') {
-        navigate('/admin/dashboard')
-      } else {
-        navigate('/dashboard')
-      }
-    } catch (error: unknown) {
-      if (error instanceof AxiosError) {
-        setLoginError(error.response?.data?.error || 'Error al iniciar sesión')
-      } else {
-        setLoginError('Error al iniciar sesión')
-      }
+      await login({ email, password })
+      navigate(from, { replace: true })
+    } catch (error) {
+      console.error('Error al iniciar sesión:', error)
+      setLoginError('Error al iniciar sesión')
     }
   }
 

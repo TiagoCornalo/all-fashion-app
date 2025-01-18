@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { SidebarProvider, SidebarTrigger, AppSideBar, Loader } from '../components'
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  AppSideBar,
+  Loader
+} from '../components'
 import { IconComponent } from '../assets'
 import { authService } from '../services/auth.service'
 import { LOGIN_PATH } from '../consts'
@@ -24,6 +29,7 @@ const BaseLayout = ({
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [userRole, setUserRole] = useState<string>('')
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -48,6 +54,7 @@ const BaseLayout = ({
         }
 
         setUserRole(response.user.role)
+        setIsAuthenticated(true)
       } catch (error) {
         console.error('Error de validación:', error)
         authService.logout()
@@ -60,15 +67,15 @@ const BaseLayout = ({
     validateUser()
   }, [navigate, requiredRoles])
 
-  if (isLoading) {
+  if (isLoading || !isAuthenticated) {
     return (
-      <div className='flex justify-center items-center h-screen'>
+      <div className='fixed inset-0 flex justify-center items-center bg-white z-50'>
         <Loader className='h-8 w-8' />
       </div>
     )
   }
 
-  const filteredItems = menuItems.filter(item =>
+  const filteredItems = menuItems.filter((item) =>
     item.roles.includes(userRole)
   )
 

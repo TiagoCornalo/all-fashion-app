@@ -3,7 +3,6 @@ import api from './config/axios'
 interface DecodedToken {
   role: string
   exp: number
-  // ... otros campos del token
 }
 
 interface User {
@@ -50,13 +49,23 @@ class AuthService {
     }
   }
 
+  async login(credentials: {
+    email: string
+    password: string
+  }): Promise<{ user: User }> {
+    const { data } = await api.post('/auth/login', credentials)
+    localStorage.setItem('token', data.token)
+    localStorage.setItem('user', JSON.stringify(data.user))
+    return data
+  }
+
   logout() {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
   }
 
   isAuthenticated(): boolean {
-    return this.hasValidToken()
+    return localStorage.getItem('token') !== null
   }
 }
 
