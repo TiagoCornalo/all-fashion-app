@@ -1,5 +1,9 @@
 import { create } from 'zustand'
-import { getCurrentRegister, openRegister, closeRegister } from '../services/cash-register'
+import {
+  getCurrentRegister,
+  openRegister,
+  closeRegister
+} from '../services/cash-register'
 
 interface CashRegister {
   _id: string
@@ -31,7 +35,11 @@ interface CashRegisterStore {
   error: string | null
   fetchCurrentRegister: () => Promise<void>
   openRegister: (initialBalance: number) => Promise<void>
-  closeRegister: (id: string, actualCash: number, notes?: string) => Promise<void>
+  closeRegister: (
+    id: string,
+    actualCash: number,
+    notes?: string
+  ) => Promise<void>
 }
 
 export const useCashRegisterStore = create<CashRegisterStore>((set, get) => ({
@@ -72,7 +80,9 @@ export const useCashRegisterStore = create<CashRegisterStore>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const data = await closeRegister(id, actualCash, notes)
-      set({ currentRegister: data })
+      set({ currentRegister: null })
+      await get().fetchCurrentRegister()
+      return data
     } catch (error) {
       console.error(error)
       set({ error: 'Error al cerrar la caja' })

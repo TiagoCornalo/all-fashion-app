@@ -5,8 +5,15 @@ export const openRegister = async (initialBalance: number) => {
   return response.data
 }
 
-export const closeRegister = async (id: string, actualCash: number, notes?: string) => {
-  const response = await api.post(`/cash-registers/${id}/close`, { actualCash, notes })
+export const closeRegister = async (
+  id: string,
+  actualCash: number,
+  notes?: string
+) => {
+  const response = await api.put(`/cash-registers/${id}/close`, {
+    actualCash,
+    notes
+  })
   return response.data
 }
 

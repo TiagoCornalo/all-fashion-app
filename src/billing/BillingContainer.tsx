@@ -6,7 +6,7 @@ import {
   CloseRegisterDialog,
   NewSaleDialog
 } from './components'
-import { Button } from '../components'
+import { Button, Loader } from '../components'
 import { PlusCircle, XCircle } from 'lucide-react'
 import { toast } from 'react-toastify'
 
@@ -31,7 +31,13 @@ export default function BillingContainer() {
     fetchRegister()
   }, [fetchCurrentRegister])
 
-  if (isLoading) return <div>Cargando...</div>
+  if (isLoading) {
+    return (
+      <div className='flex justify-center items-center'>
+        <Loader />
+      </div>
+    )
+  }
 
   return (
     <LayoutMultiRole allowedRoles={['ADMIN', 'SELLER']}>
