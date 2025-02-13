@@ -1,4 +1,4 @@
-import { useSaleStore } from '../../../stores/saleStore'
+import { useSaleForm } from '../hooks/useSaleForm'
 import {
   Card,
   CardContent,
@@ -14,7 +14,7 @@ import {
 } from '../../../components'
 
 const SaleSummary = () => {
-  const { items, payments, invoice, total } = useSaleStore()
+  const { items, payments, invoice, total } = useSaleForm()
 
   const getPaymentTypeLabel = (type: string) => {
     const labels = {
@@ -36,88 +36,90 @@ const SaleSummary = () => {
   }
 
   return (
-    <div className='space-y-6'>
-      <Card>
-        <CardHeader>
-          <CardTitle>Resumen de Venta</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className='space-y-6'>
-            {/* Productos */}
-            <div>
-              <h3 className='font-medium mb-2'>Productos</h3>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Producto</TableHead>
-                    <TableHead>Cantidad</TableHead>
-                    <TableHead>Precio</TableHead>
-                    <TableHead>Subtotal</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map((item) => (
-                    <TableRow key={item.product}>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell>{item.quantity}</TableCell>
-                      <TableCell>${item.price}</TableCell>
-                      <TableCell>${item.price * item.quantity}</TableCell>
+    <div className='max-h-[60vh] overflow-y-auto'>
+      <div className='space-y-6'>
+        <Card>
+          <CardHeader>
+            <CardTitle>Resumen de Venta</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className='space-y-6'>
+              {/* Productos */}
+              <div>
+                <h3 className='font-medium mb-2'>Productos</h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Producto</TableHead>
+                      <TableHead>Cantidad</TableHead>
+                      <TableHead>Precio</TableHead>
+                      <TableHead>Subtotal</TableHead>
                     </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {items.map((item) => (
+                      <TableRow key={item.product}>
+                        <TableCell>{item.name}</TableCell>
+                        <TableCell>{item.quantity}</TableCell>
+                        <TableCell>${item.price}</TableCell>
+                        <TableCell>${item.price * item.quantity}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <Separator />
+
+              {/* Pagos */}
+              <div>
+                <h3 className='font-medium mb-2'>Pagos</h3>
+                <div className='space-y-2'>
+                  {payments.map((payment, index) => (
+                    <div key={index} className='flex justify-between'>
+                      <span>{getPaymentTypeLabel(payment.type)}</span>
+                      <span>${payment.amount}</span>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            <Separator />
-
-            {/* Pagos */}
-            <div>
-              <h3 className='font-medium mb-2'>Pagos</h3>
-              <div className='space-y-2'>
-                {payments.map((payment, index) => (
-                  <div key={index} className='flex justify-between'>
-                    <span>{getPaymentTypeLabel(payment.type)}</span>
-                    <span>${payment.amount}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Facturación */}
-            <div>
-              <h3 className='font-medium mb-2'>Facturación</h3>
-              <div className='space-y-2'>
-                <div className='flex justify-between'>
-                  <span>Tipo de comprobante</span>
-                  <span>{getInvoiceTypeLabel(invoice.type)}</span>
                 </div>
-                {invoice.customerName && (
+              </div>
+
+              <Separator />
+
+              {/* Facturación */}
+              <div>
+                <h3 className='font-medium mb-2'>Facturación</h3>
+                <div className='space-y-2'>
                   <div className='flex justify-between'>
-                    <span>Cliente</span>
-                    <span>{invoice.customerName}</span>
+                    <span>Tipo de comprobante</span>
+                    <span>{getInvoiceTypeLabel(invoice.type)}</span>
                   </div>
-                )}
-                {invoice.customerDocument && (
-                  <div className='flex justify-between'>
-                    <span>CUIT/DNI</span>
-                    <span>{invoice.customerDocument}</span>
-                  </div>
-                )}
+                  {invoice.customerName && (
+                    <div className='flex justify-between'>
+                      <span>Cliente</span>
+                      <span>{invoice.customerName}</span>
+                    </div>
+                  )}
+                  {invoice.customerDocument && (
+                    <div className='flex justify-between'>
+                      <span>CUIT/DNI</span>
+                      <span>{invoice.customerDocument}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Total */}
+              <div className='flex justify-between text-lg font-medium'>
+                <span>Total</span>
+                <span>${total}</span>
               </div>
             </div>
-
-            <Separator />
-
-            {/* Total */}
-            <div className='flex justify-between text-lg font-medium'>
-              <span>Total</span>
-              <span>${total}</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

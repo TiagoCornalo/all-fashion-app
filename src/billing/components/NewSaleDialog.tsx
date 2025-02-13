@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useCashRegisterStore } from '../../stores/cashRegisterStore'
 import { useSaleStore } from '../../stores/saleStore'
 import {
@@ -10,6 +9,7 @@ import {
 } from '../../components'
 import { toast } from 'react-toastify'
 import { ProductSelector, PaymentForm, InvoiceForm, SaleSummary } from './sale'
+import { useSaleForm } from './hooks/useSaleForm'
 
 interface NewSaleDialogProps {
   isOpen: boolean
@@ -17,11 +17,19 @@ interface NewSaleDialogProps {
 }
 
 const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
-  const [step, setStep] = useState(1)
-  const [remaining, setRemaining] = useState(0)
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const { currentRegister } = useCashRegisterStore()
-  const { items, total, createSale, clearSale } = useSaleStore()
+  const { createSale } = useSaleStore()
+  const {
+    step,
+    setStep,
+    items,
+    isSubmitting,
+    setIsSubmitting,
+    handleNext,
+    handleBack,
+    handleCancel,
+    isStepAccessible
+  } = useSaleForm()
 
   const steps = [
     { id: 1, title: 'Productos' },
@@ -30,40 +38,41 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
     { id: 4, title: 'Resumen' }
   ]
 
-  const handleNext = () => setStep((prev) => Math.min(prev + 1, 4))
-  const handleBack = () => setStep((prev) => Math.max(prev - 1, 1))
+  const handleSubmit = async () => {
+    if (!currentRegister) return
+
+    try {
+      setIsSubmitting(true)
+      await createSale(currentRegister._id)
+      toast.success('Venta realizada correctamente')
+      if (handleCancel()) {
+        onOpenChange(false)
+      }
+    } catch (error) {
+      console.error(error)
+      toast.error('Error al realizar la venta')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const renderStepContent = () => {
     switch (step) {
       case 1:
         return <ProductSelector />
       case 2:
-        return (
-          <>
-            <PaymentForm
-              total={total}
-              onComplete={handleNext}
-              remaining={remaining}
-              setRemaining={setRemaining}
-            />
-            <div className='flex justify-end mt-4'>
-              <Button onClick={handleBack} variant='outline' className='mr-2'>
-                Atrás
-              </Button>
-              <Button onClick={handleNext} disabled={remaining !== 0}>
-                Continuar
-              </Button>
-            </div>
-          </>
-        )
+        return <PaymentForm />
       case 3:
-        return <InvoiceForm onComplete={handleNext} />
+        return <InvoiceForm />
       case 4:
         return (
           <>
             <SaleSummary />
             <div className='flex justify-end space-x-2 mt-4'>
-              <Button variant='outline' onClick={() => onOpenChange(false)}>
+              <Button
+                variant='outline'
+                onClick={() => handleCancel() && onOpenChange(false)}
+              >
                 Cancelar
               </Button>
               <Button onClick={handleSubmit} disabled={isSubmitting}>
@@ -75,39 +84,27 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
     }
   }
 
-  const handleSubmit = async () => {
-    if (!currentRegister) return
-
-    try {
-      setIsSubmitting(true)
-      await createSale(currentRegister._id)
-      toast.success('Venta realizada correctamente')
-      clearSale()
-      onOpenChange(false)
-    } catch (error) {
-      console.error(error)
-      toast.error('Error al realizar la venta')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-4xl'>
+      <DialogContent className='max-w-4xl max-h-[80vh] flex flex-col'>
         <DialogHeader>
           <DialogTitle>Nueva Venta</DialogTitle>
         </DialogHeader>
 
-        <div className='space-y-6'>
+        <div className='space-y-6 flex-1 overflow-y-auto'>
           {/* Stepper */}
-          <div className='flex justify-between'>
+          <div className='flex justify-between sticky top-0 bg-background z-10 py-2'>
             {steps.map((s) => (
               <div
                 key={s.id}
-                className={`flex items-center ${
+                className={`flex items-center cursor-pointer ${
                   step >= s.id ? 'text-primary' : 'text-muted-foreground'
                 }`}
+                onClick={() => {
+                  if (s.id < step || isStepAccessible(s.id)) {
+                    setStep(s.id)
+                  }
+                }}
               >
                 <div
                   className={`
@@ -135,21 +132,21 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
 
           {/* Content */}
           {renderStepContent()}
-
-          {/* Navigation */}
-          {step < 4 && items.length > 0 && (
-            <div className='flex justify-between mt-4'>
-              <Button
-                variant='outline'
-                onClick={handleBack}
-                disabled={step === 1}
-              >
-                Atrás
-              </Button>
-              <Button onClick={handleNext}>Siguiente</Button>
-            </div>
-          )}
         </div>
+
+        {/* Navigation - hacerlo sticky al fondo */}
+        {step < 4 && items.length > 0 && (
+          <div className='flex justify-between mt-4 sticky bottom-0 bg-background py-2'>
+            <Button
+              variant='outline'
+              onClick={handleBack}
+              disabled={step === 1}
+            >
+              Atrás
+            </Button>
+            <Button onClick={handleNext}>Siguiente</Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )

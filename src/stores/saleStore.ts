@@ -69,7 +69,8 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
     items: [],
     payments: [],
     invoice: { type: 'TICKET' },
-    notes: ''
+    notes: '',
+    total: 0
   }),
 
   createSale: async (cashRegisterId) => {

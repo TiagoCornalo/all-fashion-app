@@ -20,7 +20,6 @@ export default function BillingContainer() {
     const fetchRegister = async () => {
       try {
         await fetchCurrentRegister()
-        console.log(currentRegister)
       } catch (error) {
         if (error instanceof Response && error.status === 404) {
           return
