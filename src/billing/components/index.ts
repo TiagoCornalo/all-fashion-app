@@ -5,4 +5,4 @@ export { default as InvoiceForm } from './sale/InvoiceForm'
 export { default as PaymentForm } from './sale/PaymentForm'
 export { default as ProductSelector } from './sale/ProductSelector'
 export { default as SaleSummary } from './sale/SaleSummary'
-
+export { default as BillingRegisters } from './BillingRegisters'

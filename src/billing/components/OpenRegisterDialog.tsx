@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useCashRegisterStore } from '../../stores/cashRegisterStore'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -20,6 +21,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { toast } from 'react-toastify'
+import { useAuth } from '../../context/auth/useAuth'
 
 const formSchema = z.object({
   initialBalance: z
@@ -29,24 +31,79 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
-const OpenRegisterDialog = () => {
-  const { openRegister, currentRegister } = useCashRegisterStore()
+interface OpenRegisterDialogProps {
+  isOpen: boolean
+  onClose?: () => void
+}
+
+const OpenRegisterDialog = ({ isOpen, onClose }: OpenRegisterDialogProps) => {
+  const { isAuthenticated } = useAuth()
+  const {
+    openRegister,
+    currentRegister,
+    fetchLastClosedRegister,
+    lastClosedRegister,
+    isLoading
+  } = useCashRegisterStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [localInitialBalance, setLocalInitialBalance] = useState(
+    lastClosedRegister?.closingSummary?.actualCash || 0
+  )
+
+  if (!isAuthenticated) return null
+
+  const fetchLastRegister = useCallback(async () => {
+    try {
+      await fetchLastClosedRegister()
+    } catch (error) {
+      console.error('Error al cargar último registro:', error)
+    }
+  }, [fetchLastClosedRegister])
+
+  useEffect(() => {
+    let isMounted = true
+
+    if (isMounted && !lastClosedRegister && !isLoading) {
+      fetchLastRegister()
+    }
+
+    return () => {
+      isMounted = false
+    }
+  }, [fetchLastRegister, lastClosedRegister, isLoading])
+
+  useEffect(() => {
+    if (lastClosedRegister?.currentBalance) {
+      setLocalInitialBalance(lastClosedRegister.currentBalance)
+    }
+  }, [lastClosedRegister])
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      initialBalance: 0
+      initialBalance: localInitialBalance
     }
   })
+
+  useEffect(() => {
+    form.setValue('initialBalance', localInitialBalance)
+  }, [localInitialBalance, form])
 
   if (currentRegister) return null
 
   const onSubmit = async (values: FormValues) => {
+    if (!isAuthenticated) {
+      toast.error('Debe iniciar sesión para abrir la caja')
+      return
+    }
+
     try {
       setIsSubmitting(true)
       await openRegister(values.initialBalance)
       toast.success('Caja abierta correctamente')
+      if (onClose) {
+        onClose()
+      }
     } catch (error) {
       console.error(error)
       toast.error('Error al abrir la caja')
@@ -56,7 +113,7 @@ const OpenRegisterDialog = () => {
   }
 
   return (
-    <Dialog defaultOpen>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Abrir Caja</DialogTitle>
@@ -79,7 +136,7 @@ const OpenRegisterDialog = () => {
                       {...field}
                       onChange={(e) => {
                         const value =
-                          e.target.value === '' ? '' : Number(e.target.value)
+                          e.target.value === '' ? 0 : Number(e.target.value)
                         field.onChange(value)
                       }}
                     />
@@ -90,7 +147,12 @@ const OpenRegisterDialog = () => {
             />
 
             <DialogFooter>
-              <Button type='submit' disabled={isSubmitting}>
+              <DialogClose asChild>
+                <Button variant='outline' type='button'>
+                  Cancelar
+                </Button>
+              </DialogClose>
+              <Button type='submit' disabled={isSubmitting || isLoading}>
                 {isSubmitting ? 'Abriendo...' : 'Abrir Caja'}
               </Button>
             </DialogFooter>

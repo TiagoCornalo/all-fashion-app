@@ -31,7 +31,7 @@ const InventoryContainer = () => {
   })
 
   const fetchProductsData = async (tableFilters: TableFilters) => {
-    if (!authService.hasValidToken()) {
+    if (!authService.isAuthenticated()) {
       navigate(LOGIN_PATH)
       return
     }

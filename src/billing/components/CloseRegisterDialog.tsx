@@ -44,7 +44,7 @@ const CloseRegisterDialog = ({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      actualCash: 0,
+      actualCash: currentRegister?.currentBalance || 0,
       notes: ''
     }
   })
@@ -62,6 +62,7 @@ const CloseRegisterDialog = ({
       toast.error('Error al cerrar la caja')
     } finally {
       setIsSubmitting(false)
+      window.location.reload()
     }
   }
 

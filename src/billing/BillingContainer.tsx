@@ -4,15 +4,27 @@ import { useCashRegisterStore } from '../stores/cashRegisterStore'
 import {
   OpenRegisterDialog,
   CloseRegisterDialog,
-  NewSaleDialog
+  NewSaleDialog,
+  BillingRegisters
 } from './components'
-import { Button, Loader } from '../components'
+import {
+  Button,
+  Loader,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent
+} from '../components'
 import { PlusCircle, XCircle } from 'lucide-react'
 import { toast } from 'react-toastify'
+import { useIsMobile } from '../hooks'
 
 export default function BillingContainer() {
+  const isMobile = useIsMobile()
   const [isNewSaleOpen, setIsNewSaleOpen] = useState(false)
   const [isCloseRegisterOpen, setIsCloseRegisterOpen] = useState(false)
+  const [isOpenRegisterOpen, setIsOpenRegisterOpen] = useState(false)
   const { currentRegister, isLoading, fetchCurrentRegister } =
     useCashRegisterStore()
 
@@ -44,35 +56,52 @@ export default function BillingContainer() {
         <h1 className='text-2xl font-bold mb-4'>Facturación</h1>
 
         {!currentRegister ? (
-          <OpenRegisterDialog />
+          <>
+            <Button
+              onClick={() => setIsOpenRegisterOpen(true)}
+              className='bg-green-600 hover:bg-green-700'
+            >
+              Abrir Caja
+            </Button>
+            {isOpenRegisterOpen && (
+              <OpenRegisterDialog
+                isOpen={isOpenRegisterOpen}
+                onClose={() => setIsOpenRegisterOpen(false)}
+              />
+            )}
+          </>
         ) : (
-          <div className='space-y-4'>
-            <div className='flex justify-between items-center'>
-              <div>
-                <p>Caja actual: ${currentRegister.currentBalance}</p>
-                <p>
-                  Abierta el:{' '}
-                  {new Date(currentRegister.openedAt).toLocaleString()}
-                </p>
+          <Card className='space-y-4'>
+            <CardHeader>
+              <CardTitle>
+                Balance actual: ${currentRegister.currentBalance}
+              </CardTitle>
+              <CardDescription>
+                Abierta el:{' '}
+                {new Date(currentRegister.openedAt).toLocaleString('es-ES')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className='flex justify-between items-center'>
+                <div className='space-x-2'>
+                  <Button
+                    onClick={() => setIsNewSaleOpen(true)}
+                    className='space-x-2'
+                  >
+                    <PlusCircle className='h-4 w-4' />
+                    <span>Nueva Venta</span>
+                  </Button>
+                  <Button
+                    variant='destructive'
+                    onClick={() => setIsCloseRegisterOpen(true)}
+                    className='space-x-2'
+                  >
+                    <XCircle className='h-4 w-4' />
+                    <span>Cerrar Caja</span>
+                  </Button>
+                </div>
               </div>
-              <div className='space-x-2'>
-                <Button
-                  onClick={() => setIsNewSaleOpen(true)}
-                  className='space-x-2'
-                >
-                  <PlusCircle className='h-4 w-4' />
-                  <span>Nueva Venta</span>
-                </Button>
-                <Button
-                  variant='destructive'
-                  onClick={() => setIsCloseRegisterOpen(true)}
-                  className='space-x-2'
-                >
-                  <XCircle className='h-4 w-4' />
-                  <span>Cerrar Caja</span>
-                </Button>
-              </div>
-            </div>
+            </CardContent>
 
             <NewSaleDialog
               isOpen={isNewSaleOpen}
@@ -82,9 +111,11 @@ export default function BillingContainer() {
               isOpen={isCloseRegisterOpen}
               onOpenChange={setIsCloseRegisterOpen}
             />
-          </div>
+          </Card>
         )}
       </div>
+
+      <BillingRegisters />
     </LayoutMultiRole>
   )
 }

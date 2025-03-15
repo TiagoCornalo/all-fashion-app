@@ -58,7 +58,8 @@ const ProductSelector = () => {
         product: product._id,
         quantity: 1,
         price: product.price,
-        name: product.name
+        name: product.name,
+        subtotal: product.price
       }
       addItem(newItem)
     }

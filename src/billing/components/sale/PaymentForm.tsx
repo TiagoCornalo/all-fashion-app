@@ -16,6 +16,7 @@ import * as z from 'zod'
 import { PaymentType } from '../../../types/sale.types'
 import { Checkbox } from '../../../components'
 import { useSaleForm } from '../hooks/useSaleForm'
+import { useEffect } from 'react'
 
 const formSchema = z.object({
   selectedMethods: z.array(z.enum(['CASH', 'DEBIT', 'CREDIT', 'TRANSFER'])),
@@ -31,7 +32,7 @@ const PaymentForm = () => {
     selectedMethods,
     setSelectedMethods,
     paymentAmounts,
-    setPaymentAmounts
+    updatePaymentAmount
   } = useSaleForm()
 
   const form = useForm<FormValues>({
@@ -44,113 +45,131 @@ const PaymentForm = () => {
 
   const handleAmountChange = (method: string, value: number) => {
     form.setValue(`amounts.${method}`, value)
-    setPaymentAmounts((prev) => ({
-      ...prev,
-      [method]: value || 0
-    }))
+    updatePaymentAmount(method as PaymentType, value || 0)
   }
 
+  useEffect(() => {
+    if (selectedMethods.length === 1) {
+      handleAmountChange(selectedMethods[0], total)
+    }
+  }, [selectedMethods.length, total])
+
+  const onMethodChange = (method: PaymentType, checked: boolean) => {
+    const updated = checked
+      ? [...selectedMethods, method]
+      : selectedMethods.filter((m) => m !== method)
+
+    form.setValue('selectedMethods', updated)
+    setSelectedMethods(updated)
+
+    if (!checked) {
+      handleAmountChange(method, 0)
+    } else if (updated.length === 1) {
+      handleAmountChange(method, total)
+    }
+  }
+
+  useEffect(() => {
+    form.setValue('amounts', paymentAmounts)
+  }, [paymentAmounts])
+
   return (
-    <div className='max-h-[60vh] overflow-y-auto'>
-      <div className='space-y-4'>
-        <Card>
-          <CardHeader>
-            <CardTitle>Total a pagar: ${total}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <div className='space-y-6'>
-                <FormField
-                  control={form.control}
-                  name='selectedMethods'
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Métodos de pago</FormLabel>
-                      <FormControl>
-                        <div className='grid grid-cols-2 gap-4'>
-                          {[
-                            { value: 'CASH', label: 'Efectivo' },
-                            { value: 'DEBIT', label: 'Débito' },
-                            { value: 'CREDIT', label: 'Crédito' },
-                            { value: 'TRANSFER', label: 'Transferencia' }
-                          ].map((method) => (
-                            <div
-                              key={method.value}
-                              className='flex items-center space-x-2'
-                            >
-                              <Checkbox
-                                checked={selectedMethods.includes(
-                                  method.value as PaymentType
-                                )}
-                                onCheckedChange={(checked) => {
-                                  const current =
-                                    form.getValues('selectedMethods')
-                                  const updated = checked
-                                    ? [...current, method.value]
-                                    : current.filter((m) => m !== method.value)
-                                  form.setValue(
-                                    'selectedMethods',
-                                    updated as PaymentType[]
-                                  )
-                                  setSelectedMethods(updated as PaymentType[])
-                                }}
-                              />
-                              <span>{method.label}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                {selectedMethods.length > 0 && (
-                  <div className='space-y-4'>
-                    {selectedMethods.map((method) => (
-                      <FormField
-                        key={method}
-                        control={form.control}
-                        name={`amounts.${method}`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              {method === 'CASH'
-                                ? 'Efectivo'
-                                : method === 'DEBIT'
-                                ? 'Débito'
-                                : method === 'CREDIT'
-                                ? 'Crédito'
-                                : 'Transferencia'}
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type='number'
-                                {...field}
-                                value={field.value || ''}
-                                onChange={(e) => {
-                                  const value =
-                                    e.target.value === ''
-                                      ? ''
-                                      : Number(e.target.value)
-                                  handleAmountChange(method, value || 0)
-                                }}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    ))}
-                  </div>
+    <div className='flex flex-col h-full'>
+      <Card>
+        <CardHeader>
+          <CardTitle>Total a pagar: ${total}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <div className='space-y-6'>
+              {/* Métodos de pago en grid */}
+              <FormField
+                control={form.control}
+                name='selectedMethods'
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Métodos de pago</FormLabel>
+                    <FormControl>
+                      <div className='grid grid-cols-2 gap-4'>
+                        {[
+                          { value: 'CASH', label: 'Efectivo' },
+                          { value: 'DEBIT', label: 'Débito' },
+                          { value: 'CREDIT', label: 'Crédito' },
+                          { value: 'TRANSFER', label: 'Transferencia' }
+                        ].map((method) => (
+                          <div
+                            key={method.value}
+                            className='flex items-center space-x-2'
+                          >
+                            <Checkbox
+                              checked={selectedMethods.includes(
+                                method.value as PaymentType
+                              )}
+                              onCheckedChange={(checked) => {
+                                onMethodChange(
+                                  method.value as PaymentType,
+                                  checked as boolean
+                                )
+                              }}
+                            />
+                            <span>{method.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </FormControl>
+                  </FormItem>
                 )}
+              />
 
-                <div className='text-lg font-medium'>
-                  Restante: ${remaining}
+              {/* Inputs de montos en grid cuando hay muchos métodos */}
+              {selectedMethods.length > 0 && (
+                <div
+                  className={`grid ${
+                    selectedMethods.length > 2 ? 'grid-cols-2' : 'grid-cols-1'
+                  } gap-4`}
+                >
+                  {selectedMethods.map((method) => (
+                    <FormField
+                      key={method}
+                      control={form.control}
+                      name={`amounts.${method}`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {method === 'CASH'
+                              ? 'Efectivo'
+                              : method === 'DEBIT'
+                              ? 'Débito'
+                              : method === 'CREDIT'
+                              ? 'Crédito'
+                              : 'Transferencia'}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type='number'
+                              {...field}
+                              value={field.value || ''}
+                              onChange={(e) => {
+                                const value =
+                                  e.target.value === ''
+                                    ? ''
+                                    : Number(e.target.value)
+                                handleAmountChange(method, value || 0)
+                              }}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  ))}
                 </div>
-              </div>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
+              )}
+
+              <div className='text-lg font-medium'>Restante: ${remaining}</div>
+            </div>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   )
 }

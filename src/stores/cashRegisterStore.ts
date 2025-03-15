@@ -1,24 +1,34 @@
 import { create } from 'zustand'
 import {
   getCurrentRegister,
+  getLastClosedRegister,
   openRegister,
   closeRegister
 } from '../services/cash-register'
 
-interface CashRegister {
+export interface CashRegister {
   _id: string
   date: Date
   initialBalance: number
   currentBalance: number
   status: 'OPEN' | 'CLOSED'
   openedAt: Date
-  openedBy: string
+  openedBy: {
+    _id: string
+    name: string
+  }
   closedAt?: Date
-  closedBy?: string
+  closedBy?: {
+    _id: string
+    name: string
+  }
   movements: Array<{
     type: string
     amount: number
-    createdBy: string
+    createdBy: {
+      _id: string
+      name: string
+    }
     notes?: string
   }>
   closingSummary?: {
@@ -31,9 +41,11 @@ interface CashRegister {
 
 interface CashRegisterStore {
   currentRegister: CashRegister | null
+  lastClosedRegister: CashRegister | null
   isLoading: boolean
   error: string | null
   fetchCurrentRegister: () => Promise<void>
+  fetchLastClosedRegister: () => Promise<void>
   openRegister: (initialBalance: number) => Promise<void>
   closeRegister: (
     id: string,
@@ -44,6 +56,7 @@ interface CashRegisterStore {
 
 export const useCashRegisterStore = create<CashRegisterStore>((set, get) => ({
   currentRegister: null,
+  lastClosedRegister: null,
   isLoading: false,
   error: null,
 
@@ -55,6 +68,19 @@ export const useCashRegisterStore = create<CashRegisterStore>((set, get) => ({
     } catch (error) {
       console.error(error)
       set({ currentRegister: null })
+    } finally {
+      set({ isLoading: false })
+    }
+  },
+
+  fetchLastClosedRegister: async () => {
+    set({ isLoading: true, error: null })
+    try {
+      const data = await getLastClosedRegister()
+      set({ lastClosedRegister: data })
+    } catch (error) {
+      console.error(error)
+      set({ lastClosedRegister: null })
     } finally {
       set({ isLoading: false })
     }

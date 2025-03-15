@@ -1,4 +1,5 @@
 import { useSaleForm } from '../hooks/useSaleForm'
+import { useSaleStore } from '../../../stores/saleStore'
 import {
   Card,
   CardContent,
@@ -14,7 +15,16 @@ import {
 } from '../../../components'
 
 const SaleSummary = () => {
-  const { items, payments, invoice, total } = useSaleForm()
+  const { items, invoice, total } = useSaleForm()
+
+  // Obtener los pagos directamente del store para asegurarte de que estén actualizados
+  const { selectedMethods, paymentAmounts } = useSaleStore()
+
+  // Generar los pagos basados en los métodos seleccionados y las cantidades
+  const payments = selectedMethods.map((method) => ({
+    type: method,
+    amount: paymentAmounts[method] || 0
+  }))
 
   const getPaymentTypeLabel = (type: string) => {
     const labels = {
@@ -100,10 +110,10 @@ const SaleSummary = () => {
                       <span>{invoice.customerName}</span>
                     </div>
                   )}
-                  {invoice.customerDocument && (
+                  {invoice.customer?.documentNumber && (
                     <div className='flex justify-between'>
                       <span>CUIT/DNI</span>
-                      <span>{invoice.customerDocument}</span>
+                      <span>{invoice.customer.documentNumber}</span>
                     </div>
                   )}
                 </div>

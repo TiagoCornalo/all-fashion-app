@@ -21,3 +21,15 @@ export const getCurrentRegister = async () => {
   const response = await api.get('/cash-registers/current')
   return response.data
 }
+
+export const getCashRegisters = async (page: number = 1, limit: number = 5) => {
+  const response = await api.get('/cash-registers', {
+    params: { page, limit }
+  })
+  return response.data
+}
+
+export const getLastClosedRegister = async () => {
+  const response = await api.get('/cash-registers/last-closed')
+  return response.data
+}
