@@ -49,6 +49,9 @@ const OpenRegisterDialog = ({ isOpen, onClose }: OpenRegisterDialogProps) => {
   const [localInitialBalance, setLocalInitialBalance] = useState(
     lastClosedRegister?.closingSummary?.actualCash || 0
   )
+  const [isFocused, setIsFocused] = useState(false)
+  const [inputValue, setInputValue] = useState('')
+  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false)
 
   if (!isAuthenticated) return null
 
@@ -57,24 +60,26 @@ const OpenRegisterDialog = ({ isOpen, onClose }: OpenRegisterDialogProps) => {
       await fetchLastClosedRegister()
     } catch (error) {
       console.error('Error al cargar último registro:', error)
+      setHasAttemptedFetch(true)
     }
   }, [fetchLastClosedRegister])
 
   useEffect(() => {
     let isMounted = true
 
-    if (isMounted && !lastClosedRegister && !isLoading) {
+    if (isMounted && !hasAttemptedFetch && !lastClosedRegister && !isLoading) {
       fetchLastRegister()
     }
 
     return () => {
       isMounted = false
     }
-  }, [fetchLastRegister, lastClosedRegister, isLoading])
+  }, [fetchLastRegister, lastClosedRegister, isLoading, hasAttemptedFetch])
 
   useEffect(() => {
     if (lastClosedRegister?.currentBalance) {
       setLocalInitialBalance(lastClosedRegister.currentBalance)
+      setInputValue(lastClosedRegister.currentBalance.toString())
     }
   }, [lastClosedRegister])
 
@@ -132,12 +137,29 @@ const OpenRegisterDialog = ({ isOpen, onClose }: OpenRegisterDialogProps) => {
                   <FormLabel>Saldo Inicial</FormLabel>
                   <FormControl>
                     <Input
-                      type='number'
-                      {...field}
+                      type='text'
+                      inputMode='numeric'
+                      pattern='[0-9]*'
+                      value={isFocused ? inputValue : field.value}
+                      onFocus={() => {
+                        setIsFocused(true)
+                        setInputValue(
+                          field.value === 0 ? '' : field.value.toString()
+                        )
+                      }}
+                      onBlur={() => {
+                        setIsFocused(false)
+                        if (inputValue === '') {
+                          field.onChange(0)
+                        }
+                      }}
                       onChange={(e) => {
-                        const value =
-                          e.target.value === '' ? 0 : Number(e.target.value)
-                        field.onChange(value)
+                        const value = e.target.value.replace(/[^0-9]/g, '')
+                        setInputValue(value)
+
+                        if (value !== '') {
+                          field.onChange(Number(value))
+                        }
                       }}
                     />
                   </FormControl>

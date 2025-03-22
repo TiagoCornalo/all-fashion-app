@@ -13,13 +13,15 @@ import {
 } from '../../components'
 import { validateEmail } from '../../utils'
 import { useAuth } from '../../context/auth/useAuth'
+import useUserStore from '../../stores/userStore'
 
 const AuthSignIn = () => {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const setUser = useUserStore((state) => state.setUser)
 
-  const from = location.state?.from?.pathname || '/dashboard'
+  const from = location.state?.from?.pathname || '/home'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -44,6 +46,13 @@ const AuthSignIn = () => {
 
     try {
       await login({ email, password })
+
+      const userJSON = localStorage.getItem('user')
+      if (userJSON) {
+        const user = JSON.parse(userJSON)
+        setUser(user)
+      }
+
       navigate(from, { replace: true })
     } catch (error) {
       console.error('Error al iniciar sesión:', error)

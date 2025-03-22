@@ -38,6 +38,7 @@ export interface CashRegister {
       invoiceNumber: string
       paymentMethods: string[]
     }
+    reference: string
   }>
   closingSummary?: {
     expectedCash: number

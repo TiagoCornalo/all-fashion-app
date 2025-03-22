@@ -39,11 +39,13 @@ type SupplierFormValues = z.infer<typeof supplierFormSchema>
 interface SuppliersCreateDialogProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
+  onSupplierCreated: () => void
 }
 
 const SuppliersCreateDialog = ({
   isOpen,
-  onOpenChange
+  onOpenChange,
+  onSupplierCreated
 }: SuppliersCreateDialogProps) => {
   const [activeTab, setActiveTab] = useState('basic')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -65,6 +67,7 @@ const SuppliersCreateDialog = ({
       await createSupplier(values)
       toast.success('Proveedor creado exitosamente')
       onOpenChange(false)
+      onSupplierCreated()
     } catch (error) {
       if (error instanceof AxiosError) {
         toast.error(error.response?.data.message)

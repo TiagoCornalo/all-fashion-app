@@ -22,6 +22,8 @@ import Bank from './icons/bank.svg'
 import House from './icons/house.svg'
 import Briefcase from './icons/brief-case.svg'
 import Label from './icons/label.svg'
+import BarChart from './icons/bar-chart.svg'
+import Money from './icons/dollar-banknote.svg'
 
 // Usamos el tipo del módulo SVG directamente
 type SvgComponent = typeof Bill
@@ -51,5 +53,7 @@ export {
   Bank,
   House,
   Briefcase,
-  Label
+  Label,
+  BarChart,
+  Money
 }

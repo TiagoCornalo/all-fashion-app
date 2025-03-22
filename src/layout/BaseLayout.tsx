@@ -51,7 +51,7 @@ const BaseLayout = ({
         }
 
         if (requiredRoles && !requiredRoles.includes(response.user.role)) {
-          navigate('/dashboard')
+          navigate('/home')
           return
         }
 

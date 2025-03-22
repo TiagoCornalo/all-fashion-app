@@ -17,6 +17,7 @@ import { CashRegister } from '../../stores/cashRegisterStore'
 import { formatCurrency, formatDateTime } from '../../utils'
 import { ChevronLeft, ChevronRight, Eye } from 'lucide-react'
 import { useIsMobile } from '../../hooks'
+import { Link } from 'react-router-dom'
 
 const CashRegisterSales = ({
   cashRegister
@@ -130,9 +131,11 @@ const CashRegisterSales = ({
                         <TableCell>{sale.createdBy.name || 'N/A'}</TableCell>
                       )}
                       <TableCell className='text-right'>
-                        <Button variant='outline' size='sm'>
-                          <Eye className='h-4 w-4' />
-                        </Button>
+                        <Link to={`/sale/${sale.reference}`}>
+                          <Button variant='outline' size='sm'>
+                            <Eye className='h-4 w-4' />
+                          </Button>
+                        </Link>
                       </TableCell>
                     </TableRow>
                   ))}

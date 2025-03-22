@@ -22,6 +22,7 @@ const OrderDetailContainer = lazy(() => import('./order/OrderContainer'))
 const SaleContainer = lazy(() => import('./sale/SaleContainer'))
 const DiscountsContainer = lazy(() => import('./discounts/DiscountsContainer'))
 const CombosContainer = lazy(() => import('./combos/CombosContainer'))
+const HomeContainer = lazy(() => import('./home/HomeContainer'))
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
       <NotificationsProvider>
         <Routes>
           <Route path='/' element={<AuthContainer />} />
+          <Route path='/home' element={<HomeContainer />} />
           <Route path='/dashboard' element={<DashboardContainer />} />
           <Route path='/inventory' element={<InventoryContainer />} />
           <Route path='/barcode' element={<BarcodeReaderWithCamera />} />
@@ -39,7 +41,7 @@ function App() {
             element={<CashRegisterContainer />}
           />
           <Route path='/suppliers/:id' element={<SupplierDetailContainer />} />
-          <Route path='/orders/:orderId' element={<OrderDetailContainer />} />
+          <Route path='/orders/:id' element={<OrderDetailContainer />} />
           <Route path='/sale/:id' element={<SaleContainer />} />
           <Route path='/discounts' element={<DiscountsContainer />} />
           <Route path='/combos' element={<CombosContainer />} />

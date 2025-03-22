@@ -1,4 +1,4 @@
-import { Package, HandShake, Bill, Hammer, Label } from '../assets'
+import { Package, HandShake, Bill, Hammer, Label, BarChart } from '../assets'
 
 export const MENU_ITEMS = [
   {
@@ -32,9 +32,16 @@ export const MENU_ITEMS = [
     roles: ['ADMIN', 'MANAGER']
   },
   {
+    title: 'Análisis',
+    url: '/dashboard',
+    icon: BarChart,
+    roles: ['ADMIN', 'MANAGER']
+  },
+  {
     title: 'Servicios',
     url: '/services',
     icon: Hammer,
-    roles: ['ADMIN', 'SELLER', 'MANAGER']
+    roles: ['ADMIN', 'SELLER', 'MANAGER'],
+    disabled: true
   }
 ]

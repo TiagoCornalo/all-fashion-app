@@ -12,9 +12,10 @@ import {
 } from '../../components/ui/sidebar'
 import { authService } from '../../services/auth.service'
 import { LOGIN_PATH } from '../../consts'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../ui/button'
 import { ChevronLeft } from 'lucide-react'
+import logo from '../../assets/logo.png'
 
 interface AppSidebarProps {
   items: {
@@ -46,8 +47,13 @@ const AppSideBar = ({ items, showGoBackButton = false }: AppSidebarProps) => {
       )}
       <SidebarContent className='h-full'>
         <SidebarGroup className='h-full flex flex-col'>
-          <SidebarGroupLabel>All Fashion Distruibuidora</SidebarGroupLabel>
-          <SidebarGroupContent className='flex flex-col h-full'>
+          <SidebarGroupContent className='flex flex-col h-full '>
+            <div className='flex items-center justify-center mb-10 select-none'>
+              <Link to={'/home'}>
+                <img src={logo} alt='logo' />
+              </Link>
+            </div>
+
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
@@ -65,7 +71,7 @@ const AppSideBar = ({ items, showGoBackButton = false }: AppSidebarProps) => {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <a href={'/dashboard'}>
+                    <a href={'/home'}>
                       <House />
                       <span>Inicio</span>
                     </a>

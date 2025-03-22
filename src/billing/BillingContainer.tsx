@@ -22,6 +22,7 @@ import {
 import { toast } from 'react-toastify'
 import { Receipt } from '../assets'
 import { formatCurrency } from '../utils'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 
 export default function BillingContainer() {
   const [isNewSaleOpen, setIsNewSaleOpen] = useState(false)
@@ -31,20 +32,33 @@ export default function BillingContainer() {
   const [isWithdrawalOpen, setIsWithdrawalOpen] = useState(false)
   const { currentRegister, isLoading, fetchCurrentRegister } =
     useCashRegisterStore()
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchRegister = async () => {
       try {
         await fetchCurrentRegister()
+
+        const newSale = searchParams.get('new') === 'true'
+        if (newSale) {
+          navigate('/billing', { replace: true })
+          setIsNewSaleOpen(true)
+        }
       } catch (error) {
         if (error instanceof Response && error.status === 404) {
+          if (searchParams.get('new') === 'true') {
+            toast.error('Primero debes abrir una caja para realizar una venta')
+            setIsOpenRegisterOpen(true)
+            navigate('/billing', { replace: true })
+          }
           return
         }
         toast.error('Error al obtener el estado de la caja')
       }
     }
     fetchRegister()
-  }, [fetchCurrentRegister])
+  }, [fetchCurrentRegister, searchParams, navigate])
 
   if (isLoading) {
     return (

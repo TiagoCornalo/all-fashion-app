@@ -37,7 +37,11 @@ const SuppliersContainer = () => {
 
   const queryClient = useQueryClient()
 
-  const { data: suppliers, isLoading } = useQuery({
+  const {
+    data: suppliers,
+    isLoading,
+    refetch
+  } = useQuery({
     queryKey: [
       'suppliers',
       pagination.page,
@@ -110,6 +114,10 @@ const SuppliersContainer = () => {
     })
   }
 
+  const handleSupplierCreated = () => {
+    refetch()
+  }
+
   return (
     <LayoutMultiRole allowedRoles={['ADMIN']}>
       <section className='p-4'>
@@ -158,6 +166,7 @@ const SuppliersContainer = () => {
       <SuppliersCreateDialog
         isOpen={isOpenAddSupplier}
         onOpenChange={setIsOpenAddSupplier}
+        onSupplierCreated={handleSupplierCreated}
       />
       <SuppliersCreateOrder
         isOpen={isOpenCreateOrder}
