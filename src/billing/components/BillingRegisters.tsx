@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button } from '../../components'
 import BillingLastCashRegisters from './BillingLastCashRegisters'
 import BillingLastSales from './BillingLastSales'
+import { CardIndexDividers } from '../../assets'
 
 const BillingRegisters = () => {
   const [isOpenCashRegisters, setIsOpenCashRegisters] = useState(false)
@@ -17,10 +18,14 @@ const BillingRegisters = () => {
 
   return (
     <div className='p-4'>
-      <h1 className='text-2xl font-bold mb-4'>Registros</h1>
+      <div className='flex items-center gap-2 mb-4'>
+        {/* @ts-ignore */}
+        <CardIndexDividers className='h-6 w-6' />
+        <h1 className='text-2xl font-bold'>Registros</h1>
+      </div>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
         <Button variant='outline' onClick={handleOpenCashRegisters}>
-          Ultimas cajas cerradas
+          Ultimas cajas
         </Button>
         <Button variant='outline' onClick={handleOpenLastSales}>
           Ultimas ventas

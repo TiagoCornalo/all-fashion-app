@@ -20,11 +20,13 @@ type MenuItem = {
 const BaseLayout = ({
   children,
   requiredRoles,
-  menuItems
+  menuItems,
+  showGoBackButton = false
 }: {
   children: React.ReactNode
   requiredRoles?: string[]
   menuItems: MenuItem[]
+  showGoBackButton?: boolean
 }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -82,7 +84,7 @@ const BaseLayout = ({
   return (
     <SidebarProvider open={isOpen} onOpenChange={setIsOpen}>
       <div className='relative flex min-h-screen w-full'>
-        <AppSideBar items={filteredItems} />
+        <AppSideBar items={filteredItems} showGoBackButton={showGoBackButton} />
         <main className='flex-1 flex flex-col gap-4 p-4 w-full overflow-x-hidden'>
           <SidebarTrigger />
           {children}

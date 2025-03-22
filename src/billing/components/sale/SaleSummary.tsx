@@ -17,8 +17,14 @@ import {
 const SaleSummary = () => {
   const { items, invoice, total } = useSaleForm()
 
-  // Obtener los pagos directamente del store para asegurarte de que estén actualizados
-  const { selectedMethods, paymentAmounts } = useSaleStore()
+  // Obtener los pagos y promociones directamente del store
+  const {
+    selectedMethods,
+    paymentAmounts,
+    promotionCode,
+    itemPromotions,
+    combos
+  } = useSaleStore()
 
   // Generar los pagos basados en los métodos seleccionados y las cantidades
   const payments = selectedMethods.map((method) => ({
@@ -64,22 +70,85 @@ const SaleSummary = () => {
                       <TableHead>Cantidad</TableHead>
                       <TableHead>Precio</TableHead>
                       <TableHead>Subtotal</TableHead>
+                      {itemPromotions.length > 0 && (
+                        <TableHead>Promoción</TableHead>
+                      )}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {items.map((item) => (
-                      <TableRow key={item.product}>
-                        <TableCell>{item.name}</TableCell>
-                        <TableCell>{item.quantity}</TableCell>
-                        <TableCell>${item.price}</TableCell>
-                        <TableCell>${item.price * item.quantity}</TableCell>
-                      </TableRow>
-                    ))}
+                    {items.map((item, index) => {
+                      const hasPromo = itemPromotions.some(
+                        (p) => p.itemIndex === index
+                      )
+                      return (
+                        <TableRow key={item.product}>
+                          <TableCell>{item.name}</TableCell>
+                          <TableCell>{item.quantity}</TableCell>
+                          <TableCell>${item.price}</TableCell>
+                          <TableCell>${item.price * item.quantity}</TableCell>
+                          {itemPromotions.length > 0 && (
+                            <TableCell>
+                              {hasPromo && (
+                                <span className='text-green-600 font-medium'>
+                                  {
+                                    itemPromotions.find(
+                                      (p) => p.itemIndex === index
+                                    )?.promotionCode
+                                  }
+                                </span>
+                              )}
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      )
+                    })}
                   </TableBody>
                 </Table>
               </div>
 
+              {/* Combos - Nueva sección */}
+              {combos.length > 0 && (
+                <>
+                  <Separator />
+                  <div>
+                    <h3 className='font-medium mb-2'>Combos</h3>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Combo</TableHead>
+                          <TableHead>Cantidad</TableHead>
+                          <TableHead>Precio</TableHead>
+                          <TableHead>Subtotal</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {combos.map((combo) => (
+                          <TableRow key={combo.comboId}>
+                            <TableCell>{combo.name}</TableCell>
+                            <TableCell>{combo.quantity}</TableCell>
+                            <TableCell>${combo.price}</TableCell>
+                            <TableCell>
+                              ${combo.price * combo.quantity}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </>
+              )}
+
               <Separator />
+
+              {/* Promoción Global - Nueva sección */}
+              {promotionCode && (
+                <div>
+                  <h3 className='font-medium mb-2'>Promoción Aplicada</h3>
+                  <div className='bg-green-50 border border-green-200 rounded p-2 text-green-700'>
+                    Código: <span className='font-medium'>{promotionCode}</span>
+                  </div>
+                </div>
+              )}
 
               {/* Pagos */}
               <div>

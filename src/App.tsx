@@ -11,6 +11,17 @@ const BarcodeReaderWithCamera = lazy(
   () => import('./components/shared/BarCodeLector')
 )
 const BillingContainer = lazy(() => import('./billing/BillingContainer'))
+const CashRegisterContainer = lazy(
+  () => import('./cash-register/CashRegisterContainer')
+)
+const SuppliersContainer = lazy(() => import('./suppliers/SuppliersContainer'))
+const SupplierDetailContainer = lazy(
+  () => import('./suppliers/SupplierDetailContainer')
+)
+const OrderDetailContainer = lazy(() => import('./order/OrderContainer'))
+const SaleContainer = lazy(() => import('./sale/SaleContainer'))
+const DiscountsContainer = lazy(() => import('./discounts/DiscountsContainer'))
+const CombosContainer = lazy(() => import('./combos/CombosContainer'))
 
 function App() {
   return (
@@ -22,6 +33,16 @@ function App() {
           <Route path='/inventory' element={<InventoryContainer />} />
           <Route path='/barcode' element={<BarcodeReaderWithCamera />} />
           <Route path='/billing' element={<BillingContainer />} />
+          <Route path='/suppliers' element={<SuppliersContainer />} />
+          <Route
+            path='/cash-registers/:id'
+            element={<CashRegisterContainer />}
+          />
+          <Route path='/suppliers/:id' element={<SupplierDetailContainer />} />
+          <Route path='/orders/:orderId' element={<OrderDetailContainer />} />
+          <Route path='/sale/:id' element={<SaleContainer />} />
+          <Route path='/discounts' element={<DiscountsContainer />} />
+          <Route path='/combos' element={<CombosContainer />} />
         </Routes>
       </NotificationsProvider>
     </AuthProvider>

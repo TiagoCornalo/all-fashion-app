@@ -65,7 +65,7 @@ export const columns = (handlers: {
       }
 
       return (
-        <div className='text-center'>
+        <div>
           <Badge variant={variant}>{stock}</Badge>
         </div>
       )
@@ -76,9 +76,7 @@ export const columns = (handlers: {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Precio' />
     ),
-    cell: ({ row }) => (
-      <div className='text-right'>{formatCurrency(row.getValue('price'))}</div>
-    )
+    cell: ({ row }) => <div>{formatCurrency(row.getValue('price'))}</div>
   },
   {
     id: 'proveedor',

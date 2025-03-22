@@ -13,8 +13,20 @@ export interface Payment {
   amount: number
 }
 
+export interface Combo {
+  comboId: string
+  quantity: number
+  name?: string
+  price?: number
+}
+
+export interface ItemPromotion {
+  itemIndex: number
+  promotionCode: string
+}
+
 export interface Invoice {
-  type: 'TICKET' | 'A' | 'B' | 'C'
+  type: 'TICKET' | 'A' | 'B' | 'C' | 'X'
   pointOfSale: number
   customerName?: string
   customer?: {
@@ -29,6 +41,9 @@ export interface CreateSale {
   invoice: Invoice
   notes?: string
   cashRegister?: string
+  promotionCode?: string // Código para toda la venta
+  itemPromotions?: ItemPromotion[] // Promociones por ítem
+  combos?: Combo[] // Combos seleccionados
 }
 
 export interface Sale {

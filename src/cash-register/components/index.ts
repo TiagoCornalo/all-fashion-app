@@ -1,0 +1,5 @@
+export { default as CashRegisterDetails } from './CashRegisterDetails'
+export { default as CashRegisterResume } from './CashRegisterResume'
+export { default as CashRegisterSales } from './CashRegisterSales'
+export { default as CashRegisterSalesResume } from './CashRegisterSalesResume'
+export { default as CashRegisterOtherMovements } from './CashRegisterOtherMovements'

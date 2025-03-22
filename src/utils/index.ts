@@ -1,47 +1,67 @@
 export const validateEmail = (email: string) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(email)) {
-    return { isValid: false, error: 'El formato del correo electrónico no es válido' };
+    return {
+      isValid: false,
+      error: 'El formato del correo electrónico no es válido'
+    }
   }
 
-  const allowedDomains = ['gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com'];
-  const domain = email.split('@')[1].toLowerCase();
+  const allowedDomains = [
+    'gmail.com',
+    'outlook.com',
+    'hotmail.com',
+    'yahoo.com'
+  ]
+  const domain = email.split('@')[1].toLowerCase()
   if (!allowedDomains.includes(domain)) {
-    return { isValid: false, error: 'El correo electrónico no es válido' };
+    return { isValid: false, error: 'El correo electrónico no es válido' }
   }
 
-  return { isValid: true, error: '' };
-};
+  return { isValid: true, error: '' }
+}
 
 export const validatePassword = (password: string) => {
   if (password.length < 8) {
-    return { isValid: false, error: 'La contraseña debe tener al menos 8 caracteres' };
+    return {
+      isValid: false,
+      error: 'La contraseña debe tener al menos 8 caracteres'
+    }
   }
 
-  const hasLetters = /[a-zA-Z].*[a-zA-Z]/.test(password);
+  const hasLetters = /[a-zA-Z].*[a-zA-Z]/.test(password)
   if (!hasLetters) {
-    return { isValid: false, error: 'La contraseña debe contener al menos 2 letras' };
+    return {
+      isValid: false,
+      error: 'La contraseña debe contener al menos 2 letras'
+    }
   }
 
-  const hasNumber = /\d/.test(password);
+  const hasNumber = /\d/.test(password)
   if (!hasNumber) {
-    return { isValid: false, error: 'La contraseña debe contener al menos 1 número' };
+    return {
+      isValid: false,
+      error: 'La contraseña debe contener al menos 1 número'
+    }
   }
 
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password)
   if (!hasSpecialChar) {
-    return { isValid: false, error: 'La contraseña debe contener al menos 1 carácter especial' };
+    return {
+      isValid: false,
+      error: 'La contraseña debe contener al menos 1 carácter especial'
+    }
   }
 
-  return { isValid: true, error: '' };
-};
+  return { isValid: true, error: '' }
+}
 
 export const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'ARS'
-  }).format(amount);
-};
+  }).format(amount)
+}
 
 export const formatDateTime = (date: Date) => {
   return date.toLocaleString('es-ES', {
@@ -50,5 +70,13 @@ export const formatDateTime = (date: Date) => {
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit'
-  });
+  })
+}
+
+export const formatDayMonth = (date: Date) => {
+  return date.toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
 }

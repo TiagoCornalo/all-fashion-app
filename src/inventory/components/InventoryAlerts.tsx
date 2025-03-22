@@ -4,10 +4,13 @@ import { AlertCard } from '../../components'
 import { getAlerts, resolveAlert } from '../../services/alerts'
 import { Loader } from '../../components'
 import { Alert } from '../../types/alert.types'
+import { TriangularFlag } from '../../assets'
+import { useNavigate } from 'react-router-dom'
 
 const InventoryAlerts = () => {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
     let socket: Socket | undefined
@@ -75,13 +78,21 @@ const InventoryAlerts = () => {
     }
   }, [])
 
-  const handleResolveAlert = async (alertId: string, note: string) => {
+  const handleResolveAlert = async (
+    alertId: string,
+    note: string,
+    supplierId: string,
+    stockType: string
+  ) => {
     try {
-      const response = await resolveAlert(alertId, note)
-      if (response.ok) {
-        setAlerts((prevAlerts) =>
-          prevAlerts.filter((alert) => alert._id !== alertId)
-        )
+      await resolveAlert(alertId, note)
+
+      setAlerts((prevAlerts) =>
+        prevAlerts.filter((alert) => alert._id !== alertId)
+      )
+
+      if (stockType.includes('NO_STOCK')) {
+        navigate(`/suppliers/${supplierId}?tab=orders`)
       }
     } catch (error) {
       console.error('Error resolving alert:', error)
@@ -97,8 +108,12 @@ const InventoryAlerts = () => {
   }
 
   return (
-    <div className='space-y-4'>
-      <h2 className='text-2xl font-bold'>Alertas de Inventario</h2>
+    <div className='space-y-4 mb-6'>
+      <div className='flex items-center gap-2 mb-4 sm:flex-row flex-col'>
+        {/* @ts-ignore */}
+        <TriangularFlag className='h-6 w-6' />
+        <h2 className='text-2xl font-bold'>Alertas de Inventario</h2>
+      </div>
       {alerts.length === 0 ? (
         <p>No hay alertas pendientes</p>
       ) : (
@@ -107,11 +122,12 @@ const InventoryAlerts = () => {
             alerts.map((alert) => (
               <AlertCard
                 key={alert._id}
+                alertId={alert._id}
                 type={alert.type}
                 message={alert.message}
                 product={alert.product}
                 createdAt={alert.createdAt}
-                onResolve={(note) => handleResolveAlert(alert._id, note)}
+                onResolve={handleResolveAlert}
               />
             ))}
         </div>

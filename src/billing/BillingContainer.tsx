@@ -5,7 +5,10 @@ import {
   OpenRegisterDialog,
   CloseRegisterDialog,
   NewSaleDialog,
-  BillingRegisters
+  BillingRegisters,
+  BillingContainerActions,
+  DepositDialog,
+  WithdrawalDialog
 } from './components'
 import {
   Button,
@@ -16,15 +19,16 @@ import {
   CardDescription,
   CardContent
 } from '../components'
-import { PlusCircle, XCircle } from 'lucide-react'
 import { toast } from 'react-toastify'
-import { useIsMobile } from '../hooks'
+import { Receipt } from '../assets'
+import { formatCurrency } from '../utils'
 
 export default function BillingContainer() {
-  const isMobile = useIsMobile()
   const [isNewSaleOpen, setIsNewSaleOpen] = useState(false)
   const [isCloseRegisterOpen, setIsCloseRegisterOpen] = useState(false)
   const [isOpenRegisterOpen, setIsOpenRegisterOpen] = useState(false)
+  const [isDepositOpen, setIsDepositOpen] = useState(false)
+  const [isWithdrawalOpen, setIsWithdrawalOpen] = useState(false)
   const { currentRegister, isLoading, fetchCurrentRegister } =
     useCashRegisterStore()
 
@@ -50,10 +54,20 @@ export default function BillingContainer() {
     )
   }
 
+  const getBalanceColor = (balance: number) => {
+    if (balance > 0) return 'text-green-600'
+    if (balance < 0) return 'text-red-600'
+    return 'text-gray-600'
+  }
+
   return (
-    <LayoutMultiRole allowedRoles={['ADMIN', 'SELLER']}>
+    <LayoutMultiRole allowedRoles={['ADMIN', 'SELLER', 'MANAGER']}>
       <div className='p-4'>
-        <h1 className='text-2xl font-bold mb-4'>Facturación</h1>
+        <div className='flex items-center gap-2 mb-4'>
+          {/* @ts-ignore */}
+          <Receipt className='h-6 w-6' />
+          <h1 className='text-2xl font-bold'>Facturación</h1>
+        </div>
 
         {!currentRegister ? (
           <>
@@ -74,33 +88,45 @@ export default function BillingContainer() {
           <Card className='space-y-4'>
             <CardHeader>
               <CardTitle>
-                Balance actual: ${currentRegister.currentBalance}
+                Balance actual:{' '}
+                <span
+                  className={`${getBalanceColor(
+                    currentRegister.currentBalance
+                  )} font-bold`}
+                >
+                  {formatCurrency(currentRegister.currentBalance)}
+                </span>
               </CardTitle>
               <CardDescription>
-                Abierta el:{' '}
-                {new Date(currentRegister.openedAt).toLocaleString('es-ES')}
+                <div className='flex flex-col gap-2'>
+                  <span className='text-sm text-gray-500'>
+                    Abierta el:{' '}
+                    {new Date(currentRegister.openedAt).toLocaleString('es-ES')}
+                  </span>
+                  <span className='text-sm text-gray-500'>
+                    Abierta por: {currentRegister.openedBy.name}
+                  </span>
+                  <span className='text-sm text-gray-500'>
+                    Ultima venta:{' '}
+                    {currentRegister.movements.length > 0
+                      ? new Date(
+                          currentRegister.movements[
+                            currentRegister.movements.length - 1
+                          ].createdAt
+                        ).toLocaleString('es-ES')
+                      : 'N/A'}
+                  </span>
+                </div>
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className='flex justify-between items-center'>
-                <div className='space-x-2'>
-                  <Button
-                    onClick={() => setIsNewSaleOpen(true)}
-                    className='space-x-2'
-                  >
-                    <PlusCircle className='h-4 w-4' />
-                    <span>Nueva Venta</span>
-                  </Button>
-                  <Button
-                    variant='destructive'
-                    onClick={() => setIsCloseRegisterOpen(true)}
-                    className='space-x-2'
-                  >
-                    <XCircle className='h-4 w-4' />
-                    <span>Cerrar Caja</span>
-                  </Button>
-                </div>
-              </div>
+              <BillingContainerActions
+                setIsNewSaleOpen={setIsNewSaleOpen}
+                setIsCloseRegisterOpen={setIsCloseRegisterOpen}
+                setIsDepositOpen={setIsDepositOpen}
+                setIsWithdrawalOpen={setIsWithdrawalOpen}
+                currentRegister={currentRegister}
+              />
             </CardContent>
 
             <NewSaleDialog
@@ -110,6 +136,14 @@ export default function BillingContainer() {
             <CloseRegisterDialog
               isOpen={isCloseRegisterOpen}
               onOpenChange={setIsCloseRegisterOpen}
+            />
+            <DepositDialog
+              isOpen={isDepositOpen}
+              onOpenChange={setIsDepositOpen}
+            />
+            <WithdrawalDialog
+              isOpen={isWithdrawalOpen}
+              onOpenChange={setIsWithdrawalOpen}
             />
           </Card>
         )}

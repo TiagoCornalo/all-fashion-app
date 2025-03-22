@@ -46,3 +46,47 @@ export const bulkDeleteProducts = async (productIds: string[]) => {
   })
   return response.data
 }
+
+export const findProductsBySupplier = async (
+  supplierId: string,
+  params: {
+    page?: number
+    pageSize?: number
+    search?: string
+    sortBy?: string
+    sortOrder?: 'asc' | 'desc'
+    minStock?: number
+    maxStock?: number
+    minPrice?: number
+    maxPrice?: number
+    category?: string
+    status?: string
+  } = {}
+) => {
+  const queryParams = new URLSearchParams({
+    page: (params.page || 1).toString(),
+    pageSize: (params.pageSize || 10).toString(),
+    ...(params.search && { search: params.search }),
+    ...(params.sortBy && { sortBy: params.sortBy }),
+    ...(params.sortOrder && { sortOrder: params.sortOrder }),
+    ...(params.minStock !== undefined && {
+      minStock: params.minStock.toString()
+    }),
+    ...(params.maxStock !== undefined && {
+      maxStock: params.maxStock.toString()
+    }),
+    ...(params.minPrice !== undefined && {
+      minPrice: params.minPrice.toString()
+    }),
+    ...(params.maxPrice !== undefined && {
+      maxPrice: params.maxPrice.toString()
+    }),
+    ...(params.category && { category: params.category }),
+    ...(params.status && { status: params.status })
+  })
+
+  const response = await api.get(
+    `/products/supplier/${supplierId}?${queryParams}`
+  )
+  return response.data
+}

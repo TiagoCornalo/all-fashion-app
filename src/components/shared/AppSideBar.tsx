@@ -1,5 +1,5 @@
 import { IconComponent } from '../../assets'
-import { ManRunning, Door } from '../../assets'
+import { ManRunning, Door, House } from '../../assets'
 import {
   Sidebar,
   SidebarContent,
@@ -12,6 +12,9 @@ import {
 } from '../../components/ui/sidebar'
 import { authService } from '../../services/auth.service'
 import { LOGIN_PATH } from '../../consts'
+import { useNavigate } from 'react-router-dom'
+import { Button } from '../ui/button'
+import { ChevronLeft } from 'lucide-react'
 
 interface AppSidebarProps {
   items: {
@@ -19,11 +22,28 @@ interface AppSidebarProps {
     url: string
     icon: IconComponent
   }[]
+  showGoBackButton?: boolean
 }
 
-const AppSideBar = ({ items }: AppSidebarProps) => {
+const AppSideBar = ({ items, showGoBackButton = false }: AppSidebarProps) => {
+  const navigate = useNavigate()
+
+  const handleGoBack = (): void => {
+    navigate(-1)
+  }
   return (
     <Sidebar variant='floating' collapsible='icon'>
+      {showGoBackButton && (
+        <Button
+          variant='secondary'
+          size='sm'
+          className='fixed top-10 left-20 rounded-full p-3 shadow-lg z-50 bg-white text-black hover:bg-gray-100'
+          onClick={handleGoBack}
+          aria-label='Volver atrás'
+        >
+          <ChevronLeft className='h-5 w-5' />
+        </Button>
+      )}
       <SidebarContent className='h-full'>
         <SidebarGroup className='h-full flex flex-col'>
           <SidebarGroupLabel>All Fashion Distruibuidora</SidebarGroupLabel>
@@ -43,6 +63,14 @@ const AppSideBar = ({ items }: AppSidebarProps) => {
 
             <div className='mt-auto'>
               <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href={'/dashboard'}>
+                      <House />
+                      <span>Inicio</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <button

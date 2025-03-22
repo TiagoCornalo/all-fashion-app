@@ -8,7 +8,14 @@ import {
   Button
 } from '../../components'
 import { toast } from 'react-toastify'
-import { ProductSelector, PaymentForm, InvoiceForm, SaleSummary } from './sale'
+import {
+  ProductSelector,
+  PaymentForm,
+  InvoiceForm,
+  SaleSummary,
+  ComboSelector,
+  PromotionApplier
+} from './sale'
 import { useSaleForm } from './hooks/useSaleForm'
 import { useIsMobile } from '../../hooks'
 
@@ -19,7 +26,7 @@ interface NewSaleDialogProps {
 
 const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
   const isMobile = useIsMobile()
-  const { currentRegister } = useCashRegisterStore()
+  const { currentRegister, fetchCurrentRegister } = useCashRegisterStore()
   const { createSale } = useSaleStore()
   const {
     step,
@@ -32,6 +39,12 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
     handleCancel,
     isStepAccessible
   } = useSaleForm()
+
+  // Obtener combos del store
+  const { combos } = useSaleStore()
+
+  // Verificar si hay elementos para la venta (productos o combos)
+  const hasSaleItems = items.length > 0 || combos.length > 0
 
   const steps = [
     { id: 1, title: 'Productos' },
@@ -60,9 +73,7 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
 
       await createSale(currentRegister._id)
       toast.success('Venta realizada correctamente, actualizando...')
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000)
+      await fetchCurrentRegister()
       if (handleCancel()) {
         onOpenChange(false)
       }
@@ -77,7 +88,13 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
   const renderStepContent = () => {
     switch (step) {
       case 1:
-        return <ProductSelector />
+        return (
+          <>
+            <ProductSelector />
+            <ComboSelector />
+            <PromotionApplier />
+          </>
+        )
       case 2:
         return <PaymentForm />
       case 3:
@@ -157,7 +174,7 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
         </div>
 
         {/* Navigation */}
-        {step < 4 && items.length > 0 && (
+        {step < 4 && (
           <div className='flex justify-between mt-4 bottom-0 bg-background py-2'>
             <Button
               variant='outline'
@@ -166,7 +183,9 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
             >
               Atrás
             </Button>
-            <Button onClick={handleNext}>Siguiente</Button>
+            <Button onClick={handleNext} disabled={step === 1 && !hasSaleItems}>
+              Siguiente
+            </Button>
           </div>
         )}
       </DialogContent>

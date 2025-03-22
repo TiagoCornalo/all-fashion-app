@@ -17,9 +17,14 @@ import { Loader } from './Loader'
 interface ComboboxSuppliersProps {
   value?: string
   onChange: (value: string) => void
+  excludeIds?: string[]
 }
 
-export function ComboboxSuppliers({ value, onChange }: ComboboxSuppliersProps) {
+export function ComboboxSuppliers({
+  value,
+  onChange,
+  excludeIds = []
+}: ComboboxSuppliersProps) {
   const [open, setOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const debouncedSearch = useDebounce(inputValue, 300)
@@ -70,6 +75,16 @@ export function ComboboxSuppliers({ value, onChange }: ComboboxSuppliersProps) {
     [suppliers, value]
   )
 
+  const filteredSuppliers = useMemo(() => {
+    return (
+      suppliers
+        ?.filter((supplier) => !excludeIds.includes(supplier._id ?? ''))
+        .filter((supplier) =>
+          supplier.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+        ) || []
+    )
+  }, [suppliers, debouncedSearch, excludeIds])
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
@@ -98,16 +113,16 @@ export function ComboboxSuppliers({ value, onChange }: ComboboxSuppliersProps) {
             className='max-h-[300px] overflow-auto space-y-1'
             onScroll={onScroll}
           >
-            {suppliers.length === 0 ? (
+            {filteredSuppliers.length === 0 ? (
               <div className='text-sm text-muted-foreground text-center py-2'>
                 No se encontraron proveedores.
               </div>
             ) : (
-              suppliers.map((supplier) => (
+              filteredSuppliers.map((supplier) => (
                 <DropdownMenuItem
                   key={supplier._id}
                   onSelect={() => {
-                    onChange(supplier._id)
+                    onChange(supplier._id ?? '')
                     setOpen(false)
                   }}
                   className='flex items-start gap-2'

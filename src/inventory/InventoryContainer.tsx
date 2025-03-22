@@ -12,6 +12,7 @@ import { fetchProducts } from '../services/index'
 import { authService } from '../services/auth.service'
 import { useNavigate } from 'react-router-dom'
 import { LOGIN_PATH } from '../consts'
+import { Package } from '../assets'
 
 const InventoryContainer = () => {
   const navigate = useNavigate()
@@ -63,8 +64,12 @@ const InventoryContainer = () => {
     <LayoutAdmin>
       <InventoryProvider onRefresh={handleRefresh}>
         <section className='w-full p-4'>
-          <h1 className='text-3xl font-bold mb-6'>Inventario</h1>
           <InventoryAlerts />
+          <div className='flex items-center gap-2 text-center'>
+            {/* @ts-ignore */}
+            <Package className='h-6 w-6' />
+            <h1 className='text-3xl font-bold'>Inventario</h1>
+          </div>
         </section>
 
         <section className='w-full p-4'>

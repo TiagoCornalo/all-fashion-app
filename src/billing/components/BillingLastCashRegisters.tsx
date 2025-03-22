@@ -16,7 +16,9 @@ import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger
+  TooltipTrigger,
+  DataTableColumnHeader,
+  Button
 } from '../../components'
 import { getCashRegisters } from '../../services/cash-register'
 import {
@@ -31,20 +33,32 @@ import {
 } from '@tanstack/react-table'
 import { CashRegister } from '../../stores/cashRegisterStore'
 import { formatDateTime } from '../../utils'
-import { EllipsisVertical } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 const columns: ColumnDef<CashRegister>[] = [
   {
-    header: 'Fecha',
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title='Fecha'
+        showHideButton={false}
+      />
+    ),
     accessorKey: 'date',
     cell: ({ row }) => {
       return <div>{formatDateTime(new Date(row.original.date))}</div>
     }
   },
   {
-    header: 'Estado',
     accessorKey: 'status',
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title='Estado'
+        showHideButton={false}
+      />
+    ),
     cell: ({ row }) => {
       return (
         <div>
@@ -58,14 +72,26 @@ const columns: ColumnDef<CashRegister>[] = [
     }
   },
   {
-    header: 'Balance Inicial',
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title='Balance Inicial'
+        showHideButton={false}
+      />
+    ),
     accessorKey: 'initialBalance',
     cell: ({ row }) => {
       return <div>{row.original.initialBalance}</div>
     }
   },
   {
-    header: 'Balance Actual',
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title='Balance Actual'
+        showHideButton={false}
+      />
+    ),
     accessorKey: 'currentBalance',
     cell: ({ row }) => {
       return <div>{row.original.currentBalance}</div>
@@ -79,6 +105,13 @@ const columns: ColumnDef<CashRegister>[] = [
     }
   },
   {
+    header: 'Abierta por',
+    accessorKey: 'openedBy',
+    cell: ({ row }) => {
+      return <div>{row.original.openedBy?.name}</div>
+    }
+  },
+  {
     header: 'Acciones',
     accessorKey: 'actions',
     cell: ({ row }) => {
@@ -87,7 +120,9 @@ const columns: ColumnDef<CashRegister>[] = [
           <Tooltip>
             <TooltipTrigger asChild className='cursor-pointer'>
               <Link to={`/cash-registers/${row.original._id}`}>
-                <EllipsisVertical className='h-4 w-4' />
+                <Button variant='outline' size='sm'>
+                  <Eye className='h-4 w-4' />
+                </Button>
               </Link>
             </TooltipTrigger>
             <TooltipContent>
@@ -125,7 +160,17 @@ const BillingLastCashRegisters = ({
     setError(null)
 
     try {
-      const response = await getCashRegisters(currentPage, pageSize)
+      const sortField = sorting.length > 0 ? sorting[0].id : 'date'
+      const sortDirection =
+        sorting.length > 0 ? (sorting[0].desc ? 'desc' : 'asc') : 'desc'
+
+      const response = await getCashRegisters(
+        currentPage,
+        pageSize,
+        sortField,
+        sortDirection
+      )
+
       setCashRegisters(response.data || [])
       setTotalPages(response.meta.totalPages)
     } catch (error) {
@@ -134,7 +179,7 @@ const BillingLastCashRegisters = ({
     } finally {
       setLoading(false)
     }
-  }, [isOpen, currentPage, pageSize])
+  }, [isOpen, currentPage, pageSize, sorting])
 
   useEffect(() => {
     loadCashRegisters()
@@ -154,18 +199,23 @@ const BillingLastCashRegisters = ({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onSortingChange: setSorting,
+    onSortingChange: (updater) => {
+      const newSorting =
+        typeof updater === 'function' ? updater(sorting) : updater
+      setSorting(newSorting)
+    },
     onColumnFiltersChange: setColumnFilters,
-    manualPagination: true
+    manualPagination: true,
+    manualSorting: true
   })
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className='max-w-[90vw] max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
-          <DialogTitle>Últimas cajas cerradas</DialogTitle>
+          <DialogTitle>Últimas cajas</DialogTitle>
           <DialogDescription>
-            Aquí puedes ver las últimas cajas cerradas
+            Aquí puedes ver las últimas cajas
           </DialogDescription>
         </DialogHeader>
         <div className='space-y-4'>

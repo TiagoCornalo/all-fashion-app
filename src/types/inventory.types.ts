@@ -1,10 +1,12 @@
 export interface Supplier {
-  _id: string
   name: string
   contact: {
     email: string
     phone: string
   }
+  _id?: string
+  createdAt?: Date
+  updatedAt?: string
 }
 
 export interface Product {
@@ -41,4 +43,13 @@ export interface TableFilters {
 
 export type CreateProduct = Omit<Product, '_id' | 'createdAt' | 'updatedAt'> & {
   description?: string
+}
+
+export interface GetSuppliersParams {
+  page?: number
+  pageSize?: number
+  search?: string
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+  filters?: Record<string, string>
 }

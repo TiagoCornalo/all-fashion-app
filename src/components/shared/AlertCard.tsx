@@ -1,21 +1,36 @@
-import { Warning, Cross, ChartDecreasing, YellowCircle, Package } from '../../assets'
+import {
+  Warning,
+  Cross,
+  ChartDecreasing,
+  YellowCircle,
+  Package
+} from '../../assets'
 import { Card, CardContent } from '..'
 import { Button } from '../ui/button'
 import { formatDateTime } from '../../utils'
 
 interface AlertCardProps {
+  alertId: string
   type: 'NO_STOCK' | 'BELOW_MINIMUM' | 'NEAR_MINIMUM'
   message: string
-  onResolve: (id: string, note: string) => void
+  onResolve: (
+    id: string,
+    note: string,
+    supplierId: string,
+    stockType: string
+  ) => void
   createdAt: string
   product: {
     _id: string
     name: string
     code: string
+    supplier: string
+    type: string
   }
 }
 
 const AlertCard = ({
+  alertId,
   type,
   message,
   onResolve,
@@ -61,18 +76,19 @@ const AlertCard = ({
     }
   }
 
-  const handleResolve = (productId: string) => {
-    // TODO: Por ahora pasamos una nota vacía, podrías agregar un modal para capturar la nota
-    onResolve(productId, '')
+  const handleResolve = (
+    alertId: string,
+    supplierId: string,
+    stockType: string
+  ) => {
+    onResolve(alertId, '', supplierId, stockType)
   }
 
   return (
     <Card className={`w-full ${getColor()} text-white`}>
       <CardContent className='flex items-center justify-between gap-4 p-4'>
         <div className='flex items-center gap-4'>
-          <div className='text-2xl drop-shadow-lg'>
-            {getIcon()}
-          </div>
+          <div className='text-2xl drop-shadow-lg'>{getIcon()}</div>
           <div className='flex flex-col'>
             <p className='font-medium'>{message}</p>
             {/* <p className='text-sm'>
@@ -83,7 +99,7 @@ const AlertCard = ({
         </div>
         <Button
           variant='ghost'
-          onClick={() => handleResolve(product?._id)}
+          onClick={() => handleResolve(alertId, product?.supplier, type)}
           className='hover:bg-white/20'
         >
           Resolver

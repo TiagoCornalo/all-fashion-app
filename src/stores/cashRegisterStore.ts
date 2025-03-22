@@ -3,7 +3,9 @@ import {
   getCurrentRegister,
   getLastClosedRegister,
   openRegister,
-  closeRegister
+  closeRegister,
+  deposit,
+  withdraw
 } from '../services/cash-register'
 
 export interface CashRegister {
@@ -25,11 +27,17 @@ export interface CashRegister {
   movements: Array<{
     type: string
     amount: number
+    createdAt: Date
     createdBy: {
       _id: string
       name: string
     }
     notes?: string
+    saleDetails: {
+      invoiceType: string
+      invoiceNumber: string
+      paymentMethods: string[]
+    }
   }>
   closingSummary?: {
     expectedCash: number
@@ -37,6 +45,11 @@ export interface CashRegister {
     difference: number
     notes?: string
   }
+  paymentSummary?: {
+    method: string
+    count: number
+    total: number
+  }[]
 }
 
 interface CashRegisterStore {
@@ -52,6 +65,8 @@ interface CashRegisterStore {
     actualCash: number,
     notes?: string
   ) => Promise<void>
+  deposit: (id: string, amount: number, notes?: string) => Promise<void>
+  withdraw: (id: string, amount: number, notes?: string) => Promise<void>
 }
 
 export const useCashRegisterStore = create<CashRegisterStore>((set, get) => ({
@@ -112,6 +127,34 @@ export const useCashRegisterStore = create<CashRegisterStore>((set, get) => ({
     } catch (error) {
       console.error(error)
       set({ error: 'Error al cerrar la caja' })
+    } finally {
+      set({ isLoading: false })
+    }
+  },
+
+  deposit: async (id: string, amount: number, notes?: string) => {
+    set({ isLoading: true, error: null })
+    try {
+      const data = await deposit(id, amount, notes)
+      set({ currentRegister: data })
+    } catch (error) {
+      console.error(error)
+      set({ error: 'Error al realizar el depósito' })
+      throw error
+    } finally {
+      set({ isLoading: false })
+    }
+  },
+
+  withdraw: async (id: string, amount: number, notes?: string) => {
+    set({ isLoading: true, error: null })
+    try {
+      const data = await withdraw(id, amount, notes)
+      set({ currentRegister: data })
+    } catch (error) {
+      console.error(error)
+      set({ error: 'Error al realizar el retiro' })
+      throw error
     } finally {
       set({ isLoading: false })
     }

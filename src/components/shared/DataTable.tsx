@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -49,6 +49,14 @@ interface DataTableProps<TData, TValue> {
   error?: string | null
 }
 
+const debounce = (fn: (value: string) => void, ms = 300) => {
+  let timeoutId: ReturnType<typeof setTimeout>
+  return function (value: string) {
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => fn(value), ms)
+  }
+}
+
 export function DataTable<TData, TValue>({
   columns,
   data,
@@ -76,6 +84,22 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [searchValue, setSearchValue] = useState('')
+
+  const debouncedSearchHandler = useCallback(
+    debounce((value: string) => {
+      if (onSearchChange) {
+        onSearchChange(value)
+      }
+    }, 300),
+    [onSearchChange]
+  )
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setSearchValue(value)
+    debouncedSearchHandler(value)
+  }
 
   const tableColumns = columns
 
@@ -133,14 +157,12 @@ export function DataTable<TData, TValue>({
     }
   })
 
-  const handleSearch = useCallback(
-    (value: string) => {
-      if (onSearchChange) {
-        onSearchChange(value)
-      }
-    },
-    [onSearchChange]
-  )
+  useEffect(() => {
+    table.setPagination({
+      pageIndex: initialPage,
+      pageSize: initialPageSize
+    })
+  }, [initialPage, initialPageSize, table])
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -156,13 +178,14 @@ export function DataTable<TData, TValue>({
             <div className='flex w-full max-w-sm items-center space-x-2'>
               <Input
                 placeholder={searchPlaceholder}
-                onChange={(e) => handleSearch(e.target.value)}
+                value={searchValue}
+                onChange={handleSearchChange}
                 className='h-8'
               />
             </div>
           )}
           <Button
-            variant='outline'
+            variant='success'
             size='sm'
             onClick={handleRefresh}
             disabled={isRefreshing}
@@ -227,9 +250,12 @@ export function DataTable<TData, TValue>({
 
       {showPagination && (
         <DataTablePagination
-          currentPage={initialPage}
+          currentPage={table.getState().pagination.pageIndex}
           totalPages={pageCount}
-          onPageChange={(page) => onPaginationChange(page, initialPageSize)}
+          onPageChange={(page) => {
+            table.setPageIndex(page)
+            onPaginationChange(page + 1, initialPageSize)
+          }}
         />
       )}
     </div>

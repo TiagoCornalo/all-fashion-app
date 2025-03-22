@@ -33,7 +33,7 @@ import {
 } from '@tanstack/react-table'
 import { DataTablePagination } from '../../components'
 import { Link } from 'react-router-dom'
-import { EllipsisVertical } from 'lucide-react'
+import { Eye } from 'lucide-react'
 
 const columns: ColumnDef<Sale>[] = [
   {
@@ -85,8 +85,10 @@ const columns: ColumnDef<Sale>[] = [
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild className='cursor-pointer'>
-              <Link to={`/sales/${row.original._id}`}>
-                <EllipsisVertical className='h-4 w-4' />
+              <Link to={`/sale/${row.original._id}`}>
+                <Button variant='outline' size='sm'>
+                  <Eye className='h-4 w-4' />
+                </Button>
               </Link>
             </TooltipTrigger>
             <TooltipContent>
@@ -197,7 +199,7 @@ const BillingLastSales = ({
               />
             </div>
             <Button
-              variant='outline'
+              variant='success'
               size='sm'
               onClick={loadSales}
               disabled={loading}

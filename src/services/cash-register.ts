@@ -22,14 +22,40 @@ export const getCurrentRegister = async () => {
   return response.data
 }
 
-export const getCashRegisters = async (page: number = 1, limit: number = 5) => {
+export const getCashRegisters = async (
+  page: number = 1,
+  limit: number = 5,
+  sortBy: string = 'date',
+  sortOrder: 'asc' | 'desc' = 'desc'
+) => {
   const response = await api.get('/cash-registers', {
-    params: { page, limit }
+    params: { page, limit, sortBy, sortOrder }
   })
   return response.data
 }
 
 export const getLastClosedRegister = async () => {
   const response = await api.get('/cash-registers/last-closed')
+  return response.data
+}
+
+export const getCashRegisterById = async (id: string) => {
+  const response = await api.get(`/cash-registers/${id}`)
+  return response.data
+}
+
+export const deposit = async (id: string, amount: number, notes?: string) => {
+  const response = await api.post(`/cash-registers/${id}/deposit`, {
+    amount,
+    notes
+  })
+  return response.data
+}
+
+export const withdraw = async (id: string, amount: number, notes?: string) => {
+  const response = await api.post(`/cash-registers/${id}/withdrawal`, {
+    amount,
+    notes
+  })
   return response.data
 }

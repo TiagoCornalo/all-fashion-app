@@ -1,5 +1,5 @@
 body {
-  width: 100vw;
+  width: 99vw;
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -7,33 +7,26 @@ body {
 
 .gradient-background {
   background: rgb(25, 25, 25);
-  background: linear-gradient(
-    90deg,
-    rgba(25, 25, 25, 1) 0%,
-    rgba(14, 42, 108, 1) 35%,
-    rgba(203, 31, 31, 1) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(25, 25, 25, 1) 0%,
+      rgba(14, 42, 108, 1) 35%,
+      rgba(203, 31, 31, 1) 100%);
 }
 
 .gradient-background-light {
-  background: linear-gradient(
-    90deg,
-    rgba(25, 25, 25, 0.85) 0%,
-    rgba(14, 42, 108, 0.85) 35%,
-    rgba(203, 31, 31, 0.85) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(25, 25, 25, 0.85) 0%,
+      rgba(14, 42, 108, 0.85) 35%,
+      rgba(203, 31, 31, 0.85) 100%);
 }
 
 .scroll-shadow {
   background:
-    /* Shadow Cover TOP */ linear-gradient(
-        rgba(25, 25, 25, 0.85) 30%,
-        rgba(25, 25, 25, 0)
-      )
-      center top,
+    /* Shadow Cover TOP */
+    linear-gradient(rgba(25, 25, 25, 0.85) 30%,
+      rgba(25, 25, 25, 0)) center top,
     /* Shadow Cover BOTTOM */
-      linear-gradient(rgba(25, 25, 25, 0), rgba(25, 25, 25, 0.85) 70%) center
-      bottom;
+    linear-gradient(rgba(25, 25, 25, 0), rgba(25, 25, 25, 0.85) 70%) center bottom;
   background-repeat: no-repeat;
   background-size: 100% 40px, 100% 40px;
   background-attachment: local, local;
@@ -42,30 +35,20 @@ body {
 .scroll-shadow {
   background: linear-gradient(white 30%, rgba(255, 255, 255, 0)),
     linear-gradient(rgba(255, 255, 255, 0), white 70%) 0 100%,
-    radial-gradient(
-      farthest-side at 50% 0,
+    radial-gradient(farthest-side at 50% 0,
       rgba(0, 0, 0, 0.4),
-      rgba(0, 0, 0, 0)
-    ),
-    radial-gradient(
-        farthest-side at 50% 100%,
-        rgba(0, 0, 0, 0.4),
-        rgba(0, 0, 0, 0)
-      )
-      0 100%;
+      rgba(0, 0, 0, 0)),
+    radial-gradient(farthest-side at 50% 100%,
+      rgba(0, 0, 0, 0.4),
+      rgba(0, 0, 0, 0)) 0 100%;
   background: linear-gradient(white 30%, rgba(255, 255, 255, 0)),
     linear-gradient(rgba(255, 255, 255, 0), white 70%) 0 100%,
-    radial-gradient(
-      farthest-side at 50% 0,
+    radial-gradient(farthest-side at 50% 0,
       rgba(0, 0, 0, 0.4),
-      rgba(0, 0, 0, 0)
-    ),
-    radial-gradient(
-        farthest-side at 50% 100%,
-        rgba(0, 0, 0, 0.4),
-        rgba(0, 0, 0, 0)
-      )
-      0 100%;
+      rgba(0, 0, 0, 0)),
+    radial-gradient(farthest-side at 50% 100%,
+      rgba(0, 0, 0, 0.4),
+      rgba(0, 0, 0, 0)) 0 100%;
   background-repeat: no-repeat;
   background-color: white;
   background-size: 100% 50px, 100% 50px, 100% 18px, 100% 18px;

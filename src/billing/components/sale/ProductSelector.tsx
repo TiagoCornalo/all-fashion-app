@@ -15,6 +15,7 @@ import { SaleItem } from '../../../types/sale.types'
 import { Search, Plus, Minus, Trash } from 'lucide-react'
 import { useDebounce } from '../../../hooks/useDebounce'
 import api from '../../../services/config/axios'
+import { PromotionItemModal } from '.'
 
 const ProductSelector = () => {
   const [search, setSearch] = useState('')
@@ -22,7 +23,20 @@ const ProductSelector = () => {
   const [loading, setLoading] = useState(false)
   const debouncedSearch = useDebounce(search, 300)
 
-  const { items, addItem, removeItem, updateItemQuantity } = useSaleStore()
+  const {
+    items,
+    addItem,
+    removeItem,
+    updateItemQuantity,
+    itemPromotions,
+    addItemPromotion,
+    removeItemPromotion
+  } = useSaleStore()
+
+  const [isPromotionModalOpen, setIsPromotionModalOpen] = useState(false)
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(
+    null
+  )
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -76,6 +90,27 @@ const ProductSelector = () => {
     }
   }
 
+  // Función para aplicar promoción a un ítem específico
+  const handleApplyPromotion = (index: number) => {
+    setSelectedItemIndex(index)
+    setIsPromotionModalOpen(true)
+  }
+
+  // Función para aplicar el código de promoción validado
+  const applyPromotionCode = (index: number, code: string) => {
+    addItemPromotion(index, code)
+  }
+
+  // Función para determinar si un ítem tiene promoción aplicada
+  const hasPromotion = (index: number) => {
+    return itemPromotions.some((p) => p.itemIndex === index)
+  }
+
+  // Función para quitar promoción de un ítem
+  const handleRemovePromotion = (index: number) => {
+    removeItemPromotion(index)
+  }
+
   return (
     <div className='max-h-[60vh] overflow-y-auto'>
       <div className='space-y-4'>
@@ -99,13 +134,15 @@ const ProductSelector = () => {
               {products.map((product) => (
                 <div
                   key={product._id}
-                  className='p-2 hover:bg-accent cursor-pointer flex justify-between items-center'
+                  className={`p-2 hover:bg-accent cursor-pointer flex justify-between items-center ${
+                    product.stock === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                   onClick={() => handleAddProduct(product)}
                 >
                   <div>
                     <div>{product.name}</div>
                     <div className='text-sm text-muted-foreground'>
-                      Stock: {product.stock}
+                      Stock: {product.stock} {product.stock === 0 && 'Agotado'}
                     </div>
                   </div>
                   <div className='font-medium'>${product.price}</div>
@@ -124,11 +161,12 @@ const ProductSelector = () => {
                 <TableHead>Cantidad</TableHead>
                 <TableHead>Precio</TableHead>
                 <TableHead>Subtotal</TableHead>
+                <TableHead>Promoción</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items.map((item) => (
+              {items.map((item, index) => (
                 <TableRow key={item.product}>
                   <TableCell>{item.name}</TableCell>
                   <TableCell>
@@ -157,6 +195,26 @@ const ProductSelector = () => {
                   <TableCell>${item.price}</TableCell>
                   <TableCell>${item.price * item.quantity}</TableCell>
                   <TableCell>
+                    {hasPromotion(index) ? (
+                      <Button
+                        variant='outline'
+                        size='sm'
+                        onClick={() => handleRemovePromotion(index)}
+                        className='text-red-500 hover:text-red-700'
+                      >
+                        Quitar promo
+                      </Button>
+                    ) : (
+                      <Button
+                        variant='outline'
+                        size='sm'
+                        onClick={() => handleApplyPromotion(index)}
+                      >
+                        Aplicar promo
+                      </Button>
+                    )}
+                  </TableCell>
+                  <TableCell>
                     <Button
                       variant='ghost'
                       size='icon'
@@ -171,6 +229,17 @@ const ProductSelector = () => {
           </Table>
         )}
       </div>
+
+      {/* Modal para promociones */}
+      {selectedItemIndex !== null && (
+        <PromotionItemModal
+          isOpen={isPromotionModalOpen}
+          onOpenChange={setIsPromotionModalOpen}
+          itemIndex={selectedItemIndex}
+          itemName={items[selectedItemIndex]?.name || ''}
+          onApplyPromotion={applyPromotionCode}
+        />
+      )}
     </div>
   )
 }

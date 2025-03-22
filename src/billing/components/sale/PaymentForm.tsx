@@ -17,6 +17,7 @@ import { PaymentType } from '../../../types/sale.types'
 import { Checkbox } from '../../../components'
 import { useSaleForm } from '../hooks/useSaleForm'
 import { useEffect } from 'react'
+import { useSaleStore } from '../../../stores/saleStore'
 
 const formSchema = z.object({
   selectedMethods: z.array(z.enum(['CASH', 'DEBIT', 'CREDIT', 'TRANSFER'])),
@@ -35,6 +36,8 @@ const PaymentForm = () => {
     updatePaymentAmount
   } = useSaleForm()
 
+  const { discount, combos, items, itemPromotions } = useSaleStore()
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -50,7 +53,7 @@ const PaymentForm = () => {
 
   useEffect(() => {
     if (selectedMethods.length === 1) {
-      handleAmountChange(selectedMethods[0], total)
+      handleAmountChange(selectedMethods[0], parseFloat(total.toFixed(2)))
     }
   }, [selectedMethods.length, total])
 
@@ -65,7 +68,7 @@ const PaymentForm = () => {
     if (!checked) {
       handleAmountChange(method, 0)
     } else if (updated.length === 1) {
-      handleAmountChange(method, total)
+      handleAmountChange(method, parseFloat(total.toFixed(2)))
     }
   }
 
@@ -77,9 +80,101 @@ const PaymentForm = () => {
     <div className='flex flex-col h-full'>
       <Card>
         <CardHeader>
-          <CardTitle>Total a pagar: ${total}</CardTitle>
+          <CardTitle>
+            Total a pagar: ${total.toFixed(2)}
+            {discount > 0 && (
+              <span className='ml-2 text-sm text-green-600'>
+                (Descuento aplicado: {discount}%)
+              </span>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent>
+          {(combos.length > 0 || discount > 0 || itemPromotions.length > 0) && (
+            <div className='mb-4 p-3 bg-gray-50 rounded-md'>
+              <h3 className='text-sm font-medium mb-2'>Desglose</h3>
+              <div className='space-y-1 text-sm'>
+                {/* Productos con sus descuentos individuales */}
+                <div className='mb-2'>
+                  <span className='font-medium'>Productos:</span>
+                  {items.map((item, index) => {
+                    const hasPromo = itemPromotions.some(
+                      (p) => p.itemIndex === index
+                    )
+                    return (
+                      <div
+                        key={item.product}
+                        className='flex justify-between pl-4 mt-1'
+                      >
+                        <span>
+                          {item.name} (x{item.quantity})
+                        </span>
+                        <div className='text-right'>
+                          <span>${item.price * item.quantity}</span>
+                          {hasPromo && (
+                            <span className='text-green-600 ml-2'>
+                              - Promo:{' '}
+                              {
+                                itemPromotions.find(
+                                  (p) => p.itemIndex === index
+                                )?.promotionCode
+                              }
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {combos.length > 0 && (
+                  <div className='flex justify-between'>
+                    <span>Combos:</span>
+                    <span>
+                      $
+                      {combos
+                        .reduce(
+                          (sum, combo) =>
+                            sum + (combo.price || 0) * combo.quantity,
+                          0
+                        )
+                        .toFixed(2)}
+                    </span>
+                  </div>
+                )}
+
+                {discount > 0 && (
+                  <div className='flex justify-between text-green-600'>
+                    <span>Descuento global ({discount}%):</span>
+                    <span>
+                      -$
+                      {(
+                        ((useSaleStore
+                          .getState()
+                          .items.reduce(
+                            (sum, item) => sum + item.price * item.quantity,
+                            0
+                          ) +
+                          combos.reduce(
+                            (sum, combo) =>
+                              sum + (combo.price || 0) * combo.quantity,
+                            0
+                          )) *
+                          discount) /
+                        100
+                      ).toFixed(2)}
+                    </span>
+                  </div>
+                )}
+
+                <div className='border-t pt-1 mt-1 font-medium flex justify-between'>
+                  <span>Total:</span>
+                  <span>${total.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <Form {...form}>
             <div className='space-y-6'>
               {/* Métodos de pago en grid */}

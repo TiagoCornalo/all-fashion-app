@@ -14,6 +14,7 @@ export const useSaleForm = () => {
     selectedMethods,
     remaining,
     paymentAmounts,
+    combos,
     setInvoice,
     clearSale,
     setPayments,
@@ -23,8 +24,8 @@ export const useSaleForm = () => {
   } = useSaleStore()
 
   const handleNext = () => {
-    if (step === 1 && items.length === 0) {
-      toast.error('Debe agregar al menos un producto')
+    if (step === 1 && items.length === 0 && combos.length === 0) {
+      toast.error('Debe agregar al menos un producto o combo')
       return
     }
 
@@ -92,10 +93,10 @@ export const useSaleForm = () => {
 
   const isStepAccessible = (targetStep: number) => {
     if (targetStep === 1) return true
-    if (targetStep === 2) return items.length > 0
+    if (targetStep === 2) return items.length > 0 || combos.length > 0
     if (targetStep === 3 || targetStep === 4) {
       return (
-        items.length > 0 &&
+        (items.length > 0 || combos.length > 0) &&
         selectedMethods.length > 0 &&
         remaining === 0 &&
         selectedMethods.every((method) => (paymentAmounts[method] || 0) > 0)
@@ -127,7 +128,7 @@ export const useSaleForm = () => {
     handleInvoiceSubmit,
     handleCancel,
     isStepAccessible,
-    canAdvanceFromStep1: items.length > 0,
+    canAdvanceFromStep1: items.length > 0 || combos.length > 0,
     canAdvanceFromStep2: selectedMethods.length > 0 && remaining === 0,
     updatePayment,
     paymentAmounts,

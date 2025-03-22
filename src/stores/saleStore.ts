@@ -4,7 +4,9 @@ import {
   Payment,
   Invoice,
   CreateSale,
-  PaymentType
+  PaymentType,
+  Combo,
+  ItemPromotion
 } from '../types/sale.types'
 import api from '../services/config/axios'
 
@@ -17,6 +19,12 @@ interface SaleStore {
   selectedMethods: PaymentType[]
   paymentAmounts: Record<string, number>
   remaining: number
+
+  // Nuevos campos para promociones y combos
+  promotionCode: string
+  itemPromotions: ItemPromotion[]
+  combos: Combo[]
+  discount: number
 
   // Acciones
   addItem: (item: SaleItem) => void
@@ -36,6 +44,15 @@ interface SaleStore {
   updatePaymentAmount: (method: PaymentType, amount: number) => void
   calculateRemaining: () => number
   clearPayments: () => void
+
+  // Nuevas acciones para promociones y combos
+  setPromotionCode: (code: string) => void
+  addItemPromotion: (itemIndex: number, promotionCode: string) => void
+  removeItemPromotion: (itemIndex: number) => void
+  addCombo: (combo: Combo) => void
+  removeCombo: (comboId: string) => void
+  updateComboQuantity: (comboId: string, quantity: number) => void
+  setDiscount: (percentage: number) => void
 }
 
 export const useSaleStore = create<SaleStore>((set, get) => ({
@@ -50,6 +67,10 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
   selectedMethods: [],
   paymentAmounts: {},
   remaining: 0,
+  promotionCode: '',
+  itemPromotions: [],
+  combos: [],
+  discount: 0,
 
   addItem: (item) => {
     set((state) => ({
@@ -78,10 +99,27 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
 
   updateTotal: () => {
     set((state) => {
-      const newTotal = state.items.reduce(
+      // Calcular el subtotal de productos con promociones individuales aplicadas
+      const itemsTotal = state.items.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0
       )
+
+      // Calcular el subtotal de combos
+      const combosTotal = state.combos.reduce(
+        (sum, combo) => sum + (combo.price || 0) * combo.quantity,
+        0
+      )
+
+      // Sumar ambos subtotales
+      let newTotal = itemsTotal + combosTotal
+
+      // Si hay código de promoción global, aplicar descuento
+      if (state.promotionCode) {
+        const discountPercentage = state.discount || 0
+        const discountAmount = (newTotal * discountPercentage) / 100
+        newTotal = +(newTotal - discountAmount).toFixed(2) // Redondear a dos decimales
+      }
 
       // También actualizar el remaining si no hay pagos o si todos los pagos son 0
       const totalPaid = Object.values(state.paymentAmounts).reduce(
@@ -91,9 +129,10 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
 
       return {
         total: newTotal,
-        // Si no hay métodos seleccionados, remaining debe ser igual al total
         remaining:
-          state.selectedMethods.length === 0 ? newTotal : newTotal - totalPaid
+          state.selectedMethods.length === 0
+            ? newTotal
+            : +(newTotal - totalPaid).toFixed(2)
       }
     })
   },
@@ -145,6 +184,63 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
     })
   },
 
+  setPromotionCode: (code) => {
+    set({ promotionCode: code })
+    // Si se elimina el código, eliminar el descuento
+    if (!code) {
+      get().setDiscount(0)
+    }
+    get().updateTotal()
+  },
+
+  addItemPromotion: (itemIndex, promotionCode) =>
+    set((state) => {
+      const existingPromoIndex = state.itemPromotions.findIndex(
+        (p) => p.itemIndex === itemIndex
+      )
+      const newPromotions = [...state.itemPromotions]
+
+      if (existingPromoIndex >= 0) {
+        // Actualizar promoción existente
+        newPromotions[existingPromoIndex] = { itemIndex, promotionCode }
+      } else {
+        // Agregar nueva promoción
+        newPromotions.push({ itemIndex, promotionCode })
+      }
+
+      return { itemPromotions: newPromotions }
+    }),
+
+  removeItemPromotion: (itemIndex) =>
+    set((state) => ({
+      itemPromotions: state.itemPromotions.filter(
+        (p) => p.itemIndex !== itemIndex
+      )
+    })),
+
+  addCombo: (combo) => {
+    set((state) => ({
+      combos: [...state.combos, combo]
+    }))
+    get().updateTotal()
+  },
+
+  removeCombo: (comboId) => {
+    set((state) => ({
+      combos: state.combos.filter((c) => c.comboId !== comboId)
+    }))
+    get().updateTotal()
+  },
+
+  updateComboQuantity: (comboId, quantity) => {
+    set((state) => ({
+      combos: state.combos.map((combo) =>
+        combo.comboId === comboId ? { ...combo, quantity } : combo
+      )
+    }))
+    get().updateTotal()
+  },
+
   clearSale: () => {
     set({
       items: [],
@@ -156,7 +252,12 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
       notes: '',
       total: 0,
       selectedMethods: [],
-      paymentAmounts: {}
+      paymentAmounts: {},
+      // Limpiar también los nuevos campos
+      promotionCode: '',
+      itemPromotions: [],
+      combos: [],
+      discount: 0
     })
 
     set((state) => ({
@@ -165,16 +266,37 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
   },
 
   createSale: async (cashRegisterId) => {
-    const { items, payments, invoice, notes } = get()
-    const sale: CreateSale = {
+    const {
       items,
       payments,
       invoice,
       notes,
-      cashRegister: cashRegisterId
+      promotionCode,
+      itemPromotions,
+      combos
+    } = get()
+
+    const sale: CreateSale = {
+      items,
+      payments,
+      invoice: {
+        ...invoice,
+        type: invoice.type === 'TICKET' ? 'X' : invoice.type
+      },
+      notes,
+      cashRegister: cashRegisterId,
+      // Incluir nuevos campos si tienen valores
+      ...(promotionCode && { promotionCode }),
+      ...(itemPromotions.length > 0 && { itemPromotions }),
+      ...(combos.length > 0 && { combos })
     }
 
     const response = await api.post('/sales', sale)
     return response.data
+  },
+
+  setDiscount: (percentage) => {
+    set({ discount: percentage })
+    get().updateTotal()
   }
 }))
