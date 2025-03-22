@@ -110,15 +110,27 @@ const PaymentForm = () => {
                           {item.name} (x{item.quantity})
                         </span>
                         <div className='text-right'>
-                          <span>${item.price * item.quantity}</span>
-                          {hasPromo && (
+                          {item.originalPrice ? (
+                            <>
+                              <span className='line-through text-gray-400 mr-2'>
+                                $
+                                {(item.originalPrice * item.quantity).toFixed(
+                                  2
+                                )}
+                              </span>
+                              <span>${item.subtotal}</span>
+                            </>
+                          ) : (
+                            <span>${item.price * item.quantity}</span>
+                          )}
+                          {(hasPromo || item.discounted) && (
                             <span className='text-green-600 ml-2'>
                               - Promo:{' '}
-                              {
-                                itemPromotions.find(
-                                  (p) => p.itemIndex === index
-                                )?.promotionCode
-                              }
+                              {item.discountPercentage
+                                ? `${item.discountPercentage}%`
+                                : itemPromotions.find(
+                                    (p) => p.itemIndex === index
+                                  )?.promotionCode}
                             </span>
                           )}
                         </div>

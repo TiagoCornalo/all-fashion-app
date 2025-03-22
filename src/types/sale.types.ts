@@ -4,6 +4,10 @@ export interface SaleItem {
   price: number
   subtotal: number
   name?: string // Para mostrar en la UI
+  originalPrice?: number
+  discountAmount?: number
+  discountPercentage?: number
+  discounted?: boolean
 }
 
 export type PaymentType = 'CASH' | 'DEBIT' | 'CREDIT' | 'TRANSFER'

@@ -41,12 +41,13 @@ const PromotionApplier = () => {
     setPromotionCode,
     itemPromotions,
     addItemPromotion,
-    removeItemPromotion
+    removeItemPromotion,
+    replaceItems,
+    removeGlobalPromotion
   } = useSaleStore()
 
   const [validating, setValidating] = useState(false)
 
-  // Para promoción global
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,7 +55,6 @@ const PromotionApplier = () => {
     }
   })
 
-  // Para promoción por ítem
   const itemPromotionForm = useForm<z.infer<typeof itemPromotionSchema>>({
     resolver: zodResolver(itemPromotionSchema),
     defaultValues: {
@@ -66,26 +66,33 @@ const PromotionApplier = () => {
   const onSubmitGlobalPromo = async (values: z.infer<typeof formSchema>) => {
     try {
       setValidating(true)
-      // Verificar que el código de promoción sea válido
-      const response = await api.get(
-        `/promotions/validate/${values.promotionCode}`
+
+      const currentItems = useSaleStore.getState().items
+
+      const response = await api.post(
+        `/promotions/validate/${values.promotionCode}`,
+        {
+          items: currentItems,
+          applyToItems: []
+        }
       )
 
       if (response.data.valid) {
-        // Obtener el porcentaje de descuento de la respuesta
+        const itemsWithDiscount = response.data.items
+
+        replaceItems(itemsWithDiscount)
+
+        setPromotionCode(values.promotionCode)
+
         const discountPercentage =
           response.data.promotion?.discountPercentage || 0
-
-        // Actualizar el código de promoción y aplicar el descuento
-        setPromotionCode(values.promotionCode)
         useSaleStore.getState().setDiscount(discountPercentage)
 
-        // Mostrar mensaje con el descuento aplicado
         toast.success(
           `Código de promoción aplicado: ${discountPercentage}% de descuento`
         )
       } else {
-        toast.error('Código de promoción inválido')
+        toast.error(response.data.error || 'Código de promoción inválido')
       }
     } catch (error) {
       console.error('Error al validar código de promoción:', error)
@@ -100,20 +107,33 @@ const PromotionApplier = () => {
   ) => {
     try {
       setValidating(true)
-      // Verificar que el código de promoción sea válido
-      const response = await api.get(
-        `/promotions/validate/${values.promotionCode}`
+
+      // Obtener items actuales
+      const currentItems = useSaleStore.getState().items
+
+      // Usar el nuevo endpoint POST
+      const response = await api.post(
+        `/promotions/validate/${values.promotionCode}`,
+        {
+          items: currentItems,
+          applyToItems: [parseInt(values.itemIndex)] // Solo aplicar a este item
+        }
       )
 
       if (response.data.valid) {
+        // Reemplazar items en el store
+        replaceItems(response.data.items)
+
+        // Registrar la promoción por item
         addItemPromotion(parseInt(values.itemIndex), values.promotionCode)
+
         toast.success('Promoción aplicada al producto')
         itemPromotionForm.reset({
           itemIndex: '',
           promotionCode: ''
         })
       } else {
-        toast.error('Código de promoción inválido')
+        toast.error(response.data.error || 'Código de promoción inválido')
       }
     } catch (error) {
       console.error('Error al validar código de promoción:', error)
@@ -121,6 +141,16 @@ const PromotionApplier = () => {
     } finally {
       setValidating(false)
     }
+  }
+
+  const handleRemoveGlobalPromotion = (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    removeGlobalPromotion()
+    toast.success('Promoción global eliminada')
   }
 
   return (
@@ -139,7 +169,10 @@ const PromotionApplier = () => {
               <div className='flex space-x-2'>
                 <div className='flex-1'>
                   <Label htmlFor='promotionCode'>
-                    Código de promoción para toda la venta
+                    Código de promoción para toda la venta{' '}
+                    <span className='text-xs text-muted-foreground'>
+                      *No aplica para combos
+                    </span>
                   </Label>
                   <div className='flex space-x-2 mt-1'>
                     <div className='relative flex-1'>
@@ -166,7 +199,7 @@ const PromotionApplier = () => {
                       <Button
                         type='button'
                         variant='destructive'
-                        onClick={() => setPromotionCode('')}
+                        onClick={handleRemoveGlobalPromotion}
                         disabled={validating}
                       >
                         <XCircle className='mr-2 h-4 w-4' />

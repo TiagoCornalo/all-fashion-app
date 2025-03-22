@@ -87,7 +87,7 @@ const ComboSelector = () => {
 
   return (
     <div className='max-h-[60vh] overflow-y-auto mt-4'>
-      <div className='space-y-4'>
+      <div className='space-y-4 p-1'>
         <h3 className='font-medium'>Combos y Promociones</h3>
 
         {/* Buscador de combos */}
@@ -142,7 +142,7 @@ const ComboSelector = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {combos.map((combo) => (
+              {combos.map((combo: Combo) => (
                 <TableRow key={combo.comboId}>
                   <TableCell>{combo.name}</TableCell>
                   <TableCell>
@@ -175,7 +175,9 @@ const ComboSelector = () => {
                     </div>
                   </TableCell>
                   <TableCell>${combo.price}</TableCell>
-                  <TableCell>${combo.price * combo.quantity}</TableCell>
+                  <TableCell>
+                    ${(combo.price || 0) * (combo.quantity || 0)}
+                  </TableCell>
                   <TableCell>
                     <Button
                       variant='ghost'

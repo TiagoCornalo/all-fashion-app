@@ -113,7 +113,7 @@ const ProductSelector = () => {
 
   return (
     <div className='max-h-[60vh] overflow-y-auto'>
-      <div className='space-y-4'>
+      <div className='space-y-4 p-1'>
         {/* Buscador de productos */}
         <div className='relative'>
           <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />

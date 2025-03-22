@@ -47,12 +47,14 @@ interface SaleStore {
 
   // Nuevas acciones para promociones y combos
   setPromotionCode: (code: string) => void
+  removeGlobalPromotion: () => void
   addItemPromotion: (itemIndex: number, promotionCode: string) => void
   removeItemPromotion: (itemIndex: number) => void
   addCombo: (combo: Combo) => void
   removeCombo: (comboId: string) => void
   updateComboQuantity: (comboId: string, quantity: number) => void
   setDiscount: (percentage: number) => void
+  replaceItems: (items: SaleItem[]) => void
 }
 
 export const useSaleStore = create<SaleStore>((set, get) => ({
@@ -99,9 +101,11 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
 
   updateTotal: () => {
     set((state) => {
-      // Calcular el subtotal de productos con promociones individuales aplicadas
+      // Calcular el subtotal usando los precios con descuento ya aplicados
+      // Si los items tienen subtotal (que ya incluye el descuento), usamos ese valor
+      // Si no, usamos price * quantity
       const itemsTotal = state.items.reduce(
-        (sum, item) => sum + item.price * item.quantity,
+        (sum, item) => sum + (item.subtotal || item.price * item.quantity),
         0
       )
 
@@ -112,16 +116,9 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
       )
 
       // Sumar ambos subtotales
-      let newTotal = itemsTotal + combosTotal
+      const newTotal = itemsTotal + combosTotal
 
-      // Si hay código de promoción global, aplicar descuento
-      if (state.promotionCode) {
-        const discountPercentage = state.discount || 0
-        const discountAmount = (newTotal * discountPercentage) / 100
-        newTotal = +(newTotal - discountAmount).toFixed(2) // Redondear a dos decimales
-      }
-
-      // También actualizar el remaining si no hay pagos o si todos los pagos son 0
+      // Calcular el total pagado
       const totalPaid = Object.values(state.paymentAmounts).reduce(
         (sum, amount) => sum + (amount || 0),
         0
@@ -186,10 +183,39 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
 
   setPromotionCode: (code) => {
     set({ promotionCode: code })
-    // Si se elimina el código, eliminar el descuento
     if (!code) {
       get().setDiscount(0)
+      get().updateTotal()
     }
+  },
+
+  removeGlobalPromotion: () => {
+    // Restaurar items - eliminar descuentos
+    const items = get().items.map((item) => {
+      // Si el item tiene precio original, restaurarlo
+      console.log(item)
+      if (item.originalPrice) {
+        return {
+          ...item,
+          price: item.originalPrice,
+          subtotal: item.originalPrice * item.quantity,
+          // Eliminar propiedades de descuento
+          originalPrice: undefined,
+          discountAmount: undefined,
+          discountPercentage: undefined,
+          discounted: undefined
+        }
+      }
+      return item
+    })
+
+    // Actualizar el store de una sola vez
+    set({
+      items,
+      promotionCode: '',
+      discount: 0
+    })
+
     get().updateTotal()
   },
 
@@ -211,12 +237,36 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
       return { itemPromotions: newPromotions }
     }),
 
-  removeItemPromotion: (itemIndex) =>
+  removeItemPromotion: (itemIndex) => {
+    // Obtener el item actual
+    const items = get().items
+    const itemToRestore = items[itemIndex]
+
+    // Si el item tiene precio original, restaurarlo
+    if (itemToRestore && itemToRestore.originalPrice) {
+      const updatedItems = [...items]
+      updatedItems[itemIndex] = {
+        ...itemToRestore,
+        price: itemToRestore.originalPrice,
+        subtotal: itemToRestore.originalPrice * itemToRestore.quantity,
+        // Eliminar propiedades de descuento
+        originalPrice: undefined,
+        discountAmount: undefined,
+        discountPercentage: undefined,
+        discounted: undefined
+      }
+
+      // Actualizar los items
+      get().replaceItems(updatedItems)
+    }
+
+    // Eliminar la promoción del registro
     set((state) => ({
       itemPromotions: state.itemPromotions.filter(
         (p) => p.itemIndex !== itemIndex
       )
-    })),
+    }))
+  },
 
   addCombo: (combo) => {
     set((state) => ({
@@ -297,6 +347,11 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
 
   setDiscount: (percentage) => {
     set({ discount: percentage })
+    get().updateTotal()
+  },
+
+  replaceItems: (items) => {
+    set({ items })
     get().updateTotal()
   }
 }))

@@ -17,6 +17,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import api from '../../../services/config/axios'
 import { toast } from 'react-toastify'
+import { useSaleStore } from '../../../stores/saleStore'
 
 const formSchema = z.object({
   promotionCode: z.string().min(1, 'El código de promoción es requerido')
@@ -38,6 +39,7 @@ const PromotionItemModal = ({
   onApplyPromotion
 }: PromotionItemModalProps) => {
   const [validating, setValidating] = useState(false)
+  const { items, replaceItems } = useSaleStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,12 +51,24 @@ const PromotionItemModal = ({
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setValidating(true)
-      // Verificar que el código de promoción sea válido
-      const response = await api.get(
-        `/promotions/validate/${values.promotionCode}`
+
+      // Obtener items actuales
+      const currentItems = useSaleStore.getState().items
+
+      // Usar el nuevo endpoint POST
+      const response = await api.post(
+        `/promotions/validate/${values.promotionCode}`,
+        {
+          items: currentItems,
+          applyToItems: [itemIndex] // Aplicar solo a este item
+        }
       )
 
       if (response.data.valid) {
+        // Reemplazar items en el store
+        replaceItems(response.data.items)
+
+        // Llamar al callback para registrar la promoción
         onApplyPromotion(itemIndex, values.promotionCode)
         onOpenChange(false)
         form.reset()
@@ -64,7 +78,7 @@ const PromotionItemModal = ({
           response.data.promotion?.discountPercentage || 0
         toast.success(`Promoción aplicada: ${discountPercentage}% de descuento`)
       } else {
-        toast.error('Código de promoción inválido')
+        toast.error(response.data.error || 'Código de promoción inválido')
       }
     } catch (error) {
       console.error('Error al validar código de promoción:', error)
