@@ -131,7 +131,7 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
         <div className='space-y-6 overflow-y-auto'>
           {/* Stepper - solo visible en desktop */}
           {!isMobile && (
-            <div className='flex justify-between items-center sticky top-0 bg-background z-10 py-2 w-full'>
+            <div className='flex justify-between items-center sticky top-0 bg-background z-10 py-2 w-full px-1'>
               {steps.map((s) => (
                 <div
                   key={s.id}

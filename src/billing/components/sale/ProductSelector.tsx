@@ -73,7 +73,8 @@ const ProductSelector = () => {
         quantity: 1,
         price: product.price,
         name: product.name,
-        subtotal: product.price
+        subtotal: product.price,
+        stock: product.stock
       }
       addItem(newItem)
     }
@@ -187,6 +188,7 @@ const ProductSelector = () => {
                         onClick={() =>
                           handleQuantityChange(item.product, item.quantity + 1)
                         }
+                        disabled={item.quantity >= (item.stock || 0)}
                       >
                         <Plus className='h-4 w-4' />
                       </Button>

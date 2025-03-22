@@ -94,54 +94,61 @@ const PaymentForm = () => {
             <div className='mb-4 p-3 bg-gray-50 rounded-md'>
               <h3 className='text-sm font-medium mb-2'>Desglose</h3>
               <div className='space-y-1 text-sm'>
-                {/* Productos con sus descuentos individuales */}
-                <div className='mb-2'>
-                  <span className='font-medium'>Productos:</span>
-                  {items.map((item, index) => {
-                    const hasPromo = itemPromotions.some(
-                      (p) => p.itemIndex === index
-                    )
-                    return (
-                      <div
-                        key={item.product}
-                        className='flex justify-between pl-4 mt-1'
-                      >
-                        <span>
-                          {item.name} (x{item.quantity})
-                        </span>
-                        <div className='text-right'>
-                          {item.originalPrice ? (
-                            <>
-                              <span className='line-through text-gray-400 mr-2'>
-                                $
-                                {(item.originalPrice * item.quantity).toFixed(
-                                  2
-                                )}
-                              </span>
-                              <span>${item.subtotal}</span>
-                            </>
-                          ) : (
-                            <span>${item.price * item.quantity}</span>
-                          )}
-                          {(hasPromo || item.discounted) && (
-                            <span className='text-green-600 ml-2'>
-                              - Promo:{' '}
-                              {item.discountPercentage
-                                ? `${item.discountPercentage}%`
-                                : itemPromotions.find(
-                                    (p) => p.itemIndex === index
-                                  )?.promotionCode}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
+                {/* Subtotal de productos antes de descuento */}
+                {items.length > 0 && (
+                  <div className='flex justify-between'>
+                    <span>Subtotal productos:</span>
+                    <span>
+                      $
+                      {items
+                        .reduce(
+                          (sum, item) =>
+                            sum +
+                            (item.originalPrice || item.price) * item.quantity,
+                          0
+                        )
+                        .toFixed(2)}
+                    </span>
+                  </div>
+                )}
 
+                {/* Descuento global si aplica */}
+                {discount > 0 && (
+                  <div className='flex justify-between text-green-600'>
+                    <span>Descuento global ({discount}%):</span>
+                    <span>
+                      -$
+                      {items
+                        .reduce(
+                          (sum, item) => sum + (item.discountAmount || 0),
+                          0
+                        )
+                        .toFixed(2)}
+                    </span>
+                  </div>
+                )}
+
+                {/* Subtotal de productos después de descuento */}
+                {items.length > 0 && (
+                  <div className='flex justify-between'>
+                    <span>Subtotal productos (con descuento):</span>
+                    <span>
+                      $
+                      {items
+                        .reduce(
+                          (sum, item) =>
+                            sum + (item.subtotal || item.price * item.quantity),
+                          0
+                        )
+                        .toFixed(2)}
+                    </span>
+                  </div>
+                )}
+
+                {/* Subtotal de combos */}
                 {combos.length > 0 && (
                   <div className='flex justify-between'>
-                    <span>Combos:</span>
+                    <span>Subtotal combos:</span>
                     <span>
                       $
                       {combos
@@ -155,30 +162,7 @@ const PaymentForm = () => {
                   </div>
                 )}
 
-                {discount > 0 && (
-                  <div className='flex justify-between text-green-600'>
-                    <span>Descuento global ({discount}%):</span>
-                    <span>
-                      -$
-                      {(
-                        ((useSaleStore
-                          .getState()
-                          .items.reduce(
-                            (sum, item) => sum + item.price * item.quantity,
-                            0
-                          ) +
-                          combos.reduce(
-                            (sum, combo) =>
-                              sum + (combo.price || 0) * combo.quantity,
-                            0
-                          )) *
-                          discount) /
-                        100
-                      ).toFixed(2)}
-                    </span>
-                  </div>
-                )}
-
+                {/* Total */}
                 <div className='border-t pt-1 mt-1 font-medium flex justify-between'>
                   <span>Total:</span>
                   <span>${total.toFixed(2)}</span>

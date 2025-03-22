@@ -8,6 +8,7 @@ export interface SaleItem {
   discountAmount?: number
   discountPercentage?: number
   discounted?: boolean
+  stock?: number
 }
 
 export type PaymentType = 'CASH' | 'DEBIT' | 'CREDIT' | 'TRANSFER'

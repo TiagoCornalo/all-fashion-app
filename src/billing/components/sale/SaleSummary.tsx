@@ -52,7 +52,7 @@ const SaleSummary = () => {
   }
 
   return (
-    <div className='max-h-[60vh] overflow-y-auto'>
+    <div className='max-h-[60vh]'>
       <div className='space-y-6'>
         <Card>
           <CardHeader>
