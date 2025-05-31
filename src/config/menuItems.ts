@@ -56,11 +56,11 @@ export const MENU_ITEMS = [
     icon: Users,
     roles: ['ADMIN']
   },
-  {
+/*   {
     title: 'Servicios',
     url: '/services',
     icon: Hammer,
     roles: ['ADMIN', 'SELLER', 'MANAGER'],
     disabled: true
-  }
+  } */
 ]

@@ -6,12 +6,12 @@ import PendingTransfersPanel from '../components/transfers/PendingTransfersPanel
 const DashboardContainer = () => {
   return (
     <LayoutAdmin>
-      <section className='flex flex-col md:flex-row gap-4 p-4'>
+      {/*       <section className='flex flex-col md:flex-row gap-4 p-4'>
         <DashboardSalesResume />
       </section>
       <section className='w-full p-4'>
         <DashboardAlerts />
-      </section>
+      </section> */}
       <section className='w-full p-4'>
         <PendingTransfersPanel />
       </section>
