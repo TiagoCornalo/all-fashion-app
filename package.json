@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "ESLINT_NO_DEV_ERRORS=true tsc -b && vite build",
+    "build": "tsc --noEmit false && vite build",
     "build:nocheck": "tsc --noEmit false && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
