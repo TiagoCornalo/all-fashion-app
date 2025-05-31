@@ -23,11 +23,35 @@ interface SaleStore {
   // Campos para transferencias
   transferData: Record<string, { customerPhone?: string; transferReference?: string }>
 
+  // Campos para detalles de pago (cuenta corriente, etc.)
+  paymentDetails: Record<string, any>
+
   // Nuevos campos para promociones y combos
   promotionCode: string
   itemPromotions: ItemPromotion[]
   combos: Combo[]
   discount: number
+
+  // Datos del cliente para registro de promociones
+  promotionCustomerData: {
+    promotionCode: string
+    customer: {
+      name: string
+      documentType: 'DNI' | 'CUIT'
+      documentNumber: string
+      phone?: string
+      email?: string
+      address?: string
+    }
+    discountInfo: {
+      discountPercentage: number
+      discountAmount: number
+      originalAmount: number
+      finalAmount: number
+      applicationType: 'GLOBAL' | 'ITEM'
+      affectedItems?: number[]
+    }
+  } | null
 
   // Acciones
   addItem: (item: SaleItem) => void
@@ -52,6 +76,10 @@ interface SaleStore {
   updateTransferData: (method: PaymentType, data: { customerPhone?: string; transferReference?: string }) => void
   getTransferData: (method: PaymentType) => { customerPhone?: string; transferReference?: string }
 
+  // Acciones para detalles de pago
+  updatePaymentDetails: (method: PaymentType, details: any) => void
+  getPaymentDetails: (method: PaymentType) => any
+
   // Nuevas acciones para promociones y combos
   setPromotionCode: (code: string) => void
   removeGlobalPromotion: () => void
@@ -62,6 +90,29 @@ interface SaleStore {
   updateComboQuantity: (comboId: string, quantity: number) => void
   setDiscount: (percentage: number) => void
   replaceItems: (items: SaleItem[]) => void
+
+  // Acciones para registro de promociones
+  setPromotionCustomerData: (data: {
+    promotionCode: string
+    customer: {
+      name: string
+      documentType: 'DNI' | 'CUIT'
+      documentNumber: string
+      phone?: string
+      email?: string
+      address?: string
+    }
+    discountInfo: {
+      discountPercentage: number
+      discountAmount: number
+      originalAmount: number
+      finalAmount: number
+      applicationType: 'GLOBAL' | 'ITEM'
+      affectedItems?: number[]
+    }
+  }) => void
+  clearPromotionCustomerData: () => void
+  registerPromotionUsage: (saleId: string) => Promise<void>
 }
 
 export const useSaleStore = create<SaleStore>((set, get) => ({
@@ -77,10 +128,12 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
   paymentAmounts: {},
   remaining: 0,
   transferData: {},
+  paymentDetails: {},
   promotionCode: '',
   itemPromotions: [],
   combos: [],
   discount: 0,
+  promotionCustomerData: null,
 
   addItem: (item) => {
     set((state) => ({
@@ -186,6 +239,7 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
       selectedMethods: [],
       paymentAmounts: {},
       transferData: {},
+      paymentDetails: {},
       remaining: get().total
     })
   },
@@ -201,6 +255,19 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
 
   getTransferData: (method) => {
     return get().transferData[method] || {}
+  },
+
+  updatePaymentDetails: (method, details) => {
+    set((state) => ({
+      paymentDetails: {
+        ...state.paymentDetails,
+        [method]: details
+      }
+    }))
+  },
+
+  getPaymentDetails: (method) => {
+    return get().paymentDetails[method] || {}
   },
 
   setPromotionCode: (code) => {
@@ -326,11 +393,13 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
       selectedMethods: [],
       paymentAmounts: {},
       transferData: {},
+      paymentDetails: {},
       // Limpiar también los nuevos campos
       promotionCode: '',
       itemPromotions: [],
       combos: [],
-      discount: 0
+      discount: 0,
+      promotionCustomerData: null
     })
 
     set((state) => ({
@@ -346,12 +415,47 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
       notes,
       promotionCode,
       itemPromotions,
-      combos
+      combos,
+      selectedMethods,
+      paymentAmounts,
+      transferData,
+      paymentDetails,
+      promotionCustomerData
     } = get()
 
+    // Construir los pagos con todos los detalles
+    const paymentsWithDetails = selectedMethods.map((method) => {
+      const basePayment = {
+        method: method,
+        amount: paymentAmounts[method] || 0
+      }
+
+      // Agregar datos específicos del método
+      if (method === 'TRANSFER') {
+        const transferInfo = transferData[method] || {}
+        return {
+          ...basePayment,
+          customerPhone: transferInfo.customerPhone,
+          transferReference: transferInfo.transferReference
+        }
+      }
+
+      if (method === 'ACCOUNT_PAYABLE') {
+        const accountInfo = paymentDetails[method] || {}
+        return {
+          ...basePayment,
+          accountPayableId: accountInfo.accountPayableId,
+          customerInfo: accountInfo.customerInfo
+        }
+      }
+
+      return basePayment
+    })
+
+    // Crear la venta
     const sale: CreateSale = {
       items,
-      payments,
+      payments: paymentsWithDetails,
       invoice: {
         ...invoice,
         type: invoice.type === 'TICKET' ? 'X' : invoice.type
@@ -361,7 +465,8 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
       // Incluir nuevos campos si tienen valores
       ...(promotionCode && { promotionCode }),
       ...(itemPromotions.length > 0 && { itemPromotions }),
-      ...(combos.length > 0 && { combos })
+      ...(combos.length > 0 && { combos }),
+      ...(promotionCustomerData && { promotionCustomerData })
     }
 
     const response = await api.post('/sales', sale)
@@ -376,5 +481,44 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
   replaceItems: (items) => {
     set({ items })
     get().updateTotal()
+  },
+
+  setPromotionCustomerData: (data) => {
+    set({ promotionCustomerData: data })
+  },
+
+  clearPromotionCustomerData: () => {
+    set({ promotionCustomerData: null })
+  },
+
+  registerPromotionUsage: async (saleId) => {
+    const { promotionCustomerData } = get()
+
+    if (!promotionCustomerData) {
+      console.log('No hay datos de promoción para registrar')
+      return
+    }
+
+    try {
+      const response = await api.post('/promotions/register-usage', {
+        promotionCode: promotionCustomerData.promotionCode,
+        customer: promotionCustomerData.customer,
+        discountInfo: promotionCustomerData.discountInfo,
+        saleId: saleId,
+        notes: `Venta con promoción aplicada`,
+        pointOfSale: 1
+      })
+
+      console.log('Promoción registrada exitosamente:', response.data)
+
+      // Limpiar los datos de promoción después del registro exitoso
+      get().clearPromotionCustomerData()
+
+      return response.data
+    } catch (error) {
+      console.error('Error al registrar uso de promoción:', error)
+      // No lanzamos el error para que no afecte la venta
+      // Pero mantenemos los datos por si se quiere reintentar
+    }
   }
 }))

@@ -51,7 +51,8 @@ const SaleSummary = () => {
       CASH: 'Efectivo',
       DEBIT: 'Débito',
       CREDIT: 'Crédito',
-      TRANSFER: 'Transferencia'
+      TRANSFER: 'Transferencia',
+      ACCOUNT_PAYABLE: 'Cuenta Corriente'
     }
     return labels[type as keyof typeof labels] || type
   }

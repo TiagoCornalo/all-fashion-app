@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger
 } from '../../components'
 import { formatDateTime } from '../../utils'
-import { MoreHorizontal, Pencil, Trash } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash, History } from 'lucide-react'
 
 interface DiscountsTableProps {
   discounts: Discount[]
@@ -23,6 +23,7 @@ interface DiscountsTableProps {
   onRefresh: () => Promise<void>
   onEdit: (discount: Discount) => void
   onDelete: (discount: Discount) => void
+  onViewHistory: (discount: Discount) => void
   isLoading: boolean
   initialPage: number
   initialPageSize: number
@@ -37,6 +38,7 @@ const DiscountsTable = ({
   onRefresh,
   onEdit,
   onDelete,
+  onViewHistory,
   isLoading,
   initialPage,
   initialPageSize
@@ -105,7 +107,21 @@ const DiscountsTable = ({
             showHideButton={false}
           />
         ),
-        cell: ({ row }) => <div>{row.getValue('currentUsageCount')}</div>,
+        cell: ({ row }) => {
+          const currentUsage = row.getValue('currentUsageCount') as number
+          const usageLimit = row.original.usageLimit
+
+          return (
+            <div className="flex items-center gap-2">
+              <span>{currentUsage}</span>
+              {usageLimit && currentUsage >= usageLimit && (
+                <Badge variant="destructive" className="text-xs">
+                  Límite alcanzado
+                </Badge>
+              )}
+            </div>
+          )
+        },
         enableSorting: true
       },
       {
@@ -162,6 +178,8 @@ const DiscountsTable = ({
         enableHiding: false,
         enableSorting: false,
         cell: ({ row }) => {
+          const currentUsage = row.original.currentUsageCount
+
           return (
             <div className='flex items-center justify-end gap-2'>
               <DropdownMenu>
@@ -174,6 +192,13 @@ const DiscountsTable = ({
                   <DropdownMenuItem onClick={() => onEdit(row.original)}>
                     <Pencil className='mr-2 h-4 w-4' />
                     Editar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onViewHistory(row.original)}
+                    disabled={currentUsage === 0}
+                  >
+                    <History className='mr-2 h-4 w-4' />
+                    Ver Historial ({currentUsage})
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => onDelete(row.original)}
@@ -189,7 +214,7 @@ const DiscountsTable = ({
         }
       }
     ],
-    [onEdit, onDelete]
+    [onEdit, onDelete, onViewHistory]
   )
 
   const handleFilterChange = (newFilters: Record<string, string>) => {

@@ -43,7 +43,8 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
     setShowTransferConfirmation,
     handleTransferConfirmation,
     selectedMethods,
-    paymentAmounts
+    paymentAmounts,
+    handlePromotionRegistration
   } = useSaleForm()
 
   // Obtener combos del store
@@ -91,7 +92,17 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
         useSaleStore.getState().setPayments(currentPayments)
       }
 
-      await createSale(currentRegister._id)
+      // Crear la venta
+      const saleResult = await createSale(currentRegister._id)
+
+      console.log(saleResult)
+
+      // Registrar el uso de promoción si hay datos
+      if (saleResult.sale && saleResult.sale._id) {
+        console.log('Registrando uso de promoción')
+        await handlePromotionRegistration(saleResult.sale._id)
+      }
+
       toast.success('Venta realizada correctamente, actualizando...')
       await fetchCurrentRegister()
       if (handleCancel()) {

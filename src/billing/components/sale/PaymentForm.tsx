@@ -16,11 +16,12 @@ import * as z from 'zod'
 import { PaymentType } from '../../../types/sale.types'
 import { Checkbox } from '../../../components'
 import { useSaleForm } from '../hooks/useSaleForm'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSaleStore } from '../../../stores/saleStore'
+import { AccountPayablePaymentForm } from './AccountPayablePaymentForm'
 
 const formSchema = z.object({
-  selectedMethods: z.array(z.enum(['CASH', 'DEBIT', 'CREDIT', 'TRANSFER'])),
+  selectedMethods: z.array(z.enum(['CASH', 'DEBIT', 'CREDIT', 'TRANSFER', 'ACCOUNT_PAYABLE'])),
   amounts: z.record(z.number().min(0)),
   customerPhone: z.string().optional(),
   transferReference: z.string().optional()
@@ -29,6 +30,17 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 
 const PaymentForm = () => {
+  const [accountPayableData, setAccountPayableData] = useState<{
+    accountPayableId?: string
+    customerInfo?: {
+      name: string
+      documentType: 'DNI' | 'CUIT'
+      documentNumber: string
+      phone?: string
+      email?: string
+    }
+  }>({})
+
   const {
     total,
     remaining,
@@ -44,7 +56,8 @@ const PaymentForm = () => {
     items,
     itemPromotions,
     updateTransferData,
-    getTransferData
+    getTransferData,
+    updatePaymentDetails
   } = useSaleStore()
 
   const form = useForm<FormValues>({
@@ -86,6 +99,23 @@ const PaymentForm = () => {
     })
   }
 
+  /**
+   * Maneja los cambios en los datos de cuenta corriente
+   */
+  const handleAccountPayableDataChange = (data: {
+    accountPayableId?: string
+    customerInfo?: {
+      name: string
+      documentType: 'DNI' | 'CUIT'
+      documentNumber: string
+      phone?: string
+      email?: string
+    }
+  }) => {
+    setAccountPayableData(data)
+    updatePaymentDetails('ACCOUNT_PAYABLE', data)
+  }
+
   useEffect(() => {
     if (selectedMethods.length === 1) {
       handleAmountChange(selectedMethods[0], parseFloat(total.toFixed(2)))
@@ -102,11 +132,14 @@ const PaymentForm = () => {
 
     if (!checked) {
       handleAmountChange(method, 0)
-      // Limpiar datos de transferencia si se deselecciona
+      // Limpiar datos específicos según el método
       if (method === 'TRANSFER') {
         updateTransferData('TRANSFER', {})
         form.setValue('customerPhone', '')
         form.setValue('transferReference', '')
+      } else if (method === 'ACCOUNT_PAYABLE') {
+        setAccountPayableData({})
+        updatePaymentDetails('ACCOUNT_PAYABLE', {})
       }
     } else if (updated.length === 1) {
       handleAmountChange(method, parseFloat(total.toFixed(2)))
@@ -227,7 +260,8 @@ const PaymentForm = () => {
                           { value: 'CASH', label: 'Efectivo' },
                           { value: 'DEBIT', label: 'Débito' },
                           { value: 'CREDIT', label: 'Crédito' },
-                          { value: 'TRANSFER', label: 'Transferencia' }
+                          { value: 'TRANSFER', label: 'Transferencia' },
+                          { value: 'ACCOUNT_PAYABLE', label: 'Cuenta Corriente' }
                         ].map((method) => (
                           <div
                             key={method.value}
@@ -273,7 +307,9 @@ const PaymentForm = () => {
                                 ? 'Débito'
                                 : method === 'CREDIT'
                                   ? 'Crédito'
-                                  : 'Transferencia'}
+                                  : method === 'TRANSFER'
+                                    ? 'Transferencia'
+                                    : 'Cuenta Corriente'}
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -351,6 +387,16 @@ const PaymentForm = () => {
                         </div>
                       </FormItem>
                     )}
+                  />
+                </div>
+              )}
+
+              {/* Componente para cuenta corriente */}
+              {selectedMethods.includes('ACCOUNT_PAYABLE') && (
+                <div className='space-y-4'>
+                  <AccountPayablePaymentForm
+                    onDataChange={handleAccountPayableDataChange}
+                    disabled={false}
                   />
                 </div>
               )}

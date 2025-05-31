@@ -1,5 +1,5 @@
-import { Package, HandShake, Bill, Hammer, Label, BarChart } from '../assets'
-import { CheckCircle } from 'lucide-react'
+import { Package, HandShake, Bill, Hammer, Label, BarChart, CreditCard } from '../assets'
+import { CheckCircle, Users } from 'lucide-react'
 
 export const MENU_ITEMS = [
   {
@@ -7,6 +7,12 @@ export const MENU_ITEMS = [
     url: '/inventory',
     icon: Package,
     roles: ['ADMIN', 'MANAGER']
+  },
+  {
+    title: 'Facturación',
+    url: '/billing',
+    icon: Bill,
+    roles: ['ADMIN', 'SELLER', 'MANAGER']
   },
   {
     title: 'Proveedores',
@@ -21,10 +27,10 @@ export const MENU_ITEMS = [
     roles: ['ADMIN', 'SELLER', 'MANAGER']
   },
   {
-    title: 'Facturación',
-    url: '/billing',
-    icon: Bill,
-    roles: ['ADMIN', 'SELLER', 'MANAGER']
+    title: 'Cuentas Corrientes',
+    url: '/accounts-payable',
+    icon: CreditCard,
+    roles: ['ADMIN', 'MANAGER']
   },
   {
     title: 'Descuentos',
@@ -43,6 +49,12 @@ export const MENU_ITEMS = [
     url: '/dashboard',
     icon: BarChart,
     roles: ['ADMIN', 'MANAGER']
+  },
+  {
+    title: 'Gestión de Usuarios',
+    url: '/users',
+    icon: Users,
+    roles: ['ADMIN']
   },
   {
     title: 'Servicios',

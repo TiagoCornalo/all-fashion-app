@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import PendingTransfersPanel from '../../components/transfers/PendingTransfersPanel'
+import { useAuth } from '../../context/auth/useAuth'
 
 const BillingContainerActions = ({
   setIsNewSaleOpen,
@@ -30,10 +31,12 @@ const BillingContainerActions = ({
   setIsCloseRegisterOpen: (open: boolean) => void
   currentRegister: CashRegister
 }) => {
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
   return (
     <div className='flex gap-2'>
       {/* Botón de transferencias pendientes */}
-      <PendingTransfersPanel showAsDialog={true} />
+      {isAdmin && <PendingTransfersPanel showAsDialog={true} />}
 
       {/* Menú principal de gestión de caja */}
       <DropdownMenu>
@@ -62,17 +65,19 @@ const BillingContainerActions = ({
           >
             <DollarSign className='mr-2 h-5 w-5' /> Retiro
           </DropdownMenuItem>
-          <DropdownMenuItem asChild className='cursor-pointer text-md'>
-            <Link to={`/cash-registers/${currentRegister._id}`}>
-              <Info className='mr-2 h-5 w-5' /> Detalles
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onSelect={() => setIsCloseRegisterOpen(true)}
-            className='cursor-pointer text-md'
-          >
-            <XCircle className='mr-2 h-5 w-5' /> Cerrar Caja
-          </DropdownMenuItem>
+          {isAdmin && <>
+            <DropdownMenuItem asChild className='cursor-pointer text-md'>
+              <Link to={`/cash-registers/${currentRegister._id}`}>
+                <Info className='mr-2 h-5 w-5' /> Detalles
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => setIsCloseRegisterOpen(true)}
+              className='cursor-pointer text-md'
+            >
+              <XCircle className='mr-2 h-5 w-5' /> Cerrar Caja
+            </DropdownMenuItem>
+          </>}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -8,7 +8,7 @@ const AuthContainer = () => {
 
   useEffect(() => {
     const user = authService.getCurrentUser()
-    if (user) {
+    if (user && user._id) {
       navigate('/home')
     }
   }, [])

@@ -13,12 +13,18 @@ import { Package, Eye, User } from 'lucide-react'
 import { orderVerificationService } from '../../../services/orderVerification.service'
 import { formatDateTime } from '../../../utils'
 import { RECEPTION_STATUS } from './constants'
+import { useAuth } from '../../../context/auth/useAuth'
 
 /**
  * Lista de pedidos que llegaron físicamente y están pendientes de verificación de cantidades
  */
 const ArrivedOrdersList = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const userRole = user?.role as string
+  const isAdmin = userRole === 'ADMIN'
+  const isManager = userRole === 'MANAGER'
+  const canApprove = isAdmin || isManager
 
   // Query para obtener pedidos llegados pendientes de verificación
   const { data: ordersResponse, isLoading, error, refetch } = useQuery({
@@ -120,13 +126,15 @@ const ArrivedOrdersList = () => {
                       </p>
                     </div>
 
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Confirmado por:</p>
-                      <p className="text-gray-900 flex items-center gap-1">
-                        <User className="h-4 w-4" />
-                        {order.confirmedArrivalBy.name}
-                      </p>
-                    </div>
+                    {canApprove && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Confirmado por:</p>
+                        <p className="text-gray-900 flex items-center gap-1">
+                          <User className="h-4 w-4" />
+                          {order.confirmedArrivalBy.name}
+                        </p>
+                      </div>
+                    )}
 
                     <div>
                       <p className="text-sm font-medium text-gray-700">Productos:</p>

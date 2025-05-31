@@ -155,7 +155,7 @@ export interface SaleItem {
   stock?: number
 }
 
-export type PaymentType = 'CASH' | 'DEBIT' | 'CREDIT' | 'TRANSFER'
+export type PaymentType = 'CASH' | 'DEBIT' | 'CREDIT' | 'TRANSFER' | 'ACCOUNT_PAYABLE'
 
 export interface Payment {
   method: PaymentType
@@ -173,6 +173,21 @@ export interface Payment {
     transferReference: string
     amount: number
     status: string
+  }
+  // Campos para cuenta corriente
+  accountPayableId?: string
+  customerInfo?: {
+    name: string
+    documentType?: 'DNI' | 'CUIT'
+    documentNumber: string
+    phone?: string
+    email?: string
+    address?: {
+      street?: string
+      city?: string
+      state?: string
+      postalCode?: string
+    }
   }
 }
 

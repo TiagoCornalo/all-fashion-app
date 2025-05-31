@@ -9,7 +9,8 @@ import {
   AddDiscountDialog,
   DeleteDiscountDialog,
   DiscountsTable,
-  EditDiscountDialog
+  EditDiscountDialog,
+  PromotionUsageHistoryModal
 } from './components'
 import { Label } from '../assets'
 
@@ -26,6 +27,7 @@ const DiscountsContainer = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false)
 
   // Consultar los descuentos con React Query
   const {
@@ -66,6 +68,11 @@ const DiscountsContainer = () => {
     setIsDeleteDialogOpen(true)
   }
 
+  const handleViewHistory = (discount: Discount) => {
+    setSelectedDiscount(discount)
+    setIsHistoryModalOpen(true)
+  }
+
   const handleRefresh = async () => {
     await refetch()
     return Promise.resolve()
@@ -95,6 +102,7 @@ const DiscountsContainer = () => {
               onRefresh={handleRefresh}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onViewHistory={handleViewHistory}
               isLoading={isLoading}
               initialPage={pagination.page - 1}
               initialPageSize={pagination.pageSize}
@@ -121,6 +129,12 @@ const DiscountsContainer = () => {
         isOpen={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         onDiscountDeleted={handleRefresh}
+      />
+
+      <PromotionUsageHistoryModal
+        isOpen={isHistoryModalOpen}
+        onOpenChange={setIsHistoryModalOpen}
+        discount={selectedDiscount}
       />
     </LayoutMultiRole>
   )

@@ -24,6 +24,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import api from '../../../services/config/axios'
 import { toast } from 'react-toastify'
+import { PromotionCustomerModal } from '.'
 
 const formSchema = z.object({
   promotionCode: z.string().min(1, 'El código de promoción es requerido')
@@ -43,10 +44,21 @@ const PromotionApplier = () => {
     addItemPromotion,
     removeItemPromotion,
     replaceItems,
-    removeGlobalPromotion
+    removeGlobalPromotion,
+    setPromotionCustomerData,
+    total
   } = useSaleStore()
 
   const [validating, setValidating] = useState(false)
+  const [showCustomerModal, setShowCustomerModal] = useState(false)
+  const [pendingPromotionData, setPendingPromotionData] = useState<{
+    code: string
+    discountPercentage: number
+    discountAmount: number
+    originalAmount: number
+    isGlobal: boolean
+    itemIndex?: number
+  } | null>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -68,6 +80,10 @@ const PromotionApplier = () => {
       setValidating(true)
 
       const currentItems = useSaleStore.getState().items
+      const originalAmount = currentItems.reduce(
+        (sum, item) => sum + (item.originalPrice || item.price) * item.quantity,
+        0
+      )
 
       const response = await api.post(
         `/promotions/validate/${values.promotionCode}`,
@@ -79,18 +95,30 @@ const PromotionApplier = () => {
 
       if (response.data.valid) {
         const itemsWithDiscount = response.data.items
+        const discountPercentage = response.data.promotion?.discountPercentage || 0
 
+        // Calcular el monto de descuento
+        const finalAmount = itemsWithDiscount.reduce(
+          (sum: number, item: any) => sum + (item.subtotal || item.price * item.quantity),
+          0
+        )
+        const discountAmount = originalAmount - finalAmount
+
+        // Guardar datos pendientes y mostrar modal de cliente
+        setPendingPromotionData({
+          code: values.promotionCode,
+          discountPercentage,
+          discountAmount,
+          originalAmount,
+          isGlobal: true
+        })
+
+        // Aplicar promoción temporalmente
         replaceItems(itemsWithDiscount)
-
         setPromotionCode(values.promotionCode)
-
-        const discountPercentage =
-          response.data.promotion?.discountPercentage || 0
         useSaleStore.getState().setDiscount(discountPercentage)
 
-        toast.success(
-          `Código de promoción aplicado: ${discountPercentage}% de descuento`
-        )
+        setShowCustomerModal(true)
       } else {
         toast.error(response.data.error || 'Código de promoción inválido')
       }
@@ -108,26 +136,43 @@ const PromotionApplier = () => {
     try {
       setValidating(true)
 
-      // Obtener items actuales
       const currentItems = useSaleStore.getState().items
+      const itemIndex = parseInt(values.itemIndex)
+      const originalItem = currentItems[itemIndex]
+      const originalAmount = (originalItem?.originalPrice || originalItem?.price || 0) * (originalItem?.quantity || 0)
 
-      // Usar el nuevo endpoint POST
       const response = await api.post(
         `/promotions/validate/${values.promotionCode}`,
         {
           items: currentItems,
-          applyToItems: [parseInt(values.itemIndex)] // Solo aplicar a este item
+          applyToItems: [itemIndex]
         }
       )
 
       if (response.data.valid) {
-        // Reemplazar items en el store
-        replaceItems(response.data.items)
+        const itemsWithDiscount = response.data.items
+        const discountPercentage = response.data.promotion?.discountPercentage || 0
 
-        // Registrar la promoción por item
-        addItemPromotion(parseInt(values.itemIndex), values.promotionCode)
+        // Calcular el descuento del item específico
+        const updatedItem = itemsWithDiscount[itemIndex]
+        const finalAmount = updatedItem?.subtotal || (updatedItem?.price * updatedItem?.quantity) || 0
+        const discountAmount = originalAmount - finalAmount
 
-        toast.success('Promoción aplicada al producto')
+        // Guardar datos pendientes y mostrar modal de cliente
+        setPendingPromotionData({
+          code: values.promotionCode,
+          discountPercentage,
+          discountAmount,
+          originalAmount,
+          isGlobal: false,
+          itemIndex
+        })
+
+        // Aplicar promoción temporalmente
+        replaceItems(itemsWithDiscount)
+        addItemPromotion(itemIndex, values.promotionCode)
+
+        setShowCustomerModal(true)
         itemPromotionForm.reset({
           itemIndex: '',
           promotionCode: ''
@@ -141,6 +186,54 @@ const PromotionApplier = () => {
     } finally {
       setValidating(false)
     }
+  }
+
+  const handleCustomerDataSubmit = (customerData: any) => {
+    if (!pendingPromotionData) return
+
+    // Calcular el total actual para finalAmount
+    const currentTotal = useSaleStore.getState().total
+
+    // Guardar los datos del cliente y promoción en el store
+    setPromotionCustomerData({
+      promotionCode: pendingPromotionData.code,
+      customer: {
+        name: customerData.name,
+        documentType: customerData.documentType,
+        documentNumber: customerData.documentNumber,
+        phone: customerData.phone || '',
+        email: customerData.email || '',
+        address: customerData.address || ''
+      },
+      discountInfo: {
+        discountPercentage: pendingPromotionData.discountPercentage,
+        discountAmount: pendingPromotionData.discountAmount,
+        originalAmount: pendingPromotionData.originalAmount,
+        finalAmount: currentTotal,
+        applicationType: pendingPromotionData.isGlobal ? 'GLOBAL' : 'ITEM',
+        affectedItems: pendingPromotionData.isGlobal ? [] : [pendingPromotionData.itemIndex!]
+      }
+    })
+
+    setShowCustomerModal(false)
+    setPendingPromotionData(null)
+
+    toast.success(
+      `Promoción aplicada: ${pendingPromotionData.discountPercentage}% de descuento. Datos del cliente guardados.`
+    )
+  }
+
+  const handleCustomerModalCancel = () => {
+    // Si el usuario cancela, revertir la promoción
+    if (pendingPromotionData?.isGlobal) {
+      removeGlobalPromotion()
+    } else if (pendingPromotionData?.itemIndex !== undefined) {
+      removeItemPromotion(pendingPromotionData.itemIndex)
+    }
+
+    setShowCustomerModal(false)
+    setPendingPromotionData(null)
+    toast.info('Promoción cancelada')
   }
 
   const handleRemoveGlobalPromotion = (
@@ -323,6 +416,16 @@ const PromotionApplier = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Modal para datos del cliente */}
+      <PromotionCustomerModal
+        isOpen={showCustomerModal}
+        onOpenChange={setShowCustomerModal}
+        promotionCode={pendingPromotionData?.code || ''}
+        discountPercentage={pendingPromotionData?.discountPercentage || 0}
+        onSubmit={handleCustomerDataSubmit}
+        loading={validating}
+      />
     </div>
   )
 }

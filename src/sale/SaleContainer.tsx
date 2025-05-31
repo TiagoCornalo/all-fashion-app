@@ -13,7 +13,8 @@ import {
   SalePayments,
   SaleSummary,
   SaleNotes,
-  SaleTransferVerification
+  SaleTransferVerification,
+  SaleAccountsPayable
 } from './components'
 
 const SaleContainer = () => {
@@ -85,6 +86,28 @@ const SaleContainer = () => {
                   quantity: item.quantity
                 };
               })}
+            />
+
+            {/* Componente para cargar a cuenta corriente */}
+            <SaleAccountsPayable
+              saleId={sale._id}
+              saleTotal={sale.total}
+              saleItems={sale.items.map(item => {
+                const productData = typeof item.product === 'object' && item.product !== null
+                  ? item.product as { _id: string; name: string }
+                  : null;
+
+                return {
+                  product: {
+                    _id: productData?._id || (typeof item.product === 'string' ? item.product : ''),
+                    name: productData?.name || item.name || ''
+                  },
+                  quantity: item.quantity,
+                  price: item.price,
+                  subtotal: item.subtotal
+                };
+              })}
+              invoice={sale.invoice}
             />
 
             <SaleSummary

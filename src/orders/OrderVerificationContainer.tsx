@@ -56,10 +56,10 @@ const OrderVerificationContainer = () => {
                 Pendientes Aprobación
               </TabsTrigger>
             )}
-            <TabsTrigger value="verified" className="flex items-center gap-2">
+            {canApprove && <TabsTrigger value="verified" className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4" />
               Verificados
-            </TabsTrigger>
+            </TabsTrigger>}
           </TabsList>
 
           {/* Pedidos programados para llegar hoy */}

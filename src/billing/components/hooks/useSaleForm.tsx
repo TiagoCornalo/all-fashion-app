@@ -16,12 +16,16 @@ export const useSaleForm = () => {
     remaining,
     paymentAmounts,
     combos,
+    promotionCustomerData,
     setInvoice,
     clearSale,
     setPayments,
     setSelectedMethods,
     clearPayments,
-    updatePaymentAmount
+    updatePaymentAmount,
+    getPaymentDetails,
+    registerPromotionUsage,
+    clearPromotionCustomerData
   } = useSaleStore()
 
   const handleNext = () => {
@@ -64,6 +68,23 @@ export const useSaleForm = () => {
         setShowTransferConfirmation(true)
         return
       }
+
+      // Validar datos de cuenta corriente si se seleccionó ACCOUNT_PAYABLE
+      if (selectedMethods.includes('ACCOUNT_PAYABLE')) {
+        const accountPayableData = getPaymentDetails('ACCOUNT_PAYABLE')
+        if (!accountPayableData.accountPayableId && !accountPayableData.customerInfo) {
+          toast.error('Debe seleccionar una cuenta existente o completar los datos del nuevo cliente')
+          return
+        }
+
+        if (accountPayableData.customerInfo) {
+          const { name, documentNumber } = accountPayableData.customerInfo
+          if (!name || !documentNumber) {
+            toast.error('Complete el nombre y documento del cliente para crear la nueva cuenta')
+            return
+          }
+        }
+      }
     }
 
     setStep((prev) => Math.min(prev + 1, 4))
@@ -92,6 +113,16 @@ export const useSaleForm = () => {
             ...payment,
             customerPhone: transferData.customerPhone,
             transferReference: transferData.transferReference
+          }
+        }
+
+        // Agregar datos adicionales para cuenta corriente
+        if (method === 'ACCOUNT_PAYABLE') {
+          const accountData = getPaymentDetails('ACCOUNT_PAYABLE')
+          return {
+            ...payment,
+            accountPayableId: accountData.accountPayableId,
+            customerInfo: accountData.customerInfo
           }
         }
 
@@ -129,9 +160,27 @@ export const useSaleForm = () => {
   const handleCancel = () => {
     clearSale()
     clearPayments()
+    clearPromotionCustomerData()
     setStep(1)
     setIsSubmitting(false)
     return true
+  }
+
+  /**
+   * Función auxiliar para registrar el uso de promoción después de crear la venta
+   * @param saleId - ID de la venta creada
+   */
+  const handlePromotionRegistration = async (saleId: string) => {
+    if (promotionCustomerData) {
+      try {
+        console.log('Registrando uso de promoción para venta:', saleId)
+        await registerPromotionUsage(saleId)
+        console.log('Uso de promoción registrado exitosamente')
+      } catch (error) {
+        console.error('Error al registrar uso de promoción (no crítico):', error)
+        // No mostramos error al usuario porque la venta ya se procesó correctamente
+      }
+    }
   }
 
   const isStepAccessible = (targetStep: number) => {
@@ -142,7 +191,23 @@ export const useSaleForm = () => {
         (items.length > 0 || combos.length > 0) &&
         selectedMethods.length > 0 &&
         remaining === 0 &&
-        selectedMethods.every((method) => (paymentAmounts[method] || 0) > 0)
+        selectedMethods.every((method) => {
+          const hasValidAmount = (paymentAmounts[method] || 0) > 0
+
+          if (method === 'TRANSFER') {
+            const transferData = useSaleStore.getState().getTransferData('TRANSFER')
+            return hasValidAmount && transferData.customerPhone
+          }
+
+          if (method === 'ACCOUNT_PAYABLE') {
+            const accountData = getPaymentDetails('ACCOUNT_PAYABLE')
+            return hasValidAmount && (accountData.accountPayableId || (
+              accountData.customerInfo?.name && accountData.customerInfo?.documentNumber
+            ))
+          }
+
+          return hasValidAmount
+        })
       )
     }
     return false
@@ -161,6 +226,7 @@ export const useSaleForm = () => {
     total,
     payments,
     invoice,
+    promotionCustomerData,
     setInvoice,
     setStep,
     setPayments,
@@ -178,6 +244,7 @@ export const useSaleForm = () => {
     updatePaymentAmount,
     showTransferConfirmation,
     setShowTransferConfirmation,
-    handleTransferConfirmation
+    handleTransferConfirmation,
+    handlePromotionRegistration
   }
 }
