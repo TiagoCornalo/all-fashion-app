@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   Button,
   Card,
@@ -20,10 +20,10 @@ import {
   Check,
   X,
   CheckCircle,
-  Send
+  Send,
+  Truck
 } from 'lucide-react'
 import { ShoppingCart } from '../../assets'
-import { useMemo } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { formatDateTime } from '../../utils'
 import { DataTableColumnHeader } from '../../components/shared/DataTableColumnHeader'
@@ -32,14 +32,15 @@ import {
   completeOrder,
   sendOrder,
   approveOrder,
-  rejectOrder
+  rejectOrder,
 } from '../../services/order'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import SupplierOrderEditDialog from './SupplierOrderEditDialog'
 import DeleteOrderDialog from './DeleteOrderDialog'
 import { toast } from 'react-toastify'
-import { useIsMobile } from '../../hooks/use-mobile'
+import { useIsMobile } from '../../hooks'
+import ScheduleArrivalDialog from './ScheduleArrivalDialog'
 
 // Definir los tipos para las órdenes
 interface OrderProduct {
@@ -66,7 +67,7 @@ interface Order {
     }
   }
   items: OrderProduct[]
-  status: 'PENDING' | 'SENT' | 'APPROVED' | 'REJECTED' | 'COMPLETED'
+  status: 'PENDING' | 'SENT' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'IN_TRANSIT'
   notes?: string
   createdAt: string
   updatedAt: string
@@ -97,6 +98,7 @@ const SuppliersOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isScheduleArrivalDialogOpen, setIsScheduleArrivalDialogOpen] = useState(false)
   const isMobile = useIsMobile()
 
   // Consultar las órdenes con React Query
@@ -150,6 +152,11 @@ const SuppliersOrders = () => {
     }
   }
 
+  const handleInTransit = (order: Order) => {
+    setSelectedOrder(order)
+    setIsScheduleArrivalDialogOpen(true)
+  }
+
   const handleSendOrder = async (order: Order) => {
     // Obtener el número de teléfono del proveedor
     const phoneNumber = order.supplier.contact.phone.replace(/\D/g, '')
@@ -162,8 +169,8 @@ const SuppliersOrders = () => {
 
   Productos:
   ${order.items
-    .map((item) => `- ${item.product?.name}: ${item.quantity} unidades`)
-    .join('\n')}
+        .map((item) => `- ${item.product?.name}: ${item.quantity} unidades`)
+        .join('\n')}
 
   Estado: ${order.status}
   Notas: ${order.notes || 'Sin notas'}
@@ -262,7 +269,8 @@ const SuppliersOrders = () => {
             SENT: 'bg-blue-500 text-white',
             APPROVED: 'bg-green-500 text-white',
             REJECTED: 'bg-red-500 text-white',
-            COMPLETED: 'bg-green-500 text-white'
+            COMPLETED: 'bg-green-500 text-white',
+            IN_TRANSIT: 'bg-blue-500 text-white'
           }
 
           const statusText: Record<string, string> = {
@@ -270,7 +278,8 @@ const SuppliersOrders = () => {
             SENT: 'Enviado',
             APPROVED: 'Aprobado',
             REJECTED: 'Rechazado',
-            COMPLETED: 'Completado'
+            COMPLETED: 'Completado',
+            IN_TRANSIT: 'En transito'
           }
 
           return (
@@ -328,23 +337,26 @@ const SuppliersOrders = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => handleEdit(row.original)}>
-                    <Pencil className='mr-2 h-4 w-4' />
-                    Editar
-                  </DropdownMenuItem>
+                  {row.original.status !== 'COMPLETED' &&
+                    <DropdownMenuItem onClick={() => handleEdit(row.original)} className='cursor-pointer'>
+                      <Pencil className='mr-2 h-4 w-4' />
+                      Editar
+                    </DropdownMenuItem>
+                  }
                   <DropdownMenuItem
                     onClick={() => handleDelete(row.original)}
-                    className='text-red-600'
+                    className='text-red-600 cursor-pointer'
                   >
                     <Trash className='mr-2 h-4 w-4' />
                     Eliminar
                   </DropdownMenuItem>
                   {row.original.status !== 'SENT' &&
                     row.original.status !== 'APPROVED' &&
-                    row.original.status !== 'COMPLETED' && (
+                    row.original.status !== 'COMPLETED' &&
+                    row.original.status !== 'IN_TRANSIT' && (
                       <DropdownMenuItem
                         onClick={() => handleSendOrder(row.original)}
-                        className='text-blue-600'
+                        className='text-blue-600 cursor-pointer'
                       >
                         <Send className='mr-2 h-4 w-4' />
                         Enviar
@@ -352,10 +364,10 @@ const SuppliersOrders = () => {
                     )}
 
                   {row.original.status !== 'APPROVED' &&
-                    row.original.status !== 'COMPLETED' && (
+                    row.original.status !== 'COMPLETED' && row.original.status !== 'IN_TRANSIT' && (
                       <DropdownMenuItem
                         onClick={() => handleApproveOrder(row.original)}
-                        className='text-green-600'
+                        className='text-green-600 cursor-pointer'
                       >
                         <CheckCircle className='mr-2 h-4 w-4' />
                         Aprobar
@@ -363,10 +375,10 @@ const SuppliersOrders = () => {
                     )}
 
                   {row.original.status !== 'REJECTED' &&
-                    row.original.status !== 'COMPLETED' && (
+                    row.original.status !== 'COMPLETED' && row.original.status !== 'IN_TRANSIT' && (
                       <DropdownMenuItem
                         onClick={() => handleRejectOrder(row.original)}
-                        className='text-red-600'
+                        className='text-red-600 cursor-pointer'
                       >
                         <X className='mr-2 h-4 w-4' />
                         Rechazar
@@ -375,10 +387,19 @@ const SuppliersOrders = () => {
                   {row.original.status !== 'COMPLETED' && (
                     <DropdownMenuItem
                       onClick={() => handleComplete(row.original)}
-                      className='text-green-600'
+                      className='text-green-600 cursor-pointer'
                     >
                       <Check className='mr-2 h-4 w-4' />
                       Completar
+                    </DropdownMenuItem>
+                  )}
+                  {row.original.status !== 'IN_TRANSIT' && row.original.status !== 'COMPLETED' && (
+                    <DropdownMenuItem
+                      onClick={() => handleInTransit(row.original)}
+                      className='text-blue-600 cursor-pointer'
+                    >
+                      <Truck className='mr-2 h-4 w-4' />
+                      En transito
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
@@ -392,7 +413,6 @@ const SuppliersOrders = () => {
   )
 
   const handlePaginationChange = (page: number, pageSize: number) => {
-    console.log('handlePaginationChange', page, pageSize)
     setPagination({ page, pageSize })
   }
 
@@ -454,6 +474,13 @@ const SuppliersOrders = () => {
         isOpen={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         onOrderDeleted={handleOrderUpdated}
+      />
+
+      <ScheduleArrivalDialog
+        order={selectedOrder}
+        isOpen={isScheduleArrivalDialogOpen}
+        onOpenChange={setIsScheduleArrivalDialogOpen}
+        onOrderUpdated={handleOrderUpdated}
       />
     </>
   )

@@ -62,7 +62,7 @@ export default function BillingContainer() {
 
   if (isLoading) {
     return (
-      <div className='flex justify-center items-center'>
+      <div className='flex justify-center items-center h-screen'>
         <Loader />
       </div>
     )
@@ -124,10 +124,10 @@ export default function BillingContainer() {
                     Ultima venta:{' '}
                     {currentRegister.movements.length > 0
                       ? new Date(
-                          currentRegister.movements[
-                            currentRegister.movements.length - 1
-                          ].createdAt
-                        ).toLocaleString('es-ES')
+                        currentRegister.movements[
+                          currentRegister.movements.length - 1
+                        ].createdAt
+                      ).toLocaleString('es-ES')
                       : 'N/A'}
                   </span>
                 </div>

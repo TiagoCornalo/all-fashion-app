@@ -1,5 +1,6 @@
 export { default as InvoiceForm } from './InvoiceForm'
 export { default as PaymentForm } from './PaymentForm'
+export { default as TransferConfirmationModal } from './TransferConfirmationModal'
 export { default as ProductSelector } from './ProductSelector'
 export { default as SaleSummary } from './SaleSummary'
 export { default as ComboSelector } from './ComboSelector'

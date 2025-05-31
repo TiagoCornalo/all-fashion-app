@@ -21,7 +21,9 @@ import { useSaleStore } from '../../../stores/saleStore'
 
 const formSchema = z.object({
   selectedMethods: z.array(z.enum(['CASH', 'DEBIT', 'CREDIT', 'TRANSFER'])),
-  amounts: z.record(z.number().min(0))
+  amounts: z.record(z.number().min(0)),
+  customerPhone: z.string().optional(),
+  transferReference: z.string().optional()
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -36,19 +38,52 @@ const PaymentForm = () => {
     updatePaymentAmount
   } = useSaleForm()
 
-  const { discount, combos, items, itemPromotions } = useSaleStore()
+  const {
+    discount,
+    combos,
+    items,
+    itemPromotions,
+    updateTransferData,
+    getTransferData
+  } = useSaleStore()
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       selectedMethods: [],
-      amounts: paymentAmounts
+      amounts: paymentAmounts,
+      customerPhone: '',
+      transferReference: ''
     }
   })
 
   const handleAmountChange = (method: string, value: number) => {
     form.setValue(`amounts.${method}`, value)
     updatePaymentAmount(method as PaymentType, value || 0)
+  }
+
+  /**
+   * Maneja los cambios en el teléfono del cliente para transferencias
+   * @param phone - Número de teléfono del cliente
+   */
+  const handleCustomerPhoneChange = (phone: string) => {
+    form.setValue('customerPhone', phone)
+    updateTransferData('TRANSFER', {
+      ...getTransferData('TRANSFER'),
+      customerPhone: phone
+    })
+  }
+
+  /**
+   * Maneja los cambios en la referencia de transferencia
+   * @param reference - Referencia de la transferencia
+   */
+  const handleTransferReferenceChange = (reference: string) => {
+    form.setValue('transferReference', reference)
+    updateTransferData('TRANSFER', {
+      ...getTransferData('TRANSFER'),
+      transferReference: reference
+    })
   }
 
   useEffect(() => {
@@ -67,6 +102,12 @@ const PaymentForm = () => {
 
     if (!checked) {
       handleAmountChange(method, 0)
+      // Limpiar datos de transferencia si se deselecciona
+      if (method === 'TRANSFER') {
+        updateTransferData('TRANSFER', {})
+        form.setValue('customerPhone', '')
+        form.setValue('transferReference', '')
+      }
     } else if (updated.length === 1) {
       handleAmountChange(method, parseFloat(total.toFixed(2)))
     }
@@ -215,9 +256,8 @@ const PaymentForm = () => {
               {/* Inputs de montos en grid cuando hay muchos métodos */}
               {selectedMethods.length > 0 && (
                 <div
-                  className={`grid ${
-                    selectedMethods.length > 2 ? 'grid-cols-2' : 'grid-cols-1'
-                  } gap-4`}
+                  className={`grid ${selectedMethods.length > 2 ? 'grid-cols-2' : 'grid-cols-1'
+                    } gap-4`}
                 >
                   {selectedMethods.map((method) => (
                     <FormField
@@ -230,10 +270,10 @@ const PaymentForm = () => {
                             {method === 'CASH'
                               ? 'Efectivo'
                               : method === 'DEBIT'
-                              ? 'Débito'
-                              : method === 'CREDIT'
-                              ? 'Crédito'
-                              : 'Transferencia'}
+                                ? 'Débito'
+                                : method === 'CREDIT'
+                                  ? 'Crédito'
+                                  : 'Transferencia'}
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -253,6 +293,65 @@ const PaymentForm = () => {
                       )}
                     />
                   ))}
+                </div>
+              )}
+
+              {/* Campos adicionales para transferencia */}
+              {selectedMethods.includes('TRANSFER') && (
+                <div className='space-y-4 p-4 border rounded-md bg-blue-50'>
+                  <h3 className='text-sm font-medium text-blue-800'>
+                    Datos de Transferencia
+                  </h3>
+
+                  <FormField
+                    control={form.control}
+                    name='customerPhone'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className='text-red-600'>
+                          Teléfono del cliente *
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type='tel'
+                            placeholder='+5491123456789'
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e)
+                              handleCustomerPhoneChange(e.target.value)
+                            }}
+                          />
+                        </FormControl>
+                        <div className='text-xs text-muted-foreground'>
+                          Campo obligatorio para transferencias
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='transferReference'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Referencia de transferencia</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='text'
+                            placeholder='BANCO123456'
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e)
+                              handleTransferReferenceChange(e.target.value)
+                            }}
+                          />
+                        </FormControl>
+                        <div className='text-xs text-muted-foreground'>
+                          Opcional: Número de referencia del banco
+                        </div>
+                      </FormItem>
+                    )}
+                  />
                 </div>
               )}
 

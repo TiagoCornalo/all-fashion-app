@@ -1,4 +1,5 @@
 import { Package, HandShake, Bill, Hammer, Label, BarChart } from '../assets'
+import { CheckCircle } from 'lucide-react'
 
 export const MENU_ITEMS = [
   {
@@ -12,6 +13,12 @@ export const MENU_ITEMS = [
     url: '/suppliers',
     icon: HandShake,
     roles: ['ADMIN', 'MANAGER']
+  },
+  {
+    title: 'Verificación Pedidos',
+    url: '/orders/verification',
+    icon: CheckCircle,
+    roles: ['ADMIN', 'SELLER', 'MANAGER']
   },
   {
     title: 'Facturación',

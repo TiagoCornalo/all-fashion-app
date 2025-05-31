@@ -75,3 +75,23 @@ export const approveOrder = async (orderId: string) => {
   const response = await api.put(`/orders/approve/${orderId}`)
   return response.data
 }
+
+export const inTransitOrder = async (orderId: string) => {
+  const response = await api.put(`/orders/in-transit/${orderId}`)
+  return response.data
+}
+
+export const scheduleArrival = async (orderId: string, data: { scheduledDate: string; notes?: string }) => {
+  const response = await api.put(`/orders/${orderId}/schedule-arrival`, data)
+  return response.data
+}
+
+export const getPendingAdminApproval = async () => {
+  const response = await api.get('/orders/admin/pending-admin-approval')
+  return response.data
+}
+
+export const adminApproveOrder = async (orderId: string, data: { approved: boolean; adminNotes?: string }) => {
+  const response = await api.post(`/orders/${orderId}/admin-approve`, data)
+  return response.data
+}

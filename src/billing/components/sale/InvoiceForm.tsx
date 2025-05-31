@@ -35,7 +35,7 @@ const InvoiceForm = () => {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      type: invoice.type || 'TICKET',
+      type: invoice.type === 'X' ? 'TICKET' : (invoice.type || 'TICKET'),
       documentType: invoice.customer?.documentType,
       documentNumber: invoice.customer?.documentNumber,
       customerName: invoice.customerName
@@ -56,7 +56,8 @@ const InvoiceForm = () => {
         if (value.documentType && value.documentNumber) {
           invoiceData.customer = {
             documentType: value.documentType,
-            documentNumber: value.documentNumber
+            documentNumber: value.documentNumber,
+            name: value.customerName || ''
           }
         }
 

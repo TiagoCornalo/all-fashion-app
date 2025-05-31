@@ -8,6 +8,7 @@ import { HandShake } from '../assets'
 import { formatDateTime } from '../utils'
 import SupplierDetailProductsTable from './components/supplier-details/SupplierDetailProductsTable'
 import SupplierDetailOrdersTable from './components/supplier-details/SupplierDetailOrdersTable'
+import SupplierDetailTransfersTable from './components/supplier-details/SupplierDetailTransfersTable'
 import { Product } from '../types/inventory.types'
 import DeleteProductDialog from '../inventory/components/inventory-table/components/DeleteProductDialog'
 import SupplierOrderEditDialog from './components/SupplierOrderEditDialog'
@@ -109,6 +110,8 @@ const SupplierDetailContainer = () => {
       setActiveTab('orders')
     } else if (tabParam === 'products') {
       setActiveTab('products')
+    } else if (tabParam === 'transfers') {
+      setActiveTab('transfers')
     }
   }, [location.search])
 
@@ -183,11 +186,14 @@ const SupplierDetailContainer = () => {
           </div>
         </div>
 
-        {/* Tabs para productos y órdenes */}
+        {/* Tabs para productos, órdenes y transferencias */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className='mb-4'>
             <TabsTrigger value='products'>Productos</TabsTrigger>
             <TabsTrigger value='orders'>Pedidos</TabsTrigger>
+            <TabsTrigger value='transfers'>
+              Transferencias
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value='products'>
@@ -203,6 +209,12 @@ const SupplierDetailContainer = () => {
               supplierId={id || ''}
               onEditOrder={handleEditOrder}
               onDeleteOrder={handleDeleteOrder}
+            />
+          </TabsContent>
+
+          <TabsContent value='transfers'>
+            <SupplierDetailTransfersTable
+              supplierId={id || ''}
             />
           </TabsContent>
         </Tabs>

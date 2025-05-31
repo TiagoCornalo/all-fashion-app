@@ -1,6 +1,7 @@
 import LayoutAdmin from '../layout/LayoutAdmin'
 import DashboardSalesResume from './components/DashboardSalesResume'
 import DashboardAlerts from './components/DashboardAlerts'
+import PendingTransfersPanel from '../components/transfers/PendingTransfersPanel'
 
 const DashboardContainer = () => {
   return (
@@ -10,6 +11,9 @@ const DashboardContainer = () => {
       </section>
       <section className='w-full p-4'>
         <DashboardAlerts />
+      </section>
+      <section className='w-full p-4'>
+        <PendingTransfersPanel />
       </section>
     </LayoutAdmin>
   )

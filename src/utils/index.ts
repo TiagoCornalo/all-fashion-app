@@ -63,8 +63,21 @@ export const formatCurrency = (amount: number) => {
   }).format(amount)
 }
 
-export const formatDateTime = (date: Date) => {
-  return date.toLocaleString('es-ES', {
+/**
+ * Formatear fecha y hora para mostrar
+ * @param date - Fecha a formatear (Date object o string ISO)
+ * @returns Fecha formateada
+ */
+export const formatDateTime = (date: Date | string): string => {
+  if (!date) return ''
+
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+
+  if (isNaN(dateObj.getTime())) {
+    return ''
+  }
+
+  return dateObj.toLocaleString('es-ES', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -79,4 +92,62 @@ export const formatDayMonth = (date: Date) => {
     month: 'long',
     year: 'numeric'
   })
+}
+
+/**
+ * Tipo para objetos de Mongoose con metadata
+ */
+interface MongooseObject {
+  _doc?: unknown
+  userPermissions?: unknown
+  [key: string]: unknown
+}
+
+/**
+ * Extraer datos útiles de objetos de Mongoose que vienen del backend
+ * @param mongooseObj - Objeto de Mongoose con metadata
+ * @returns Objeto plano con los datos reales
+ */
+export const extractMongooseData = <T>(mongooseObj: MongooseObject | T): T => {
+  if (!mongooseObj) return mongooseObj as T
+
+  // Si el objeto tiene _doc, extraer datos de ahí
+  if (mongooseObj && typeof mongooseObj === 'object' && '_doc' in mongooseObj && mongooseObj._doc) {
+    return {
+      ...mongooseObj._doc as T,
+      // Preservar propiedades adicionales que no están en _doc
+      ...(mongooseObj.userPermissions && typeof mongooseObj.userPermissions === 'object'
+        ? { userPermissions: mongooseObj.userPermissions }
+        : {}
+      )
+    } as T
+  }
+
+  // Si no tiene _doc, devolver tal como está
+  return mongooseObj as T
+}
+
+/**
+ * Definir un tipo para manejar errores de API de forma type-safe
+ */
+export interface ApiError {
+  response?: {
+    data?: {
+      error?: string
+      message?: string
+    }
+  }
+  message?: string
+}
+
+/**
+ * Extraer mensaje de error de forma segura
+ * @param error - Error de la API
+ * @returns Mensaje de error legible
+ */
+export const getErrorMessage = (error: ApiError): string => {
+  return error.response?.data?.error ||
+         error.response?.data?.message ||
+         error.message ||
+         'Error desconocido'
 }

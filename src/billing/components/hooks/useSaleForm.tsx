@@ -6,6 +6,7 @@ import { toast } from 'react-toastify'
 export const useSaleForm = () => {
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showTransferConfirmation, setShowTransferConfirmation] = useState(false)
   const {
     items,
     total,
@@ -50,6 +51,19 @@ export const useSaleForm = () => {
         )
         return
       }
+
+      // Validar datos de transferencia si se seleccionó TRANSFER
+      if (selectedMethods.includes('TRANSFER')) {
+        const transferData = useSaleStore.getState().getTransferData('TRANSFER')
+        if (!transferData.customerPhone || transferData.customerPhone.trim() === '') {
+          toast.error('El teléfono del cliente es obligatorio para transferencias')
+          return
+        }
+
+        // Si hay transferencia, mostrar modal de confirmación antes de continuar
+        setShowTransferConfirmation(true)
+        return
+      }
     }
 
     setStep((prev) => Math.min(prev + 1, 4))
@@ -65,10 +79,24 @@ export const useSaleForm = () => {
 
     // Asegúrate de que los pagos estén correctamente configurados antes de continuar
     if (selectedMethods.length > 0) {
-      const currentPayments = selectedMethods.map((method) => ({
-        method: method,
-        amount: paymentAmounts[method] || 0
-      }))
+      const currentPayments = selectedMethods.map((method) => {
+        const payment = {
+          method: method,
+          amount: paymentAmounts[method] || 0
+        }
+
+        // Agregar datos adicionales para transferencias
+        if (method === 'TRANSFER') {
+          const transferData = useSaleStore.getState().getTransferData('TRANSFER')
+          return {
+            ...payment,
+            customerPhone: transferData.customerPhone,
+            transferReference: transferData.transferReference
+          }
+        }
+
+        return payment
+      })
       console.log('currentPayments', currentPayments)
 
       // Guardar explícitamente los pagos en el store
@@ -81,6 +109,21 @@ export const useSaleForm = () => {
 
     // Avanzar al siguiente paso
     handleNext()
+  }
+
+  /**
+   * Maneja la confirmación del envío del comprobante de transferencia
+   * @param confirmed - true si el comprobante fue enviado, false si no
+   */
+  const handleTransferConfirmation = async (confirmed: boolean) => {
+    if (confirmed) {
+      // Si se confirma el envío, continuar con el siguiente paso
+      setStep((prev) => Math.min(prev + 1, 4))
+    } else {
+      // Si no se envió, mostrar mensaje informativo pero NO permitir continuar
+      toast.error('Debe confirmar el envío del comprobante para continuar')
+      // No avanzar al siguiente paso
+    }
   }
 
   const handleCancel = () => {
@@ -132,6 +175,9 @@ export const useSaleForm = () => {
     canAdvanceFromStep2: selectedMethods.length > 0 && remaining === 0,
     updatePayment,
     paymentAmounts,
-    updatePaymentAmount
+    updatePaymentAmount,
+    showTransferConfirmation,
+    setShowTransferConfirmation,
+    handleTransferConfirmation
   }
 }

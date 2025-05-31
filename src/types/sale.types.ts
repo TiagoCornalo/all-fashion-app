@@ -160,6 +160,20 @@ export type PaymentType = 'CASH' | 'DEBIT' | 'CREDIT' | 'TRANSFER'
 export interface Payment {
   method: PaymentType
   amount: number
+  transferReference?: string
+  customerPhone?: string
+  _id?: string
+  requiresVerification?: boolean
+  verified?: boolean
+  verificationDate?: string
+  verificationNotes?: string
+  verifiedBy?: string
+  verificationInfo?: {
+    customerPhone: string
+    transferReference: string
+    amount: number
+    status: string
+  }
 }
 
 export interface Combo {
@@ -205,7 +219,7 @@ export interface CreateSale {
 
 export interface Sale {
   _id: string
-  date: string
+  date?: string
   total: number
   items: SaleItem[]
   payments: Payment[]
@@ -213,9 +227,10 @@ export interface Sale {
   notes?: string
   cashRegister: {
     _id: string
-    name: string
+    name?: string
+    status?: string
   }
-  createdBy: {
+  createdBy?: {
     _id: string
     name: string
   }
@@ -225,4 +240,24 @@ export interface Sale {
   }
   createdAt: string
   updatedAt: string
+  status?: 'PENDING' | 'COMPLETED' | 'CANCELLED' | 'REFUNDED'
+  subtotal?: number
+  tax?: number
+  promotionApplied?: {
+    promotionId: string
+    code: string
+    discountPercentage: number
+    discountAmount: number
+    applied: string
+  }
+  itemPromotions?: ItemPromotion[]
+  combosApplied?: {
+    comboId: string
+    name: string
+    code: string
+    quantity: number
+    originalPrice: number
+    totalPrice: number
+  }[]
+  transferPayments?: Payment[]
 }

@@ -5,7 +5,6 @@ import { LayoutMultiRole } from '../layout'
 import { Loader } from '../components'
 import { Card, CardContent } from '../components/ui/card'
 import {
-  SaleHeader,
   SaleGeneral,
   SaleInvoice,
   SaleProducts,
@@ -13,7 +12,8 @@ import {
   SalePromotion,
   SalePayments,
   SaleSummary,
-  SaleNotes
+  SaleNotes,
+  SaleTransferVerification
 } from './components'
 
 const SaleContainer = () => {
@@ -42,22 +42,54 @@ const SaleContainer = () => {
 
             <SaleProducts
               items={sale.items}
-              itemPromotions={sale.itemPromotions}
+              itemPromotions={sale.itemPromotions || []}
             />
 
             {sale.combosApplied && sale.combosApplied.length > 0 && (
-              <SaleCombos combos={sale.combosApplied} />
+              <SaleCombos combos={sale.combosApplied.map(combo => ({
+                _id: combo.comboId,
+                comboId: combo.comboId,
+                name: combo.name,
+                code: combo.code,
+                quantity: combo.quantity,
+                originalPrice: combo.originalPrice,
+                totalPrice: combo.totalPrice
+              }))} />
             )}
 
             {sale.promotionApplied && (
               <SalePromotion promotion={sale.promotionApplied} />
             )}
 
-            <SalePayments payments={sale.payments} />
+            <SalePayments payments={sale.payments.map(payment => ({
+              _id: payment._id || '',
+              method: payment.method,
+              amount: payment.amount
+            }))} />
+
+            <SaleTransferVerification
+              saleId={sale._id}
+              payments={sale.payments}
+              items={sale.items.map(item => {
+                // Verificar si item.product es un objeto con las propiedades necesarias
+                const productData = typeof item.product === 'object' && item.product !== null
+                  ? item.product as { _id: string; name: string; supplier: string }
+                  : null;
+
+                return {
+                  product: {
+                    _id: productData?._id || (typeof item.product === 'string' ? item.product : ''),
+                    name: productData?.name || item.name || '',
+                    supplier: productData?.supplier || ''
+                  },
+                  quantity: item.quantity
+                };
+              })}
+            />
 
             <SaleSummary
-              subtotal={sale.subtotal}
-              tax={sale.tax}
+              subtotal={sale.subtotal || 0}
+              tax={sale.tax || 0}
               total={sale.total}
               promotion={sale.promotionApplied}
             />

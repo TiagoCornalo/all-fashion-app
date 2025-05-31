@@ -20,6 +20,9 @@ interface SaleStore {
   paymentAmounts: Record<string, number>
   remaining: number
 
+  // Campos para transferencias
+  transferData: Record<string, { customerPhone?: string; transferReference?: string }>
+
   // Nuevos campos para promociones y combos
   promotionCode: string
   itemPromotions: ItemPromotion[]
@@ -45,6 +48,10 @@ interface SaleStore {
   calculateRemaining: () => number
   clearPayments: () => void
 
+  // Acciones para transferencias
+  updateTransferData: (method: PaymentType, data: { customerPhone?: string; transferReference?: string }) => void
+  getTransferData: (method: PaymentType) => { customerPhone?: string; transferReference?: string }
+
   // Nuevas acciones para promociones y combos
   setPromotionCode: (code: string) => void
   removeGlobalPromotion: () => void
@@ -69,6 +76,7 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
   selectedMethods: [],
   paymentAmounts: {},
   remaining: 0,
+  transferData: {},
   promotionCode: '',
   itemPromotions: [],
   combos: [],
@@ -177,8 +185,22 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
     set({
       selectedMethods: [],
       paymentAmounts: {},
+      transferData: {},
       remaining: get().total
     })
+  },
+
+  updateTransferData: (method, data) => {
+    set((state) => ({
+      transferData: {
+        ...state.transferData,
+        [method]: data
+      }
+    }))
+  },
+
+  getTransferData: (method) => {
+    return get().transferData[method] || {}
   },
 
   setPromotionCode: (code) => {
@@ -303,6 +325,7 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
       total: 0,
       selectedMethods: [],
       paymentAmounts: {},
+      transferData: {},
       // Limpiar también los nuevos campos
       promotionCode: '',
       itemPromotions: [],

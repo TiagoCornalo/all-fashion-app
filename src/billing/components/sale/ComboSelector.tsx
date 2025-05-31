@@ -110,9 +110,8 @@ const ComboSelector = () => {
               {availableCombos.map((combo) => (
                 <div
                   key={combo._id}
-                  className={`p-2 hover:bg-accent cursor-pointer flex justify-between items-center ${
-                    !combo.isActive ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`p-2 hover:bg-accent cursor-pointer flex justify-between items-center ${!combo.isActive ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                   onClick={() => combo.isActive && handleAddCombo(combo)}
                 >
                   <div>

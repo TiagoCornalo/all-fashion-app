@@ -61,7 +61,7 @@ interface Order {
     }
   }
   items: OrderProduct[]
-  status: 'PENDING' | 'SENT' | 'APPROVED' | 'REJECTED' | 'COMPLETED'
+  status: 'PENDING' | 'SENT' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'IN_TRANSIT'
   notes?: string
   createdAt: string
   updatedAt: string
@@ -70,7 +70,7 @@ interface Order {
 }
 
 const orderEditSchema = z.object({
-  status: z.enum(['PENDING', 'SENT', 'APPROVED', 'REJECTED', 'COMPLETED']),
+  status: z.enum(['PENDING', 'SENT', 'APPROVED', 'REJECTED', 'COMPLETED', 'IN_TRANSIT']),
   notes: z.string().optional(),
   items: z.array(
     z.object({
@@ -134,15 +134,15 @@ const SupplierOrderEditDialog = ({
         .filter((item) => item.product)
         .map(
           (item) =>
-            ({
-              _id: item.product?._id || '',
-              name: item.product?.name || '',
-              code: item.product?.code || '',
-              price: item.product?.price || 0,
-              stock: item.currentStock,
-              stockMinimum: item.minimumStock,
-              supplier: order.supplier
-            } as Product)
+          ({
+            _id: item.product?._id || '',
+            name: item.product?.name || '',
+            code: item.product?.code || '',
+            price: item.product?.price || 0,
+            stock: item.currentStock,
+            stockMinimum: item.minimumStock,
+            supplier: order.supplier
+          } as Product)
         )
 
       setProducts(productsList)
@@ -153,7 +153,8 @@ const SupplierOrderEditDialog = ({
           | 'SENT'
           | 'APPROVED'
           | 'REJECTED'
-          | 'COMPLETED',
+          | 'COMPLETED'
+          | 'IN_TRANSIT',
         notes: order.notes || '',
         items: orderItems
       })
@@ -356,6 +357,7 @@ const SupplierOrderEditDialog = ({
                             <SelectItem value='COMPLETED'>
                               Completado
                             </SelectItem>
+                            <SelectItem value='IN_TRANSIT'>En tránsito</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />

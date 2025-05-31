@@ -15,12 +15,17 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-  Textarea
+  Textarea,
+
 } from '../../components'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { toast } from 'react-toastify'
+import { useQuery } from '@tanstack/react-query'
+import { getPendingTransfers } from '../../services/transferVerification'
+import PendingTransfersPanel from '../../components/transfers/PendingTransfersPanel'
+import { AlertTriangle } from 'lucide-react'
 
 const formSchema = z.object({
   actualCash: z.number().min(0, 'El monto debe ser mayor o igual a 0'),
@@ -40,6 +45,14 @@ const CloseRegisterDialog = ({
 }: CloseRegisterDialogProps) => {
   const { currentRegister, closeRegister } = useCashRegisterStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showPendingTransfers, setShowPendingTransfers] = useState(false)
+
+  // Query para verificar transferencias pendientes
+  const { data: pendingTransfers } = useQuery({
+    queryKey: ['pending-transfers-close'],
+    queryFn: () => getPendingTransfers({ pageSize: 10 }),
+    enabled: isOpen // Solo ejecutar cuando el modal esté abierto
+  })
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -51,6 +64,13 @@ const CloseRegisterDialog = ({
 
   const onSubmit = async (values: FormValues) => {
     if (!currentRegister) return
+
+    // Verificar si hay transferencias pendientes
+    if (pendingTransfers?.data && pendingTransfers.data.length > 0) {
+      toast.warning(
+        `Hay ${pendingTransfers.data.length} transferencia(s) pendiente(s) de verificación. Se recomienda verificarlas antes de cerrar la caja.`
+      )
+    }
 
     try {
       setIsSubmitting(true)
@@ -68,13 +88,37 @@ const CloseRegisterDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className='max-w-2xl'>
         <DialogHeader>
           <DialogTitle>Cerrar Caja</DialogTitle>
           <DialogDescription>
             Ingrese el monto final y las notas para cerrar la caja
           </DialogDescription>
         </DialogHeader>
+
+        {/* Alerta de transferencias pendientes */}
+        {pendingTransfers?.data && pendingTransfers.data.length > 0 && (
+          <div className='border border-yellow-200 bg-yellow-50 p-4 rounded-md'>
+            <div className='flex items-start gap-3'>
+              <AlertTriangle className='h-5 w-5 text-yellow-600 mt-0.5' />
+              <div className='flex-1'>
+                <div className='flex items-center justify-between'>
+                  <span className='text-yellow-800'>
+                    Hay <strong>{pendingTransfers.data.length}</strong> transferencia(s) pendiente(s) de verificación.
+                  </span>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={() => setShowPendingTransfers(true)}
+                    className='ml-2'
+                  >
+                    Ver Transferencias
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
@@ -125,6 +169,21 @@ const CloseRegisterDialog = ({
           </form>
         </Form>
       </DialogContent>
+
+      {/* Modal de transferencias pendientes */}
+      <Dialog open={showPendingTransfers} onOpenChange={setShowPendingTransfers}>
+        <DialogContent className='max-w-6xl max-h-[80vh] overflow-hidden'>
+          <DialogHeader>
+            <DialogTitle className='flex items-center gap-2'>
+              <AlertTriangle className='h-5 w-5 text-yellow-600' />
+              Transferencias Pendientes de Verificación
+            </DialogTitle>
+          </DialogHeader>
+          <div className='overflow-auto'>
+            <PendingTransfersPanel showAsDialog={false} maxHeight='60vh' />
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   )
 }

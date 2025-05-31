@@ -10,6 +10,16 @@ interface GetSuppliersParams {
   filters?: Record<string, string>
 }
 
+interface GetSupplierTransfersParams {
+  page?: number
+  pageSize?: number
+  startDate?: string
+  endDate?: string
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+  search?: string
+}
+
 export const getSuppliers = async (
   params: GetSuppliersParams = {}
 ): Promise<PaginatedResponse<Supplier>> => {
@@ -60,5 +70,20 @@ export const deleteSupplier = async (
   }
 ) => {
   const response = await api.delete(`/suppliers/${id}`, { data: payload })
+  return response.data
+}
+
+export const getSupplierTransfers = async (id: string, params: GetSupplierTransfersParams = {}) => {
+  const queryParams = new URLSearchParams({
+    page: (params.page || 1).toString(),
+    pageSize: (params.pageSize || 10).toString(),
+    ...(params.startDate && { startDate: params.startDate }),
+    ...(params.endDate && { endDate: params.endDate }),
+    ...(params.sortBy && { sortBy: params.sortBy }),
+    ...(params.sortOrder && { sortOrder: params.sortOrder }),
+    ...(params.search && { search: params.search })
+  })
+
+  const response = await api.get(`/suppliers/${id}/transfers?${queryParams}`)
   return response.data
 }

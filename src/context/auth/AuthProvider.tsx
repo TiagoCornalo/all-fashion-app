@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, startTransition } from 'react'
 import { AuthContext } from './AuthContext'
 import { authService } from '../../services/auth.service'
 import { User } from '../../types/auth.types'
@@ -15,14 +15,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const validateAuth = async () => {
     try {
       if (!authService.hasValidToken()) {
-        setIsAuthenticated(false)
+        startTransition(() => {
+          setIsAuthenticated(false)
+        })
         return
       }
 
       const response = await authService.validateToken()
       if (response) {
-        setIsAuthenticated(true)
-        setUser(response.user as User)
+        startTransition(() => {
+          setIsAuthenticated(true)
+          setUser(response.user as User)
+        })
       } else {
         handleLogout()
       }
@@ -30,7 +34,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('Error validating auth:', error)
       handleLogout()
     } finally {
-      setIsLoading(false)
+      startTransition(() => {
+        setIsLoading(false)
+      })
     }
   }
 
@@ -39,14 +45,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     password: string
   }) => {
     const response = await authService.login(credentials)
-    setUser(response.user as User)
-    setIsAuthenticated(true)
+    startTransition(() => {
+      setUser(response.user as User)
+      setIsAuthenticated(true)
+    })
   }
 
   const handleLogout = () => {
     authService.logout()
-    setIsAuthenticated(false)
-    setUser(null)
+    startTransition(() => {
+      setIsAuthenticated(false)
+      setUser(null)
+    })
   }
 
   return (

@@ -4,7 +4,8 @@ import {
   SuppliersHeader,
   SuppliersTable,
   SuppliersCreateDialog,
-  SuppliersCreateOrder
+  SuppliersCreateOrder,
+  PendingApprovalTable
 } from './components'
 import { getSuppliers } from '../services/suppliers'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -138,6 +139,7 @@ const SuppliersContainer = () => {
           <TabsList className='mb-4'>
             <TabsTrigger value='suppliers'>Proveedores</TabsTrigger>
             <TabsTrigger value='orders'>Pedidos</TabsTrigger>
+            <TabsTrigger value='pending-approval'>Pendientes de Aprobación</TabsTrigger>
           </TabsList>
 
           <TabsContent value='suppliers'>
@@ -159,6 +161,10 @@ const SuppliersContainer = () => {
 
           <TabsContent value='orders'>
             <SuppliersOrders />
+          </TabsContent>
+
+          <TabsContent value='pending-approval'>
+            <PendingApprovalTable />
           </TabsContent>
         </Tabs>
       </section>

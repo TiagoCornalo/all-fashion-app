@@ -6,6 +6,7 @@ import { Loader } from '../../components'
 import { Alert } from '../../types/alert.types'
 import { TriangularFlag } from '../../assets'
 import { useNavigate } from 'react-router-dom'
+import { authService } from '../../services/auth.service'
 
 const InventoryAlerts = () => {
   const [alerts, setAlerts] = useState<Alert[]>([])
@@ -31,7 +32,10 @@ const InventoryAlerts = () => {
         transports: ['websocket'],
         reconnection: true,
         reconnectionAttempts: 5,
-        reconnectionDelay: 1000
+        reconnectionDelay: 1000,
+        auth: {
+          token: authService.getToken()
+        }
       })
 
       socket.on('connect', () => {

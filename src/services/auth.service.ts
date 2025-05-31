@@ -59,6 +59,14 @@ class AuthService {
     return data
   }
 
+  getToken() {
+    return localStorage.getItem('token')
+  }
+
+  getCurrentUser() {
+    return JSON.parse(localStorage.getItem('user') || '{}')
+  }
+
   logout() {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
