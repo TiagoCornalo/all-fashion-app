@@ -39,7 +39,9 @@ interface Product {
   name: string
   code?: string
   price?: number
-  [key: string]: any
+  stock?: number
+  category?: string
+  description?: string
 }
 
 interface EditQuoteDialogProps {

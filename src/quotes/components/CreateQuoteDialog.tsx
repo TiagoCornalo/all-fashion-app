@@ -39,7 +39,9 @@ interface Product {
   name: string
   code?: string
   price?: number
-  [key: string]: any
+  stock?: number
+  category?: string
+  description?: string
 }
 
 interface CreateQuoteDialogProps {
@@ -149,25 +151,6 @@ const CreateQuoteDialog = ({
   const watchedTax = form.watch('tax')
 
   useEffect(() => {
-    let subtotal = 0
-
-    // Calcular subtotal
-    watchedItems.forEach((item) => {
-      if (item.quantity && item.unitPrice) {
-        subtotal += item.quantity * item.unitPrice
-      }
-    })
-
-    // Aplicar descuento
-    let discountAmount = 0
-    if (hasDiscount && watchedDiscount) {
-      if (watchedDiscount.type === 'percentage') {
-        discountAmount = (subtotal * watchedDiscount.value) / 100
-      } else {
-        discountAmount = watchedDiscount.value
-      }
-    }
-
     // Los totales se calculan automáticamente en el backend
   }, [watchedItems, watchedDiscount, watchedTax, hasDiscount])
 
@@ -187,18 +170,6 @@ const CreateQuoteDialog = ({
           description: item.description
         }
       })
-
-      // Calcular totales
-      const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0)
-
-      let discountAmount = 0
-      if (hasDiscount && values.discount) {
-        if (values.discount.type === 'percentage') {
-          discountAmount = (subtotal * values.discount.value) / 100
-        } else {
-          discountAmount = values.discount.value
-        }
-      }
 
       // Total se calcula automáticamente en el backend
 

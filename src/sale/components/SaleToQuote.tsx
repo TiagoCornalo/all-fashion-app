@@ -77,6 +77,7 @@ export const SaleToQuote = ({
   const [generatedQuote, setGeneratedQuote] = useState<Quote | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const quoteRef = useRef<HTMLDivElement>(null)
+  const quotePdfRef = useRef<HTMLDivElement>(null)
 
   // Obtener información de la empresa
   const { data: companyInfo } = useQuery({
@@ -160,13 +161,13 @@ export const SaleToQuote = ({
    * Generar y descargar PDF
    */
   const handleDownloadPDF = async () => {
-    if (!generatedQuote || !quoteRef.current || !companyInfo) {
+    if (!generatedQuote || !quotePdfRef.current || !companyInfo) {
       toast.error('No se puede generar el PDF en este momento')
       return
     }
 
     try {
-      const element = quoteRef.current
+      const element = quotePdfRef.current
 
       const canvas = await html2canvas(element, {
         scale: 2,
@@ -174,34 +175,36 @@ export const SaleToQuote = ({
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
+        width: element.scrollWidth,
         height: element.scrollHeight,
-        width: element.scrollWidth
+        windowWidth: 794, // Ancho A4 en pixels
+        windowHeight: 1123 // Alto A4 en pixels
       })
 
-      const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       })
 
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = pdf.internal.pageSize.getHeight()
+      // Dimensiones A4 en mm
+      const pdfWidth = 210
+      const pdfHeight = 297
+
+      // Calcular dimensiones para que se ajuste a A4
       const imgWidth = canvas.width
       const imgHeight = canvas.height
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight)
+      const ratio = Math.min(pdfWidth / (imgWidth * 0.264583), pdfHeight / (imgHeight * 0.264583))
 
-      const imgX = (pdfWidth - imgWidth * ratio) / 2
-      const imgY = 0
+      const finalWidth = imgWidth * 0.264583 * ratio
+      const finalHeight = imgHeight * 0.264583 * ratio
 
-      pdf.addImage(
-        imgData,
-        'PNG',
-        imgX,
-        imgY,
-        imgWidth * ratio,
-        imgHeight * ratio
-      )
+      // Centrar en la página
+      const x = (pdfWidth - finalWidth) / 2
+      const y = 0
+
+      const imgData = canvas.toDataURL('image/png')
+      pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight)
 
       const fileName = `Remito_${generatedQuote.number}_${new Date().toISOString().split('T')[0]}.pdf`
       pdf.save(fileName)
@@ -312,8 +315,19 @@ export const SaleToQuote = ({
                   ref={quoteRef}
                   quote={generatedQuote}
                   companyInfo={companyInfo}
+                  forPdf={false}
                 />
               </div>
+            </div>
+
+            {/* Template oculto para generar PDF en formato A4 */}
+            <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+              <QuoteTemplate
+                ref={quotePdfRef}
+                quote={generatedQuote}
+                companyInfo={companyInfo}
+                forPdf={true}
+              />
             </div>
 
             <DialogFooter className="flex-shrink-0 flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t">

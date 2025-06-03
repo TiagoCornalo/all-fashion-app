@@ -1,6 +1,45 @@
 import api from './config/axios'
 import { Quote, CreateQuoteDto, UpdateQuoteDto, QuoteFilters, CompanyInfo } from '../types/quote.types'
 
+// Interfaces para el mapeo de datos
+interface BackendQuoteData {
+  _id?: string
+  number?: string
+  type?: string
+  customerData?: any
+  items?: BackendQuoteItem[]
+  discount?: any
+  tax?: number
+  total?: number
+  subtotal?: number
+  validUntil?: string | Date
+  notes?: string
+  status?: string
+  createdAt?: string | Date
+  updatedAt?: string | Date
+  createdBy?: string
+  [key: string]: any
+}
+
+interface BackendQuoteItem {
+  product: string | { _id: string; name: string; code?: string }
+  quantity: number
+  price: number
+  subtotal: number
+  description?: string
+}
+
+interface BackendFormatData {
+  customerData?: any
+  items?: BackendQuoteItem[]
+  discount?: any
+  tax?: number
+  validUntil?: Date
+  notes?: string
+  type?: string
+  status?: string
+}
+
 /**
  * Servicio para gestionar remitos y presupuestos
  */
@@ -10,7 +49,7 @@ export class QuoteService {
   /**
    * Convertir datos del frontend al formato del backend
    */
-  private mapToBackendFormat(data: CreateQuoteDto | UpdateQuoteDto): any {
+  private mapToBackendFormat(data: CreateQuoteDto | UpdateQuoteDto): BackendFormatData {
     return {
       ...data,
       // Convertir customer a customerData para el backend
@@ -29,17 +68,17 @@ export class QuoteService {
   /**
    * Convertir datos del backend al formato del frontend
    */
-  private mapFromBackendFormat(data: any): Quote {
+  private mapFromBackendFormat(data: BackendQuoteData): Quote {
     return {
       ...data,
       // Convertir customerData a customer para el frontend
       customer: data.customerData || data.customer,
       customerData: undefined,
       // Convertir items al formato del frontend
-      items: data.items?.map((item: any) => ({
+      items: data.items?.map((item: BackendQuoteItem) => ({
         productId: typeof item.product === 'object' ? item.product._id : item.product,
-        productCode: typeof item.product === 'object' ? item.product.code : '',
-        productName: typeof item.product === 'object' ? item.product.name : '',
+        productCode: typeof item.product === 'object' ? item.product.code || '' : '',
+        productName: typeof item.product === 'object' ? item.product.name || '' : '',
         quantity: item.quantity,
         unitPrice: item.price,
         subtotal: item.subtotal,
@@ -63,7 +102,7 @@ export class QuoteService {
     const response = await api.get(this.baseUrl, { params: filters })
 
     // El backend devuelve los datos en response.data.data si usa formatApiResponse
-    const quotes = (response.data.data || response.data || []).map((quote: any) =>
+    const quotes = (response.data.data || response.data || []).map((quote: BackendQuoteData) =>
       this.mapFromBackendFormat(quote)
     )
 

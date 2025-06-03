@@ -6,6 +6,7 @@ import logoImage from '../../assets/logo.png'
 interface QuoteTemplateProps {
   quote: Quote
   companyInfo: CompanyInfo
+  forPdf?: boolean
 }
 
 /**
@@ -13,7 +14,7 @@ interface QuoteTemplateProps {
  * Utiliza la imagen del logo como fondo con opacidad
  */
 const QuoteTemplate = forwardRef<HTMLDivElement, QuoteTemplateProps>(
-  ({ quote, companyInfo }, ref) => {
+  ({ quote, companyInfo, forPdf = false }, ref) => {
     const typeLabels = {
       'QUOTE': 'PRESUPUESTO',
       'ESTIMATE': 'COTIZACIÓN',
@@ -24,28 +25,62 @@ const QuoteTemplate = forwardRef<HTMLDivElement, QuoteTemplateProps>(
       backgroundImage: `url(${logoImage})`,
       backgroundRepeat: 'no-repeat',
       backgroundPosition: 'center',
-      backgroundSize: '600px 600px',
-      backgroundAttachment: 'fixed'
+      backgroundSize: forPdf ? '500px 500px' : '600px 600px',
+      backgroundAttachment: forPdf ? 'scroll' : 'fixed'
     }
+
+    // Estilos específicos para PDF (A4)
+    const containerStyles = forPdf ? {
+      width: '210mm',      // Ancho A4
+      minHeight: '297mm',  // Alto A4
+      maxWidth: '210mm',
+      margin: '0 auto',
+      fontSize: '12px',
+      lineHeight: '1.4',
+      transform: 'scale(1)',
+      transformOrigin: 'top left'
+    } : {}
 
     return (
       <div
         ref={ref}
-        className="bg-white min-h-screen relative overflow-hidden"
-        style={backgroundStyle}
+        className="bg-white relative overflow-hidden"
+        style={{
+          ...backgroundStyle,
+          ...containerStyles,
+          ...(forPdf ? { minHeight: '297mm' } : { minHeight: '100vh' })
+        }}
       >
         {/* Overlay para dar opacidad al fondo */}
         <div className="absolute inset-0 bg-white bg-opacity-90 z-0"></div>
 
         {/* Contenido principal */}
-        <div className="relative z-10 p-8 max-w-4xl mx-auto">
+        <div
+          className="relative z-10 max-w-4xl mx-auto"
+          style={{
+            padding: forPdf ? '20mm' : '2rem',
+            ...(forPdf && {
+              maxWidth: 'none',
+              width: '100%'
+            })
+          }}
+        >
           {/* Header */}
-          <div className="flex justify-between items-start mb-8">
+          <div
+            className={`flex justify-between items-start ${forPdf ? 'mb-6' : 'mb-8'}`}
+            style={forPdf ? { marginBottom: '15mm' } : {}}
+          >
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              <h1
+                className={`font-bold text-gray-800 ${forPdf ? 'text-2xl mb-2' : 'text-3xl mb-2'}`}
+                style={forPdf ? { fontSize: '18pt', marginBottom: '5mm' } : {}}
+              >
                 {companyInfo.name}
               </h1>
-              <div className="text-gray-600 space-y-1">
+              <div
+                className="text-gray-600 space-y-1"
+                style={forPdf ? { fontSize: '10pt', lineHeight: '1.3' } : {}}
+              >
                 <p>{companyInfo.address}</p>
                 <p>Tel: {companyInfo.phone}</p>
                 <p>Email: {companyInfo.email}</p>
@@ -55,16 +90,22 @@ const QuoteTemplate = forwardRef<HTMLDivElement, QuoteTemplateProps>(
             </div>
 
             <div className="text-right">
-              <h2 className="text-2xl font-bold text-blue-600 mb-2">
+              <h2
+                className={`font-bold text-blue-600 ${forPdf ? 'text-xl mb-2' : 'text-2xl mb-2'}`}
+                style={forPdf ? { fontSize: '16pt', marginBottom: '3mm' } : {}}
+              >
                 {typeLabels[quote.type]}
               </h2>
-              <div className="bg-gray-100 p-4 rounded-lg">
+              <div
+                className="bg-gray-100 p-4 rounded-lg"
+                style={forPdf ? { padding: '8pt', fontSize: '10pt' } : {}}
+              >
                 <p className="font-semibold">N° {quote.number}</p>
-                <p className="text-sm text-gray-600">
+                <p className={`${forPdf ? 'text-xs' : 'text-sm'} text-gray-600`}>
                   Fecha: {formatDate(quote.createdAt)}
                 </p>
                 {quote.validUntil && (
-                  <p className="text-sm text-gray-600">
+                  <p className={`${forPdf ? 'text-xs' : 'text-sm'} text-gray-600`}>
                     Válido hasta: {formatDate(quote.validUntil)}
                   </p>
                 )}
@@ -73,12 +114,21 @@ const QuoteTemplate = forwardRef<HTMLDivElement, QuoteTemplateProps>(
           </div>
 
           {/* Información del cliente */}
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b border-gray-300 pb-1">
+          <div
+            className={forPdf ? 'mb-6' : 'mb-8'}
+            style={forPdf ? { marginBottom: '10mm' } : {}}
+          >
+            <h3
+              className={`${forPdf ? 'text-base' : 'text-lg'} font-semibold text-gray-800 mb-3 border-b border-gray-300 pb-1`}
+              style={forPdf ? { fontSize: '12pt', marginBottom: '5mm', paddingBottom: '2mm' } : {}}
+            >
               DATOS DEL CLIENTE
             </h3>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div
+              className="bg-gray-50 p-4 rounded-lg"
+              style={forPdf ? { padding: '8pt', fontSize: '10pt' } : {}}
+            >
+              <div className={`grid ${forPdf ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-2'} gap-4`}>
                 <div>
                   <p className="font-semibold text-gray-800">{quote.customer.name}</p>
                   {quote.customer.documentType && quote.customer.documentNumber && (
@@ -112,40 +162,94 @@ const QuoteTemplate = forwardRef<HTMLDivElement, QuoteTemplateProps>(
           </div>
 
           {/* Productos */}
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b border-gray-300 pb-1">
+          <div
+            className={forPdf ? 'mb-6' : 'mb-8'}
+            style={forPdf ? { marginBottom: '10mm' } : {}}
+          >
+            <h3
+              className={`${forPdf ? 'text-base' : 'text-lg'} font-semibold text-gray-800 mb-3 border-b border-gray-300 pb-1`}
+              style={forPdf ? { fontSize: '12pt', marginBottom: '5mm', paddingBottom: '2mm' } : {}}
+            >
               PRODUCTOS / SERVICIOS
             </h3>
             <div className="overflow-hidden border border-gray-300 rounded-lg">
-              <table className="w-full">
+              <table
+                className="w-full"
+                style={forPdf ? { fontSize: '9pt', borderCollapse: 'collapse' } : {}}
+              >
                 <thead className="bg-gray-100">
                   <tr>
-                    <th className="text-left p-3 font-semibold text-gray-800">Código</th>
-                    <th className="text-left p-3 font-semibold text-gray-800">Descripción</th>
-                    <th className="text-center p-3 font-semibold text-gray-800">Cant.</th>
-                    <th className="text-right p-3 font-semibold text-gray-800">Precio Unit.</th>
-                    <th className="text-right p-3 font-semibold text-gray-800">Subtotal</th>
+                    <th
+                      className="text-left p-3 font-semibold text-gray-800"
+                      style={forPdf ? { padding: '6pt', fontSize: '9pt' } : {}}
+                    >
+                      Código
+                    </th>
+                    <th
+                      className="text-left p-3 font-semibold text-gray-800"
+                      style={forPdf ? { padding: '6pt', fontSize: '9pt' } : {}}
+                    >
+                      Descripción
+                    </th>
+                    <th
+                      className="text-center p-3 font-semibold text-gray-800"
+                      style={forPdf ? { padding: '6pt', fontSize: '9pt' } : {}}
+                    >
+                      Cant.
+                    </th>
+                    <th
+                      className="text-right p-3 font-semibold text-gray-800"
+                      style={forPdf ? { padding: '6pt', fontSize: '9pt' } : {}}
+                    >
+                      Precio Unit.
+                    </th>
+                    <th
+                      className="text-right p-3 font-semibold text-gray-800"
+                      style={forPdf ? { padding: '6pt', fontSize: '9pt' } : {}}
+                    >
+                      Subtotal
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {quote.items.map((item, index) => (
                     <tr key={index} className="border-t border-gray-200">
-                      <td className="p-3 text-gray-800 font-mono text-sm">
+                      <td
+                        className="p-3 text-gray-800 font-mono text-sm"
+                        style={forPdf ? { padding: '6pt', fontSize: '8pt' } : {}}
+                      >
                         {item.productCode}
                       </td>
-                      <td className="p-3 text-gray-800">
+                      <td
+                        className="p-3 text-gray-800"
+                        style={forPdf ? { padding: '6pt', fontSize: '9pt' } : {}}
+                      >
                         <div className="font-medium">{item.productName}</div>
                         {item.description && (
-                          <div className="text-sm text-gray-600 mt-1">{item.description}</div>
+                          <div
+                            className={`${forPdf ? 'text-xs' : 'text-sm'} text-gray-600 mt-1`}
+                            style={forPdf ? { fontSize: '8pt', marginTop: '2pt' } : {}}
+                          >
+                            {item.description}
+                          </div>
                         )}
                       </td>
-                      <td className="p-3 text-center text-gray-800">
+                      <td
+                        className="p-3 text-center text-gray-800"
+                        style={forPdf ? { padding: '6pt', fontSize: '9pt' } : {}}
+                      >
                         {item.quantity}
                       </td>
-                      <td className="p-3 text-right text-gray-800">
+                      <td
+                        className="p-3 text-right text-gray-800"
+                        style={forPdf ? { padding: '6pt', fontSize: '9pt' } : {}}
+                      >
                         {formatCurrency(item.unitPrice)}
                       </td>
-                      <td className="p-3 text-right text-gray-800 font-medium">
+                      <td
+                        className="p-3 text-right text-gray-800 font-medium"
+                        style={forPdf ? { padding: '6pt', fontSize: '9pt' } : {}}
+                      >
                         {formatCurrency(item.subtotal)}
                       </td>
                     </tr>
@@ -156,10 +260,16 @@ const QuoteTemplate = forwardRef<HTMLDivElement, QuoteTemplateProps>(
           </div>
 
           {/* Totales */}
-          <div className="mb-8">
+          <div
+            className={forPdf ? 'mb-6' : 'mb-8'}
+            style={forPdf ? { marginBottom: '10mm' } : {}}
+          >
             <div className="flex justify-end">
-              <div className="w-full max-w-sm">
-                <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 space-y-2">
+              <div className={forPdf ? 'w-64' : 'w-full max-w-sm'}>
+                <div
+                  className="bg-gray-50 border border-gray-300 rounded-lg p-4 space-y-2"
+                  style={forPdf ? { padding: '8pt', fontSize: '10pt', lineHeight: '1.3' } : {}}
+                >
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal:</span>
                     <span>{formatCurrency(quote.subtotal)}</span>
@@ -189,7 +299,10 @@ const QuoteTemplate = forwardRef<HTMLDivElement, QuoteTemplateProps>(
 
                   <hr className="border-gray-300" />
 
-                  <div className="flex justify-between text-lg font-bold text-gray-800">
+                  <div
+                    className={`flex justify-between ${forPdf ? 'text-base' : 'text-lg'} font-bold text-gray-800`}
+                    style={forPdf ? { fontSize: '12pt' } : {}}
+                  >
                     <span>TOTAL:</span>
                     <span>{formatCurrency(quote.total)}</span>
                   </div>
@@ -200,19 +313,34 @@ const QuoteTemplate = forwardRef<HTMLDivElement, QuoteTemplateProps>(
 
           {/* Notas */}
           {quote.notes && (
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b border-gray-300 pb-1">
+            <div
+              className={forPdf ? 'mb-6' : 'mb-8'}
+              style={forPdf ? { marginBottom: '8mm' } : {}}
+            >
+              <h3
+                className={`${forPdf ? 'text-base' : 'text-lg'} font-semibold text-gray-800 mb-3 border-b border-gray-300 pb-1`}
+                style={forPdf ? { fontSize: '12pt', marginBottom: '5mm', paddingBottom: '2mm' } : {}}
+              >
                 OBSERVACIONES
               </h3>
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div
+                className="bg-gray-50 p-4 rounded-lg"
+                style={forPdf ? { padding: '8pt', fontSize: '10pt' } : {}}
+              >
                 <p className="text-gray-700 whitespace-pre-wrap">{quote.notes}</p>
               </div>
             </div>
           )}
 
           {/* Condiciones generales */}
-          <div className="mt-8 pt-6 border-t border-gray-300">
-            <div className="text-sm text-gray-600 space-y-2">
+          <div
+            className="mt-8 pt-6 border-t border-gray-300"
+            style={forPdf ? { marginTop: '8mm', paddingTop: '5mm' } : {}}
+          >
+            <div
+              className={`${forPdf ? 'text-xs' : 'text-sm'} text-gray-600 space-y-2`}
+              style={forPdf ? { fontSize: '8pt', lineHeight: '1.3' } : {}}
+            >
               <p className="font-semibold">CONDICIONES GENERALES:</p>
               <p>• Los precios están expresados en pesos argentinos.</p>
               <p>• Esta cotización tiene una validez limitada según se indica.</p>
@@ -222,7 +350,10 @@ const QuoteTemplate = forwardRef<HTMLDivElement, QuoteTemplateProps>(
           </div>
 
           {/* Footer */}
-          <div className="mt-8 text-center text-sm text-gray-500">
+          <div
+            className={`mt-8 text-center ${forPdf ? 'text-xs' : 'text-sm'} text-gray-500`}
+            style={forPdf ? { marginTop: '8mm', fontSize: '8pt' } : {}}
+          >
             <p>Documento generado automáticamente - {formatDate(new Date().toISOString())}</p>
           </div>
         </div>

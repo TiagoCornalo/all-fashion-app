@@ -29,6 +29,7 @@ interface QuotePreviewDialogProps {
 const QuotePreviewDialog = ({ quote, isOpen, onOpenChange }: QuotePreviewDialogProps) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
   const quoteRef = useRef<HTMLDivElement>(null)
+  const quotePdfRef = useRef<HTMLDivElement>(null) // Ref separada para PDF
 
   // Obtener información de la empresa
   const { data: companyInfo } = useQuery({
@@ -51,7 +52,7 @@ const QuotePreviewDialog = ({ quote, isOpen, onOpenChange }: QuotePreviewDialogP
    * Generar y descargar PDF usando html2canvas y jsPDF
    */
   const handleDownloadPDF = async () => {
-    if (!quote || !quoteRef.current || !companyInfo) {
+    if (!quote || !quotePdfRef.current || !companyInfo) {
       toast.error('No se puede generar el PDF en este momento')
       return
     }
@@ -59,47 +60,48 @@ const QuotePreviewDialog = ({ quote, isOpen, onOpenChange }: QuotePreviewDialogP
     setIsGeneratingPDF(true)
 
     try {
-      // Configurar el elemento para captura
-      const element = quoteRef.current
+      // Configurar el elemento para captura (usar la ref específica para PDF)
+      const element = quotePdfRef.current
 
-      // Configurar html2canvas
+      // Configurar html2canvas con mejor resolución para A4
       const canvas = await html2canvas(element, {
         scale: 2, // Mayor resolución
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
+        width: element.scrollWidth,
         height: element.scrollHeight,
-        width: element.scrollWidth
+        windowWidth: 794, // Ancho A4 en pixels (210mm a 96 DPI)
+        windowHeight: 1123 // Alto A4 en pixels (297mm a 96 DPI)
       })
 
-      // Configurar PDF
-      const imgData = canvas.toDataURL('image/png')
+      // Configurar PDF en formato A4
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       })
 
-      // Calcular dimensiones para ajustar al A4
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = pdf.internal.pageSize.getHeight()
+      // Dimensiones A4 en mm
+      const pdfWidth = 210
+      const pdfHeight = 297
+
+      // Calcular dimensiones para que se ajuste a A4
       const imgWidth = canvas.width
       const imgHeight = canvas.height
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight)
+      const ratio = Math.min(pdfWidth / (imgWidth * 0.264583), pdfHeight / (imgHeight * 0.264583))
 
-      const imgX = (pdfWidth - imgWidth * ratio) / 2
-      const imgY = 0
+      const finalWidth = imgWidth * 0.264583 * ratio
+      const finalHeight = imgHeight * 0.264583 * ratio
 
-      // Agregar imagen al PDF
-      pdf.addImage(
-        imgData,
-        'PNG',
-        imgX,
-        imgY,
-        imgWidth * ratio,
-        imgHeight * ratio
-      )
+      // Centrar en la página
+      const x = (pdfWidth - finalWidth) / 2
+      const y = 0
+
+      // Convertir canvas a imagen y agregar al PDF
+      const imgData = canvas.toDataURL('image/png')
+      pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight)
 
       // Descargar el PDF
       const fileName = `Remito_${quote.number}_${new Date().toISOString().split('T')[0]}.pdf`
@@ -135,8 +137,19 @@ const QuotePreviewDialog = ({ quote, isOpen, onOpenChange }: QuotePreviewDialogP
               ref={quoteRef}
               quote={quote}
               companyInfo={companyInfo}
+              forPdf={false} // Vista previa normal
             />
           </div>
+        </div>
+
+        {/* Template oculto para generar PDF en formato A4 */}
+        <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+          <QuoteTemplate
+            ref={quotePdfRef}
+            quote={quote}
+            companyInfo={companyInfo}
+            forPdf={true} // Formato A4 para PDF
+          />
         </div>
 
         {/* Botones de acción */}
