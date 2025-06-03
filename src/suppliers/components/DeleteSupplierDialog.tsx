@@ -110,8 +110,8 @@ const DeleteSupplierDialog = ({
         ? deleteOption === 'transfer'
           ? { transferToSupplierId }
           : deleteOption === 'force'
-          ? { forceDelete: true }
-          : undefined
+            ? { forceDelete: true }
+            : undefined
         : undefined
 
       await deleteSupplier(supplier._id, payload)
@@ -151,25 +151,25 @@ const DeleteSupplierDialog = ({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-      <AlertDialogContent className='max-w-[500px]'>
+      <AlertDialogContent className='w-[95vw] max-w-md sm:max-w-lg'>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-          <div className='space-y-4 text-sm text-muted-foreground'>
+          <AlertDialogTitle className='text-lg sm:text-xl'>¿Estás seguro?</AlertDialogTitle>
+          <div className='space-y-3 sm:space-y-4 text-sm text-muted-foreground'>
             {isChecking ? (
               <div className='flex items-center justify-center py-4'>
-                <Loader className='mr-2' /> Verificando productos asociados...
+                <Loader className='mr-2' /> <span className='text-xs sm:text-sm'>Verificando productos asociados...</span>
               </div>
             ) : (
               <>
-                <div>
+                <div className='text-xs sm:text-sm'>
                   Esta acción eliminará permanentemente al proveedor{' '}
                   <span className='font-medium'>{supplier?.name}</span>.
                 </div>
 
                 {hasProducts && (
-                  <div className='border rounded-md p-4 bg-amber-50 text-amber-800'>
-                    <div className='font-medium'>¡Atención!</div>
-                    <div className='mb-3'>
+                  <div className='border rounded-md p-3 sm:p-4 bg-amber-50 text-amber-800'>
+                    <div className='font-medium text-sm sm:text-base'>¡Atención!</div>
+                    <div className='mb-3 text-xs sm:text-sm'>
                       Este proveedor tiene {productCount} productos asociados.
                       Por favor seleccione qué hacer con estos productos:
                     </div>
@@ -184,7 +184,7 @@ const DeleteSupplierDialog = ({
                       <div className='flex items-start space-x-2'>
                         <RadioGroupItem value='transfer' id='transfer' />
                         <div className='grid gap-1.5 leading-none'>
-                          <Label htmlFor='transfer' className='font-medium'>
+                          <Label htmlFor='transfer' className='font-medium text-xs sm:text-sm'>
                             Transferir productos a otro proveedor
                           </Label>
                           {deleteOption === 'transfer' && (
@@ -202,11 +202,11 @@ const DeleteSupplierDialog = ({
                       <div className='flex items-start space-x-2'>
                         <RadioGroupItem value='force' id='force' />
                         <div className='grid gap-1.5 leading-none'>
-                          <Label htmlFor='force' className='font-medium'>
+                          <Label htmlFor='force' className='font-medium text-xs sm:text-sm'>
                             Eliminar proveedor y todos sus productos
                           </Label>
                           {deleteOption === 'force' && (
-                            <div className='text-sm text-red-600 pl-2'>
+                            <div className='text-xs text-red-600 pl-2'>
                               ¡Advertencia! Esta acción eliminará
                               permanentemente todos los productos asociados a
                               este proveedor.
@@ -218,7 +218,7 @@ const DeleteSupplierDialog = ({
                       <div className='flex items-start space-x-2'>
                         <RadioGroupItem value='cancel' id='cancel' />
                         <div className='grid gap-1.5 leading-none'>
-                          <Label htmlFor='cancel' className='font-medium'>
+                          <Label htmlFor='cancel' className='font-medium text-xs sm:text-sm'>
                             Cancelar y volver
                           </Label>
                         </div>
@@ -228,7 +228,7 @@ const DeleteSupplierDialog = ({
                 )}
 
                 {error && (
-                  <div className='border rounded-md p-2 bg-red-50 text-red-800'>
+                  <div className='border rounded-md p-2 bg-red-50 text-red-800 text-xs sm:text-sm'>
                     {error}
                   </div>
                 )}
@@ -237,16 +237,15 @@ const DeleteSupplierDialog = ({
           </div>
         </AlertDialogHeader>
 
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+        <AlertDialogFooter className='flex flex-col sm:flex-row gap-2 sm:gap-0 sm:space-x-2'>
+          <AlertDialogCancel className='w-full sm:w-auto h-9 sm:h-10'>Cancelar</AlertDialogCancel>
           {!isChecking && deleteOption !== 'cancel' && (
             <AlertDialogAction
               onClick={handleDelete}
-              className={`${
-                deleteOption === 'force'
-                  ? 'bg-red-700 hover:bg-red-800'
-                  : 'bg-red-600 hover:bg-red-700'
-              }`}
+              className={`w-full sm:w-auto h-9 sm:h-10 ${deleteOption === 'force'
+                ? 'bg-red-700 hover:bg-red-800'
+                : 'bg-red-600 hover:bg-red-700'
+                }`}
               disabled={isDeleting}
             >
               {isDeleting ? 'Eliminando...' : 'Eliminar'}

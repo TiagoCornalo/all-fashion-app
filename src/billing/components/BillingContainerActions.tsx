@@ -33,49 +33,55 @@ const BillingContainerActions = ({
 }) => {
   const { user } = useAuth()
   const isAdmin = user?.role === 'ADMIN'
+
   return (
-    <div className='flex gap-2'>
-      {/* Botón de transferencias pendientes */}
-      {isAdmin && <PendingTransfersPanel showAsDialog={true} />}
+    <div className='flex flex-col sm:flex-row gap-2 sm:gap-4'>
+      {/* Botón de transferencias pendientes - solo admin */}
+      {isAdmin && (
+        <div className='w-full sm:w-auto'>
+          <PendingTransfersPanel showAsDialog={true} />
+        </div>
+      )}
 
       {/* Menú principal de gestión de caja */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant='success'>
-            <MoreVertical />
-            <span>Gestionar caja</span>
+          <Button variant='success' className='w-full sm:w-auto'>
+            <MoreVertical className='sm:mr-0 mr-2' />
+            <span className='sm:hidden'>Gestionar caja</span>
+            <span className='hidden sm:inline'>Gestionar</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='start'>
+        <DropdownMenuContent align='start' className='w-56'>
           <DropdownMenuItem
             onSelect={() => setIsNewSaleOpen(true)}
-            className='cursor-pointer text-md'
+            className='cursor-pointer text-sm sm:text-md'
           >
-            <PlusCircle className='mr-2 h-5 w-5' /> Nueva Venta
+            <PlusCircle className='mr-2 h-4 w-4 sm:h-5 sm:w-5' /> Nueva Venta
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => setIsDepositOpen(true)}
-            className='cursor-pointer text-md'
+            className='cursor-pointer text-sm sm:text-md'
           >
-            <PiggyBank className='mr-2 h-5 w-5' /> Depósito
+            <PiggyBank className='mr-2 h-4 w-4 sm:h-5 sm:w-5' /> Depósito
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => setIsWithdrawalOpen(true)}
-            className='cursor-pointer text-md'
+            className='cursor-pointer text-sm sm:text-md'
           >
-            <DollarSign className='mr-2 h-5 w-5' /> Retiro
+            <DollarSign className='mr-2 h-4 w-4 sm:h-5 sm:w-5' /> Retiro
           </DropdownMenuItem>
           {isAdmin && <>
-            <DropdownMenuItem asChild className='cursor-pointer text-md'>
+            <DropdownMenuItem asChild className='cursor-pointer text-sm sm:text-md'>
               <Link to={`/cash-registers/${currentRegister._id}`}>
-                <Info className='mr-2 h-5 w-5' /> Detalles
+                <Info className='mr-2 h-4 w-4 sm:h-5 sm:w-5' /> Detalles
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => setIsCloseRegisterOpen(true)}
-              className='cursor-pointer text-md'
+              className='cursor-pointer text-sm sm:text-md'
             >
-              <XCircle className='mr-2 h-5 w-5' /> Cerrar Caja
+              <XCircle className='mr-2 h-4 w-4 sm:h-5 sm:w-5' /> Cerrar Caja
             </DropdownMenuItem>
           </>}
         </DropdownMenuContent>

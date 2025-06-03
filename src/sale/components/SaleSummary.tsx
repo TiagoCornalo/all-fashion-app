@@ -21,31 +21,31 @@ const SaleSummary = ({ subtotal, tax, total, promotion }: SaleSummaryProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Resumen</CardTitle>
+        <CardTitle className='text-base sm:text-lg'>Resumen</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className='space-y-3'>
-          <div className='flex justify-between'>
+        <div className='space-y-2 sm:space-y-3'>
+          <div className='flex justify-between text-sm sm:text-base'>
             <span className='text-gray-600'>Subtotal:</span>
             <span>{formatCurrency(subtotal)}</span>
           </div>
 
           {promotion && (
-            <div className='flex justify-between text-green-600'>
+            <div className='flex justify-between text-green-600 text-sm sm:text-base'>
               <span>Descuento global ({promotion.discountPercentage}%):</span>
               <span>-{formatCurrency(promotion.discountAmount)}</span>
             </div>
           )}
 
           {tax > 0 && (
-            <div className='flex justify-between'>
+            <div className='flex justify-between text-sm sm:text-base'>
               <span className='text-gray-600'>Impuestos:</span>
               <span>{formatCurrency(tax)}</span>
             </div>
           )}
 
           <Separator />
-          <div className='flex justify-between font-bold text-lg'>
+          <div className='flex justify-between font-bold text-lg sm:text-xl'>
             <span>Total:</span>
             <span>{formatCurrency(total)}</span>
           </div>

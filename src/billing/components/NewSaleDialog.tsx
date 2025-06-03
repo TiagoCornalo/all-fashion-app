@@ -120,11 +120,11 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
     switch (step) {
       case 1:
         return (
-          <>
+          <div className='space-y-4'>
             <ProductSelector />
             <ComboSelector />
             <PromotionApplier />
-          </>
+          </div>
         )
       case 2:
         return <PaymentForm />
@@ -132,20 +132,25 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
         return <InvoiceForm />
       case 4:
         return (
-          <>
+          <div className='space-y-4'>
             <SaleSummary />
-            <div className='flex justify-end space-x-2 mt-4'>
+            <div className='flex flex-col sm:flex-row justify-end gap-2 mt-4'>
               <Button
                 variant='outline'
                 onClick={() => handleCancel() && onOpenChange(false)}
+                className='w-full sm:w-auto order-2 sm:order-1'
               >
                 Cancelar
               </Button>
-              <Button onClick={handleSubmit} disabled={isSubmitting}>
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className='w-full sm:w-auto order-1 sm:order-2'
+              >
                 {isSubmitting ? 'Procesando...' : 'Finalizar Venta'}
               </Button>
             </div>
-          </>
+          </div>
         )
     }
   }
@@ -153,17 +158,17 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className='max-w-4xl max-h-[80vh] flex flex-col w-[90%]'>
+        <DialogContent className='w-[95vw] max-w-4xl max-h-[90vh] flex flex-col'>
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className='text-lg sm:text-xl'>
               {isMobile ? `${steps[step - 1].title} (${step}/4)` : 'Nueva Venta'}
             </DialogTitle>
           </DialogHeader>
 
-          <div className='space-y-6 overflow-y-auto'>
+          <div className='flex-1 flex flex-col min-h-0'>
             {/* Stepper - solo visible en desktop */}
             {!isMobile && (
-              <div className='flex justify-between items-center sticky top-0 bg-background z-10 py-2 w-full px-1'>
+              <div className='flex justify-between items-center sticky top-0 bg-background z-10 py-2 w-full px-1 border-b mb-4'>
                 {steps.map((s) => (
                   <div
                     key={s.id}
@@ -177,7 +182,7 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
                   >
                     <div
                       className={`
-                      min-w-[32px] min-h-[32px] rounded-full flex items-center justify-center border
+                      min-w-[32px] min-h-[32px] rounded-full flex items-center justify-center border text-sm
                       ${step >= s.id
                           ? 'border-primary bg-primary text-white'
                           : 'border-muted-foreground'
@@ -186,7 +191,7 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
                     >
                       {s.id}
                     </div>
-                    <span className='ml-2'>{s.title}</span>
+                    <span className='ml-2 text-sm'>{s.title}</span>
                     {s.id < steps.length && (
                       <div
                         className={`h-[2px] mx-4 flex-grow ${step > s.id ? 'bg-primary' : 'bg-muted-foreground'
@@ -199,20 +204,27 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
             )}
 
             {/* Content */}
-            {renderStepContent()}
+            <div className='flex-1 overflow-y-auto pb-4'>
+              {renderStepContent()}
+            </div>
           </div>
 
           {/* Navigation */}
           {step < 4 && (
-            <div className='flex justify-between mt-4 bottom-0 bg-background py-2'>
+            <div className='flex flex-col sm:flex-row justify-between gap-2 mt-4 pt-4 border-t bg-background'>
               <Button
                 variant='outline'
                 onClick={handleBack}
                 disabled={step === 1}
+                className='w-full sm:w-auto order-2 sm:order-1'
               >
                 Atrás
               </Button>
-              <Button onClick={handleNext} disabled={step === 1 && !hasSaleItems}>
+              <Button
+                onClick={handleNext}
+                disabled={step === 1 && !hasSaleItems}
+                className='w-full sm:w-auto order-1 sm:order-2'
+              >
                 Siguiente
               </Button>
             </div>

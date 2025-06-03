@@ -159,19 +159,19 @@ const AdminApprovalDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className='sm:max-w-[700px] max-h-[80vh] overflow-y-auto'>
+      <DialogContent className='w-[95vw] max-w-2xl sm:max-w-4xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
-          <DialogTitle className='flex items-center gap-2'>
-            <CheckCircle className='h-5 w-5 text-blue-600' />
+          <DialogTitle className='flex items-center gap-2 text-lg sm:text-xl'>
+            <CheckCircle className='h-4 w-4 sm:h-5 sm:w-5 text-blue-600' />
             Revisar Verificación de Pedido
           </DialogTitle>
         </DialogHeader>
 
-        <div className='space-y-6'>
+        <div className='space-y-4 sm:space-y-6'>
           {/* Información del pedido */}
-          <div className='p-4 bg-blue-50 rounded-lg'>
-            <h4 className='font-medium text-blue-800 mb-2'>Información del Pedido</h4>
-            <div className='grid grid-cols-2 gap-4 text-sm'>
+          <div className='p-3 sm:p-4 bg-blue-50 rounded-lg'>
+            <h4 className='font-medium text-blue-800 mb-2 text-sm sm:text-base'>Información del Pedido</h4>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm'>
               <div>
                 <span className='font-medium'>Proveedor:</span>
                 <div>{order.supplier.name}</div>
@@ -194,12 +194,12 @@ const AdminApprovalDialog = ({
           </div>
 
           {/* Información de la verificación del empleado */}
-          <div className='p-4 bg-yellow-50 rounded-lg'>
-            <h4 className='font-medium text-yellow-800 mb-2 flex items-center gap-2'>
-              <User className='h-4 w-4' />
+          <div className='p-3 sm:p-4 bg-yellow-50 rounded-lg'>
+            <h4 className='font-medium text-yellow-800 mb-2 flex items-center gap-2 text-sm sm:text-base'>
+              <User className='h-3 w-3 sm:h-4 sm:w-4' />
               Verificación del Empleado
             </h4>
-            <div className='space-y-2 text-sm'>
+            <div className='space-y-2 text-xs sm:text-sm'>
               <div>
                 <span className='font-medium'>Verificado por:</span>
                 <div>{order.employeeVerification.verifiedBy.name}</div>
@@ -221,11 +221,11 @@ const AdminApprovalDialog = ({
 
           {/* Discrepancias si las hay */}
           {order.employeeVerification.discrepancies && order.employeeVerification.discrepancies.length > 0 && (
-            <div className='p-4 bg-red-50 rounded-lg'>
-              <h4 className='font-medium text-red-800 mb-2'>Discrepancias Reportadas</h4>
+            <div className='p-3 sm:p-4 bg-red-50 rounded-lg'>
+              <h4 className='font-medium text-red-800 mb-2 text-sm sm:text-base'>Discrepancias Reportadas</h4>
               <div className='space-y-2'>
                 {order.employeeVerification.discrepancies.map((discrepancy, index) => (
-                  <div key={index} className='p-2 bg-white rounded border text-sm'>
+                  <div key={index} className='p-2 bg-white rounded border text-xs sm:text-sm'>
                     <div className='font-medium'>Producto ID: {discrepancy.productId}</div>
                     <div>Esperado: {discrepancy.expectedQuantity} | Recibido: {discrepancy.receivedQuantity}</div>
                     {discrepancy.notes && <div className='text-gray-600'>Notas: {discrepancy.notes}</div>}
@@ -237,18 +237,18 @@ const AdminApprovalDialog = ({
 
           {/* Productos del pedido */}
           <div>
-            <h4 className='font-medium mb-3 flex items-center gap-2'>
-              <Package className='h-4 w-4' />
+            <h4 className='font-medium mb-3 flex items-center gap-2 text-sm sm:text-base'>
+              <Package className='h-3 w-3 sm:h-4 sm:w-4' />
               Productos en el Pedido ({order.items.length})
             </h4>
-            <div className='max-h-40 overflow-y-auto space-y-2'>
+            <div className='max-h-32 sm:max-h-40 overflow-y-auto space-y-2'>
               {order.items.map((item) => (
-                <div key={item._id} className='flex justify-between items-center p-2 bg-gray-50 rounded text-sm'>
+                <div key={item._id} className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 p-2 bg-gray-50 rounded text-xs sm:text-sm'>
                   <div>
                     <div className='font-medium'>{item.product.name}</div>
                     <div className='text-gray-600'>Código: {item.product.code}</div>
                   </div>
-                  <div className='text-right'>
+                  <div className='text-left sm:text-right'>
                     <div className='font-medium'>Cantidad: {item.quantity}</div>
                     <div className='text-gray-600'>${item.product.price.toLocaleString()}</div>
                   </div>
@@ -258,37 +258,37 @@ const AdminApprovalDialog = ({
           </div>
 
           {/* Botones de acción */}
-          <div className='flex gap-4 p-4 bg-gray-50 rounded-lg'>
+          <div className='flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg'>
             <Button
               type='button'
               variant={selectedAction === true ? 'default' : 'outline'}
-              className={selectedAction === true ? 'bg-green-600 hover:bg-green-700' : 'border-green-600 text-green-600 hover:bg-green-50'}
+              className={`w-full sm:w-auto h-9 sm:h-10 ${selectedAction === true ? 'bg-green-600 hover:bg-green-700' : 'border-green-600 text-green-600 hover:bg-green-50'}`}
               onClick={handleApprove}
             >
-              <CheckCircle className='h-4 w-4 mr-2' />
-              Aprobar Verificación
+              <CheckCircle className='h-3 w-3 sm:h-4 sm:w-4 mr-2' />
+              <span className='text-xs sm:text-sm'>Aprobar Verificación</span>
             </Button>
             <Button
               type='button'
               variant={selectedAction === false ? 'default' : 'outline'}
-              className={selectedAction === false ? 'bg-red-600 hover:bg-red-700' : 'border-red-600 text-red-600 hover:bg-red-50'}
+              className={`w-full sm:w-auto h-9 sm:h-10 ${selectedAction === false ? 'bg-red-600 hover:bg-red-700' : 'border-red-600 text-red-600 hover:bg-red-50'}`}
               onClick={handleReject}
             >
-              <XCircle className='h-4 w-4 mr-2' />
-              Rechazar Verificación
+              <XCircle className='h-3 w-3 sm:h-4 sm:w-4 mr-2' />
+              <span className='text-xs sm:text-sm'>Rechazar Verificación</span>
             </Button>
           </div>
 
           {/* Formulario para notas del admin */}
           {selectedAction !== null && (
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+              <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-3 sm:space-y-4'>
                 <FormField
                   control={form.control}
                   name='adminNotes'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
+                      <FormLabel className='text-sm sm:text-base'>
                         Notas del Administrador {selectedAction === false && '(requeridas para rechazo)'}
                       </FormLabel>
                       <FormControl>
@@ -297,7 +297,7 @@ const AdminApprovalDialog = ({
                             ? 'Agregar notas sobre la aprobación (opcional)...'
                             : 'Explicar por qué se rechaza la verificación...'
                           }
-                          className='resize-none'
+                          className='resize-none text-sm'
                           rows={3}
                           {...field}
                         />
@@ -313,13 +313,14 @@ const AdminApprovalDialog = ({
                     variant='outline'
                     onClick={() => handleOpenChange(false)}
                     disabled={isSubmitting}
+                    className='w-full sm:w-auto h-9 sm:h-10'
                   >
                     Cancelar
                   </Button>
                   <Button
                     type='submit'
                     disabled={isSubmitting}
-                    className={selectedAction ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
+                    className={`w-full sm:w-auto h-9 sm:h-10 ${selectedAction ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
                   >
                     {isSubmitting
                       ? 'Procesando...'

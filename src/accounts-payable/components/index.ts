@@ -1,4 +1,4 @@
-export { AccountsDashboard } from './dashboard'
-export { AccountsTable } from './accounts-table'
-export { CreateAccountForm } from './forms'
-export { AccountReports } from './reports'
+export * from './accounts-table'
+export * from './dashboard'
+export * from './forms'
+export * from './reports'

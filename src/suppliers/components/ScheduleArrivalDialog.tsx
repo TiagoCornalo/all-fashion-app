@@ -132,30 +132,30 @@ const ScheduleArrivalDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className='sm:max-w-[500px]'>
+      <DialogContent className='w-[95vw] max-w-md sm:max-w-lg'>
         <DialogHeader>
-          <DialogTitle className='flex items-center gap-2'>
-            <Truck className='h-5 w-5 text-blue-600' />
+          <DialogTitle className='flex items-center gap-2 text-lg sm:text-xl'>
+            <Truck className='h-4 w-4 sm:h-5 sm:w-5 text-blue-600' />
             Programar Llegada del Pedido
           </DialogTitle>
         </DialogHeader>
 
-        <div className='mb-4 p-3 bg-blue-50 rounded-lg'>
-          <h4 className='font-medium text-blue-800 mb-1'>Pedido de {order.supplier.name}</h4>
-          <p className='text-sm text-blue-600'>
+        <div className='mb-3 sm:mb-4 p-3 bg-blue-50 rounded-lg'>
+          <h4 className='font-medium text-blue-800 mb-1 text-sm sm:text-base'>Pedido de {order.supplier.name}</h4>
+          <p className='text-xs sm:text-sm text-blue-600'>
             {order.totalQuantity} productos • Estado: {RECEPTION_STATUS[order.status as keyof typeof RECEPTION_STATUS]}
           </p>
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-3 sm:space-y-4'>
             <FormField
               control={form.control}
               name='scheduledDate'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='flex items-center gap-2'>
-                    <Calendar className='h-4 w-4' />
+                  <FormLabel className='flex items-center gap-2 text-sm sm:text-base'>
+                    <Calendar className='h-3 w-3 sm:h-4 sm:w-4' />
                     Fecha de Llegada Programada
                   </FormLabel>
                   <FormControl>
@@ -164,9 +164,9 @@ const ScheduleArrivalDialog = ({
                         <PopoverTrigger asChild>
                           <Button
                             variant='outline'
-                            className='w-full justify-start text-left font-normal'
+                            className='w-full justify-start text-left font-normal h-9 sm:h-10 text-xs sm:text-sm'
                           >
-                            <Calendar className='mr-2 h-4 w-4' />
+                            <Calendar className='mr-2 h-3 w-3 sm:h-4 sm:w-4' />
                             {field.value ? (
                               field.value.toLocaleDateString('es-ES')
                             ) : (
@@ -207,11 +207,11 @@ const ScheduleArrivalDialog = ({
               name='notes'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notas adicionales (opcional)</FormLabel>
+                  <FormLabel className='text-sm sm:text-base'>Notas adicionales (opcional)</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder='Agregar notas sobre la llegada del pedido...'
-                      className='resize-none'
+                      className='resize-none text-sm'
                       rows={3}
                       {...field}
                     />
@@ -227,10 +227,11 @@ const ScheduleArrivalDialog = ({
                 variant='outline'
                 onClick={() => handleOpenChange(false)}
                 disabled={isSubmitting}
+                className='w-full sm:w-auto h-9 sm:h-10'
               >
                 Cancelar
               </Button>
-              <Button type='submit' disabled={isSubmitting}>
+              <Button type='submit' disabled={isSubmitting} className='w-full sm:w-auto h-9 sm:h-10'>
                 {isSubmitting ? 'Programando...' : 'Programar Llegada'}
               </Button>
             </DialogFooter>

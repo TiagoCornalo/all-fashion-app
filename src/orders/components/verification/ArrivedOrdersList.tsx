@@ -85,66 +85,72 @@ const ArrivedOrdersList = () => {
       {/* Header con información */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            Pedidos para Verificar Cantidades
-            <Badge variant="secondary" className="ml-auto">
+          <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="flex items-center gap-2">
+              <Package className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="text-base sm:text-lg">Pedidos para Verificar Cantidades</span>
+            </div>
+            <Badge variant="secondary" className="ml-0 sm:ml-auto w-fit">
               {orders.length} pedido{orders.length !== 1 ? 's' : ''}
             </Badge>
           </CardTitle>
-          <p className="text-sm text-gray-600">
+          <p className="text-xs sm:text-sm text-gray-600">
             Estos pedidos llegaron físicamente y necesitan verificación de cantidades
           </p>
         </CardHeader>
       </Card>
 
       {/* Lista de pedidos */}
-      <div className="grid gap-4">
+      <div className="grid gap-3 sm:gap-4">
         {orders.map((order) => (
           <Card key={order._id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
+            <CardContent className="p-3 sm:p-6">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Package className="h-5 w-5 text-green-600" />
-                    <h3 className="font-semibold text-lg">{order.supplier.name}</h3>
-                    <Badge variant="outline" className="bg-green-50 text-green-700">
-                      {RECEPTION_STATUS[order.receptionStatus as keyof typeof RECEPTION_STATUS]}
-                    </Badge>
-                    {order.employeeVerification?.verifiedBy && (
-                      <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
-                        Ya verificado
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                      <h3 className="font-semibold text-base sm:text-lg">{order.supplier.name}</h3>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline" className="bg-green-50 text-green-700 text-xs">
+                        {RECEPTION_STATUS[order.receptionStatus as keyof typeof RECEPTION_STATUS]}
                       </Badge>
-                    )}
+                      {order.employeeVerification?.verifiedBy && (
+                        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 text-xs">
+                          Ya verificado
+                        </Badge>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
                     <div>
-                      <p className="text-sm font-medium text-gray-700">Llegó el:</p>
-                      <p className="text-gray-900">
+                      <p className="text-xs sm:text-sm font-medium text-gray-700">Llegó el:</p>
+                      <p className="text-sm sm:text-base text-gray-900">
                         {formatDateTime(order.actualArrivalDate)}
                       </p>
                     </div>
 
                     {canApprove && (
                       <div>
-                        <p className="text-sm font-medium text-gray-700">Confirmado por:</p>
-                        <p className="text-gray-900 flex items-center gap-1">
-                          <User className="h-4 w-4" />
+                        <p className="text-xs sm:text-sm font-medium text-gray-700">Confirmado por:</p>
+                        <p className="text-sm sm:text-base text-gray-900 flex items-center gap-1">
+                          <User className="h-3 w-3 sm:h-4 sm:w-4" />
                           {order.confirmedArrivalBy.name}
                         </p>
                       </div>
                     )}
 
                     <div>
-                      <p className="text-sm font-medium text-gray-700">Productos:</p>
-                      <p className="text-gray-900">{order.items.length} artículos</p>
+                      <p className="text-xs sm:text-sm font-medium text-gray-700">Productos:</p>
+                      <p className="text-sm sm:text-base text-gray-900">{order.items.length} artículos</p>
                     </div>
 
                     {order?.totalValue && (
                       <div>
-                        <p className="text-sm font-medium text-gray-700">Valor Total:</p>
-                        <p className="text-gray-900 font-semibold">
+                        <p className="text-xs sm:text-sm font-medium text-gray-700">Valor Total:</p>
+                        <p className="text-sm sm:text-base text-gray-900 font-semibold">
                           ${order.totalValue?.toLocaleString()}
                         </p>
                       </div>
@@ -153,10 +159,10 @@ const ArrivedOrdersList = () => {
 
                   {/* Lista de productos */}
                   <div className="mb-4">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Productos a verificar:</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-700 mb-2">Productos a verificar:</p>
                     <div className="space-y-1">
                       {order.items.slice(0, 3).map((item, index) => (
-                        <div key={index} className="flex justify-between text-sm">
+                        <div key={index} className="flex flex-col sm:flex-row sm:justify-between gap-1 text-xs sm:text-sm">
                           <span className="text-gray-600">
                             {item.product.name} ({item.product.code})
                           </span>
@@ -164,37 +170,25 @@ const ArrivedOrdersList = () => {
                         </div>
                       ))}
                       {order.items.length > 3 && (
-                        <p className="text-sm text-gray-500">
+                        <p className="text-xs sm:text-sm text-gray-500">
                           +{order.items.length - 3} productos más...
                         </p>
                       )}
                     </div>
                   </div>
-
-                  {/* Información de verificación si existe */}
-                  {order?.adminApproval && !order?.adminApproval?.approved && (
-                    <div className="p-3 bg-yellow-50 rounded-lg">
-                      <p className="text-sm font-medium text-yellow-800 mb-1">
-                        Estado de Verificación:
-                      </p>
-                      <div className="text-sm text-yellow-700">
-
-                        <p>
-                          Notas del administrador: {order.adminApproval.adminNotes}
-                        </p>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
-                <div className="ml-4">
+                <div className="lg:ml-4 flex justify-end lg:justify-start">
                   <Button
                     onClick={() => handleVerifyOrder(order._id)}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 w-full sm:w-auto"
                     variant={order.employeeVerification ? "outline" : "default"}
+                    size="sm"
                   >
-                    <Eye className="h-4 w-4" />
-                    {order.employeeVerification ? 'Ver Verificación' : 'Verificar Cantidades'}
+                    <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="text-xs sm:text-sm">
+                      {order.employeeVerification ? 'Ver Verificación' : 'Verificar Cantidades'}
+                    </span>
                   </Button>
                 </div>
               </div>

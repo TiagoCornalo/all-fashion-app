@@ -25,8 +25,8 @@ const SaleProducts = ({ items, itemPromotions }: SaleProductsProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='flex items-center'>
-          <ShoppingBag className='mr-2 h-5 w-5' />
+        <CardTitle className='flex items-center text-base sm:text-lg'>
+          <ShoppingBag className='mr-2 h-4 w-4 sm:h-5 sm:w-5' />
           Productos
         </CardTitle>
       </CardHeader>
@@ -35,12 +35,12 @@ const SaleProducts = ({ items, itemPromotions }: SaleProductsProps) => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Código</TableHead>
-                <TableHead>Producto</TableHead>
-                <TableHead className='text-right'>Cantidad</TableHead>
-                <TableHead className='text-right'>Precio Original</TableHead>
-                <TableHead className='text-right'>Precio Final</TableHead>
-                <TableHead className='text-right'>Subtotal</TableHead>
+                <TableHead className='text-xs sm:text-sm'>Código</TableHead>
+                <TableHead className='text-xs sm:text-sm'>Producto</TableHead>
+                <TableHead className='text-right text-xs sm:text-sm'>Cantidad</TableHead>
+                <TableHead className='text-right text-xs sm:text-sm'>Precio Original</TableHead>
+                <TableHead className='text-right text-xs sm:text-sm'>Precio Final</TableHead>
+                <TableHead className='text-right text-xs sm:text-sm'>Subtotal</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -50,31 +50,33 @@ const SaleProducts = ({ items, itemPromotions }: SaleProductsProps) => {
                 )
                 const itemPromotion = hasItemPromotion
                   ? itemPromotions?.find(
-                      (p) => p.productId === item.product._id
-                    )
+                    (p) => p.productId === item.product._id
+                  )
                   : null
 
                 return (
                   <TableRow key={item._id}>
-                    <TableCell className='font-medium'>
+                    <TableCell className='font-medium text-xs sm:text-sm'>
                       {item.product.code}
                     </TableCell>
-                    <TableCell>
-                      {item.product.name}
-                      {hasItemPromotion && (
-                        <Badge
-                          variant='outline'
-                          className='ml-2 bg-green-50 text-green-700 border-green-200'
-                        >
-                          {itemPromotion?.code || 'Descuento'} (
-                          {itemPromotion?.discountPercentage}%)
-                        </Badge>
-                      )}
+                    <TableCell className='text-xs sm:text-sm'>
+                      <div className='min-w-0'>
+                        <div className='truncate'>{item.product.name}</div>
+                        {hasItemPromotion && (
+                          <Badge
+                            variant='outline'
+                            className='mt-1 bg-green-50 text-green-700 border-green-200 text-xs'
+                          >
+                            {itemPromotion?.code || 'Descuento'} (
+                            {itemPromotion?.discountPercentage}%)
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
-                    <TableCell className='text-right'>
+                    <TableCell className='text-right text-xs sm:text-sm'>
                       {item.quantity}
                     </TableCell>
-                    <TableCell className='text-right'>
+                    <TableCell className='text-right text-xs sm:text-sm'>
                       {hasItemPromotion ? (
                         <span className='line-through text-gray-500'>
                           {formatCurrency(
@@ -85,10 +87,10 @@ const SaleProducts = ({ items, itemPromotions }: SaleProductsProps) => {
                         formatCurrency(item.product.price)
                       )}
                     </TableCell>
-                    <TableCell className='text-right'>
+                    <TableCell className='text-right text-xs sm:text-sm'>
                       {formatCurrency(item.price)}
                     </TableCell>
-                    <TableCell className='text-right'>
+                    <TableCell className='text-right text-xs sm:text-sm font-medium'>
                       {formatCurrency(item.subtotal)}
                     </TableCell>
                   </TableRow>

@@ -249,37 +249,37 @@ export const SaleAccountsPayable = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CreditCard className="h-5 w-5" />
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
           Cuenta Corriente
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-xs sm:text-sm text-gray-600 mb-4">
           Registrar esta venta en una cuenta corriente existente o crear una nueva
         </p>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="w-full">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button className="w-full text-xs sm:text-sm">
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               Cargar a Cuenta Corriente
             </Button>
           </DialogTrigger>
 
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Cargar Venta a Cuenta Corriente</DialogTitle>
+          <DialogContent className="w-[95vw] max-w-xl sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogHeader className="flex-shrink-0">
+              <DialogTitle className="text-base sm:text-lg">Cargar Venta a Cuenta Corriente</DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-6">
+            <div className="flex-1 overflow-auto space-y-4 sm:space-y-6">
               {/* Información de la venta */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-sm">Información de la Venta</CardTitle>
+                  <CardTitle className="text-sm sm:text-base">Información de la Venta</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-2">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
                     <div>
                       <span className="font-medium">Total:</span> ${saleTotal.toLocaleString()}
                     </div>
@@ -287,7 +287,7 @@ export const SaleAccountsPayable = ({
                       <span className="font-medium">Productos:</span> {saleItems.length}
                     </div>
                     {invoice?.number && (
-                      <div className="col-span-2">
+                      <div className="col-span-1 sm:col-span-2">
                         <span className="font-medium">Factura:</span> {invoice.type} {invoice.number}
                       </div>
                     )}
@@ -299,14 +299,14 @@ export const SaleAccountsPayable = ({
               {!showCreateAccount && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Search className="h-4 w-4" />
+                    <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                      <Search className="h-3 w-3 sm:h-4 sm:w-4" />
                       Buscar Cuenta Existente
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3 sm:space-y-4">
                     <Form {...searchForm}>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <FormField
                           control={searchForm.control}
                           name="documentNumber"
@@ -315,6 +315,7 @@ export const SaleAccountsPayable = ({
                               <FormControl>
                                 <Input
                                   placeholder="Número de documento (DNI/CUIT)"
+                                  className="text-sm"
                                   {...field}
                                 />
                               </FormControl>
@@ -325,11 +326,12 @@ export const SaleAccountsPayable = ({
                           type="button"
                           onClick={handleSearchAccount}
                           disabled={isSearching}
+                          className="w-full sm:w-auto text-xs sm:text-sm"
                         >
                           {isSearching ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                           ) : (
-                            <Search className="h-4 w-4" />
+                            <Search className="h-3 w-3 sm:h-4 sm:w-4" />
                           )}
                         </Button>
                       </div>
@@ -337,13 +339,13 @@ export const SaleAccountsPayable = ({
 
                     {foundAccount && (
                       <div className="border rounded-lg p-3 bg-green-50">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium">{foundAccount.customer.name}</h4>
-                            <p className="text-sm text-gray-600">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm sm:text-base truncate">{foundAccount.customer.name}</h4>
+                            <p className="text-xs sm:text-sm text-gray-600">
                               {foundAccount.customer.documentType}: {foundAccount.customer.documentNumber}
                             </p>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-xs sm:text-sm text-gray-600">
                               Balance: ${foundAccount.currentBalance.toLocaleString()}
                             </p>
                           </div>
@@ -351,6 +353,7 @@ export const SaleAccountsPayable = ({
                             size="sm"
                             onClick={() => handleSelectAccount(foundAccount._id)}
                             variant={selectedAccountId === foundAccount._id ? "default" : "outline"}
+                            className="w-full sm:w-auto text-xs sm:text-sm flex-shrink-0"
                           >
                             {selectedAccountId === foundAccount._id ? 'Seleccionada' : 'Seleccionar'}
                           </Button>
@@ -363,8 +366,9 @@ export const SaleAccountsPayable = ({
                         type="button"
                         variant="outline"
                         onClick={handleCreateNewAccount}
+                        className="w-full sm:w-auto text-xs sm:text-sm"
                       >
-                        <Plus className="h-4 w-4 mr-2" />
+                        <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                         Crear Nueva Cuenta
                       </Button>
                     </div>
@@ -376,14 +380,14 @@ export const SaleAccountsPayable = ({
               {showCreateAccount && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <User className="h-4 w-4" />
+                    <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                      <User className="h-3 w-3 sm:h-4 sm:w-4" />
                       Crear Nueva Cuenta
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Form {...createForm}>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
                         {/* Campos del formulario de crear cuenta */}
                         <FormField
                           control={createForm.control}
@@ -391,9 +395,9 @@ export const SaleAccountsPayable = ({
                           rules={{ required: "El nombre es requerido" }}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Nombre del Cliente *</FormLabel>
+                              <FormLabel className="text-xs sm:text-sm">Nombre del Cliente *</FormLabel>
                               <FormControl>
-                                <Input {...field} />
+                                <Input {...field} className="text-sm" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -405,10 +409,10 @@ export const SaleAccountsPayable = ({
                           name="documentType"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Tipo de Documento *</FormLabel>
+                              <FormLabel className="text-xs sm:text-sm">Tipo de Documento *</FormLabel>
                               <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
-                                  <SelectTrigger>
+                                  <SelectTrigger className="text-sm">
                                     <SelectValue />
                                   </SelectTrigger>
                                 </FormControl>
@@ -428,9 +432,9 @@ export const SaleAccountsPayable = ({
                           rules={{ required: "El documento es requerido" }}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Número de Documento *</FormLabel>
+                              <FormLabel className="text-xs sm:text-sm">Número de Documento *</FormLabel>
                               <FormControl>
-                                <Input {...field} />
+                                <Input {...field} className="text-sm" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -442,10 +446,11 @@ export const SaleAccountsPayable = ({
                           name="creditLimit"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Límite de Crédito</FormLabel>
+                              <FormLabel className="text-xs sm:text-sm">Límite de Crédito</FormLabel>
                               <FormControl>
                                 <Input
                                   type="number"
+                                  className="text-sm"
                                   {...field}
                                   value={field.value || ''}
                                   onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
@@ -462,6 +467,7 @@ export const SaleAccountsPayable = ({
                           type="button"
                           variant="outline"
                           onClick={() => setShowCreateAccount(false)}
+                          className="w-full sm:w-auto text-xs sm:text-sm"
                         >
                           Cancelar
                         </Button>
@@ -470,22 +476,27 @@ export const SaleAccountsPayable = ({
                   </CardContent>
                 </Card>
               )}
+            </div>
 
-              {/* Botón de acción */}
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleRegisterSale}
-                  disabled={registerSaleMutation.isPending}
-                >
-                  {registerSaleMutation.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Registrar Venta
-                </Button>
-              </div>
+            {/* Botón de acción */}
+            <div className="flex-shrink-0 flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={() => setIsDialogOpen(false)}
+                className="w-full sm:w-auto order-2 sm:order-1 text-xs sm:text-sm"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleRegisterSale}
+                disabled={registerSaleMutation.isPending}
+                className="w-full sm:w-auto order-1 sm:order-2 text-xs sm:text-sm"
+              >
+                {registerSaleMutation.isPending && (
+                  <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                )}
+                Registrar Venta
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

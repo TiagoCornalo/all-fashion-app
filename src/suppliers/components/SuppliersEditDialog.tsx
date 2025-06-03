@@ -108,24 +108,24 @@ const SuppliersEditDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[500px]'>
+      <DialogContent className='w-[95vw] max-w-md sm:max-w-lg'>
         <DialogHeader>
-          <DialogTitle>Editar Proveedor</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className='text-lg sm:text-xl'>Editar Proveedor</DialogTitle>
+          <DialogDescription className='text-sm sm:text-base'>
             Modifique la información del proveedor
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-3 sm:space-y-4'>
             <FormField
               control={form.control}
               name='name'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nombre</FormLabel>
+                  <FormLabel className='text-sm sm:text-base'>Nombre</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} className='h-9 sm:h-10' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -137,9 +137,9 @@ const SuppliersEditDialog = ({
               name='contact.email'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className='text-sm sm:text-base'>Email</FormLabel>
                   <FormControl>
-                    <Input type='email' {...field} />
+                    <Input type='email' {...field} className='h-9 sm:h-10' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -151,9 +151,9 @@ const SuppliersEditDialog = ({
               name='contact.phone'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Teléfono</FormLabel>
+                  <FormLabel className='text-sm sm:text-base'>Teléfono</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} className='h-9 sm:h-10' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -165,10 +165,11 @@ const SuppliersEditDialog = ({
                 variant='outline'
                 onClick={() => onOpenChange(false)}
                 type='button'
+                className='w-full sm:w-auto h-9 sm:h-10'
               >
                 Cancelar
               </Button>
-              <Button type='submit' disabled={isSubmitting}>
+              <Button type='submit' disabled={isSubmitting} className='w-full sm:w-auto h-9 sm:h-10'>
                 {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
               </Button>
             </DialogFooter>

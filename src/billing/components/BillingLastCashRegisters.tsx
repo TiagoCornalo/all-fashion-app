@@ -47,7 +47,7 @@ const columns: ColumnDef<CashRegister>[] = [
     ),
     accessorKey: 'date',
     cell: ({ row }) => {
-      return <div>{formatDateTime(new Date(row.original.date))}</div>
+      return <div className='text-xs sm:text-sm'>{formatDateTime(new Date(row.original.date))}</div>
     }
   },
   {
@@ -63,9 +63,9 @@ const columns: ColumnDef<CashRegister>[] = [
       return (
         <div>
           {row.original.status === 'OPEN' ? (
-            <Badge variant='success'>Abierta</Badge>
+            <Badge variant='success' className='text-xs'>Abierta</Badge>
           ) : (
-            <Badge variant='error'>Cerrada</Badge>
+            <Badge variant='error' className='text-xs'>Cerrada</Badge>
           )}
         </div>
       )
@@ -81,7 +81,7 @@ const columns: ColumnDef<CashRegister>[] = [
     ),
     accessorKey: 'initialBalance',
     cell: ({ row }) => {
-      return <div>{row.original.initialBalance}</div>
+      return <div className='text-xs sm:text-sm'>{row.original.initialBalance}</div>
     }
   },
   {
@@ -94,21 +94,21 @@ const columns: ColumnDef<CashRegister>[] = [
     ),
     accessorKey: 'currentBalance',
     cell: ({ row }) => {
-      return <div>{row.original.currentBalance}</div>
+      return <div className='text-xs sm:text-sm'>{row.original.currentBalance}</div>
     }
   },
   {
     header: 'Cerrada por',
     accessorKey: 'closedBy',
     cell: ({ row }) => {
-      return <div>{row.original.closedBy?.name}</div>
+      return <div className='text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none'>{row.original.closedBy?.name}</div>
     }
   },
   {
     header: 'Abierta por',
     accessorKey: 'openedBy',
     cell: ({ row }) => {
-      return <div>{row.original.openedBy?.name}</div>
+      return <div className='text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none'>{row.original.openedBy?.name}</div>
     }
   },
   {
@@ -120,8 +120,8 @@ const columns: ColumnDef<CashRegister>[] = [
           <Tooltip>
             <TooltipTrigger asChild className='cursor-pointer'>
               <Link to={`/cash-registers/${row.original._id}`}>
-                <Button variant='outline' size='sm'>
-                  <Eye className='h-4 w-4' />
+                <Button variant='outline' size='sm' className='h-6 w-6 sm:h-8 sm:w-8 p-0'>
+                  <Eye className='h-3 w-3 sm:h-4 sm:w-4' />
                 </Button>
               </Link>
             </TooltipTrigger>
@@ -147,7 +147,7 @@ const BillingLastCashRegisters = ({
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [pageSize, setPageSize] = useState(5)
+  const [pageSize] = useState(5)
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'date', desc: true }
   ])
@@ -211,65 +211,67 @@ const BillingLastCashRegisters = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-[90vw] max-h-[90vh] overflow-y-auto'>
+      <DialogContent className='w-[95vw] max-w-[90vw] max-h-[90vh] flex flex-col'>
         <DialogHeader>
-          <DialogTitle>Últimas cajas</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className='text-lg sm:text-xl'>Últimas cajas</DialogTitle>
+          <DialogDescription className='text-sm sm:text-base'>
             Aquí puedes ver las últimas cajas
           </DialogDescription>
         </DialogHeader>
-        <div className='space-y-4'>
-          <div className='rounded-md border'>
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
+        <div className='flex-1 flex flex-col min-h-0 space-y-4'>
+          <div className='flex-1 border rounded-md overflow-hidden'>
+            <div className='overflow-auto max-h-[60vh]'>
+              <Table>
+                <TableHeader className='sticky top-0 bg-background'>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id} className='text-xs sm:text-sm'>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
                               header.column.columnDef.header,
                               header.getContext()
                             )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length > 0 ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && 'selected'}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
+                        </TableHead>
                       ))}
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns?.length || 0}
-                      className='h-24 text-center'
-                    >
-                      {loading
-                        ? 'Cargando...'
-                        : error
-                        ? error
-                        : 'No hay ventas registradas.'}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows?.length > 0 ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && 'selected'}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id} className='py-2 sm:py-3'>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns?.length || 0}
+                        className='h-24 text-center text-sm'
+                      >
+                        {loading
+                          ? 'Cargando...'
+                          : error
+                            ? error
+                            : 'No hay cajas registradas.'}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
           <DataTablePagination
             currentPage={currentPage}

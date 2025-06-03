@@ -148,38 +148,38 @@ const SupplierDetailContainer = () => {
       allowedRoles={['ADMIN', 'SELLER', 'MANAGER']}
       showGoBackButton={true}
     >
-      <section className='p-4'>
-        <div className='flex items-center gap-2 mb-4'>
+      <section className='p-2 sm:p-4'>
+        <div className='flex flex-col sm:flex-row sm:items-center gap-2 mb-4'>
           {/* @ts-ignore */}
-          <HandShake className='h-6 w-6' />
-          <h1 className='text-2xl font-bold'>{supplier.name}</h1>
+          <HandShake className='h-5 w-5 sm:h-6 sm:w-6' />
+          <h1 className='text-xl sm:text-2xl font-bold text-center sm:text-left'>{supplier.name}</h1>
         </div>
 
         {/* Información del proveedor */}
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
-          <div className='bg-white p-4 rounded-lg shadow'>
-            <h2 className='text-lg font-semibold mb-3'>
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6'>
+          <div className='bg-white p-3 sm:p-4 rounded-lg shadow'>
+            <h2 className='text-base sm:text-lg font-semibold mb-2 sm:mb-3'>
               Información de Contacto
             </h2>
-            <div className='space-y-2'>
-              <p>
+            <div className='space-y-1 sm:space-y-2'>
+              <p className='text-sm sm:text-base'>
                 <span className='font-medium'>Email:</span>{' '}
                 {supplier.contact.email}
               </p>
-              <p>
+              <p className='text-sm sm:text-base'>
                 <span className='font-medium'>Teléfono:</span>{' '}
                 {supplier.contact.phone}
               </p>
             </div>
           </div>
-          <div className='bg-white p-4 rounded-lg shadow'>
-            <h2 className='text-lg font-semibold mb-3'>Detalles Adicionales</h2>
-            <div className='space-y-2'>
-              <p>
+          <div className='bg-white p-3 sm:p-4 rounded-lg shadow'>
+            <h2 className='text-base sm:text-lg font-semibold mb-2 sm:mb-3'>Detalles Adicionales</h2>
+            <div className='space-y-1 sm:space-y-2'>
+              <p className='text-sm sm:text-base'>
                 <span className='font-medium'>Fecha de registro:</span>{' '}
                 {formatDate(supplier.createdAt)}
               </p>
-              <p>
+              <p className='text-sm sm:text-base'>
                 <span className='font-medium'>ID:</span> {supplier._id}
               </p>
             </div>
@@ -188,15 +188,15 @@ const SupplierDetailContainer = () => {
 
         {/* Tabs para productos, órdenes y transferencias */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className='mb-4'>
-            <TabsTrigger value='products'>Productos</TabsTrigger>
-            <TabsTrigger value='orders'>Pedidos</TabsTrigger>
-            <TabsTrigger value='transfers'>
+          <TabsList className='mb-4 sm:mb-6 grid w-full grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-0 h-auto p-1 sm:p-1'>
+            <TabsTrigger value='products' className='text-xs sm:text-sm h-10 w-full justify-center'>Productos</TabsTrigger>
+            <TabsTrigger value='orders' className='text-xs sm:text-sm h-10 w-full justify-center'>Pedidos</TabsTrigger>
+            <TabsTrigger value='transfers' className='text-xs sm:text-sm h-10 w-full justify-center'>
               Transferencias
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value='products'>
+          <TabsContent value='products' className='mt-4'>
             <SupplierDetailProductsTable
               supplierId={id || ''}
               onEditProduct={handleEditProduct}
@@ -204,7 +204,7 @@ const SupplierDetailContainer = () => {
             />
           </TabsContent>
 
-          <TabsContent value='orders'>
+          <TabsContent value='orders' className='mt-4'>
             <SupplierDetailOrdersTable
               supplierId={id || ''}
               onEditOrder={handleEditOrder}
@@ -212,7 +212,7 @@ const SupplierDetailContainer = () => {
             />
           </TabsContent>
 
-          <TabsContent value='transfers'>
+          <TabsContent value='transfers' className='mt-4'>
             <SupplierDetailTransfersTable
               supplierId={id || ''}
             />

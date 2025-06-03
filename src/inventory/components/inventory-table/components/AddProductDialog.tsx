@@ -87,54 +87,103 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[500px]'>
+      <DialogContent className='w-[96vw] max-w-md sm:max-w-lg lg:max-w-xl max-h-[90vh] flex flex-col'>
         <DialogHeader>
-          <DialogTitle>Agregar Producto</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className='text-lg sm:text-xl'>Agregar Producto</DialogTitle>
+          <DialogDescription className='text-sm sm:text-base'>
             Complete la información del nuevo producto
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
-            <FormField
-              control={form.control}
-              name='code'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Código</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name='name'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className='grid grid-cols-2 gap-4'>
+        <div className='flex-1 overflow-y-auto'>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-3 sm:space-y-4'>
               <FormField
                 control={form.control}
-                name='stock'
+                name='code'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Stock</FormLabel>
+                    <FormLabel className='text-sm sm:text-base'>Código</FormLabel>
+                    <FormControl>
+                      <Input {...field} className='h-9 sm:h-10' />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='name'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='text-sm sm:text-base'>Nombre</FormLabel>
+                    <FormControl>
+                      <Input {...field} className='h-9 sm:h-10' />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4'>
+                <FormField
+                  control={form.control}
+                  name='stock'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className='text-sm sm:text-base'>Stock</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          {...field}
+                          className='h-9 sm:h-10'
+                          onChange={(e) => {
+                            const value =
+                              e.target.value === '' ? '' : Number(e.target.value)
+                            field.onChange(value)
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='stockMinimum'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className='text-sm sm:text-base'>Stock Mínimo</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          {...field}
+                          className='h-9 sm:h-10'
+                          onChange={(e) => {
+                            const value =
+                              e.target.value === '' ? '' : Number(e.target.value)
+                            field.onChange(value)
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name='price'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='text-sm sm:text-base'>Precio</FormLabel>
                     <FormControl>
                       <Input
                         type='number'
                         {...field}
+                        className='h-9 sm:h-10'
                         onChange={(e) => {
                           const value =
                             e.target.value === '' ? '' : Number(e.target.value)
@@ -149,80 +198,41 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
 
               <FormField
                 control={form.control}
-                name='stockMinimum'
+                name='supplierId'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Stock Mínimo</FormLabel>
+                    <FormLabel className='text-sm sm:text-base'>Proveedor</FormLabel>
                     <FormControl>
-                      <Input
-                        type='number'
-                        {...field}
-                        onChange={(e) => {
-                          const value =
-                            e.target.value === '' ? '' : Number(e.target.value)
-                          field.onChange(value)
-                        }}
+                      <ComboboxSuppliers
+                        value={field.value}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
 
-            <FormField
-              control={form.control}
-              name='price'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Precio</FormLabel>
-                  <FormControl>
-                    <Input
-                      type='number'
-                      {...field}
-                      onChange={(e) => {
-                        const value =
-                          e.target.value === '' ? '' : Number(e.target.value)
-                        field.onChange(value)
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name='supplierId'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Proveedor</FormLabel>
-                  <FormControl>
-                    <ComboboxSuppliers
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button
-                variant='outline'
-                onClick={() => onOpenChange(false)}
-                type='button'
-              >
-                Cancelar
-              </Button>
-              <Button type='submit' disabled={isSubmitting}>
-                {isSubmitting ? 'Guardando...' : 'Guardar'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+              <DialogFooter>
+                <Button
+                  variant='outline'
+                  onClick={() => onOpenChange(false)}
+                  type='button'
+                  className='w-full sm:w-auto h-9 sm:h-10'
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type='submit'
+                  disabled={isSubmitting}
+                  className='w-full sm:w-auto h-9 sm:h-10'
+                >
+                  {isSubmitting ? 'Guardando...' : 'Guardar'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </div>
       </DialogContent>
     </Dialog>
   )

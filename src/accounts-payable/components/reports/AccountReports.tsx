@@ -1,71 +1,90 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components'
-import { FileText, TrendingUp, Users, DollarSign } from 'lucide-react'
+import { FileText, BarChart, TrendingUp } from 'lucide-react'
 
 /**
  * Componente de reportes para cuentas corrientes
  */
 export const AccountReports = () => {
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Reporte de Deudores</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header */}
+      <div className="text-center sm:text-left">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Reportes de Cuentas Corrientes</h2>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">
+          Análisis y estadísticas detalladas
+        </p>
+      </div>
+
+      {/* Reportes disponibles */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <BarChart className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+              Estado de Cuentas
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-muted-foreground">
-              Lista detallada de clientes con deuda
+            <p className="text-xs sm:text-sm text-gray-600 mb-4">
+              Reporte detallado del estado actual de todas las cuentas corrientes
             </p>
+            <div className="text-center py-6 sm:py-8">
+              <p className="text-xs sm:text-sm text-gray-500">Próximamente disponible</p>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Análisis de Vencimientos</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+              Análisis de Tendencias
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-muted-foreground">
-              Proyección de vencimientos por período
+            <p className="text-xs sm:text-sm text-gray-600 mb-4">
+              Evolución de deudas y pagos a lo largo del tiempo
             </p>
+            <div className="text-center py-6 sm:py-8">
+              <p className="text-xs sm:text-sm text-gray-500">Próximamente disponible</p>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Estado de Cuentas</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+              Reportes Financieros
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-muted-foreground">
-              Exportar estados de cuenta individuales
+            <p className="text-xs sm:text-sm text-gray-600 mb-4">
+              Informes financieros exportables para análisis contable
             </p>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Resumen Financiero</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">
-              Análisis financiero completo
-            </p>
+            <div className="text-center py-6 sm:py-8">
+              <p className="text-xs sm:text-sm text-gray-500">Próximamente disponible</p>
+            </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Placeholder para futuros reportes */}
       <Card>
         <CardHeader>
-          <CardTitle>Próximamente</CardTitle>
+          <CardTitle className="text-base sm:text-lg">Reportes Personalizados</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">
-            Los reportes detallados estarán disponibles próximamente.
-            Podrás generar reportes personalizados, exportar datos y realizar análisis avanzados.
-          </p>
+          <div className="text-center py-8 sm:py-12">
+            <FileText className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
+              Reportes en Desarrollo
+            </h3>
+            <p className="text-sm sm:text-base text-gray-600 max-w-md mx-auto">
+              Estamos trabajando en reportes avanzados que te permitirán obtener insights detallados
+              sobre el comportamiento de tus cuentas corrientes.
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

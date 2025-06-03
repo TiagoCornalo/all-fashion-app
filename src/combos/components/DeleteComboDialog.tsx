@@ -47,25 +47,28 @@ const DeleteComboDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[425px]'>
-        <DialogHeader className='flex flex-col items-center gap-2'>
-          <AlertTriangle className='h-12 w-12 text-yellow-500' />
-          <DialogTitle>Desactivar Combo</DialogTitle>
+      <DialogContent className='w-[95vw] max-w-md sm:max-w-lg'>
+        <DialogHeader className='flex flex-col items-center gap-2 sm:gap-3 text-center'>
+          <AlertTriangle className='h-10 w-10 sm:h-12 sm:w-12 text-yellow-500' />
+          <DialogTitle className="text-base sm:text-lg">Desactivar Combo</DialogTitle>
         </DialogHeader>
 
-        <DialogDescription className='text-center'>
+        <DialogDescription className='text-center text-xs sm:text-sm text-gray-600 break-words'>
           ¿Estás seguro de que deseas desactivar el combo{' '}
-          <strong>{combo?.name}</strong>?
+          <strong className="break-all">{combo?.name}</strong>?
+          <br />
           <br />
           Este combo no estará disponible para nuevas ventas.
         </DialogDescription>
 
-        <DialogFooter className='flex justify-between'>
+        <DialogFooter className='flex flex-col sm:flex-row gap-2 sm:gap-0 sm:justify-between'>
           <Button
             type='button'
             variant='outline'
             onClick={() => onOpenChange(false)}
             disabled={isDeleting}
+            className="w-full sm:w-auto text-xs sm:text-sm order-2 sm:order-1"
+            size="sm"
           >
             Cancelar
           </Button>
@@ -74,6 +77,8 @@ const DeleteComboDialog = ({
             variant='destructive'
             onClick={handleDelete}
             disabled={isDeleting}
+            className="w-full sm:w-auto text-xs sm:text-sm order-1 sm:order-2"
+            size="sm"
           >
             {isDeleting ? 'Desactivando...' : 'Desactivar'}
           </Button>

@@ -55,7 +55,7 @@ const DiscountsTable = ({
           />
         ),
         cell: ({ row }) => (
-          <div className='font-medium'>{row.getValue('code')}</div>
+          <div className='font-medium text-xs sm:text-sm break-words'>{row.getValue('code')}</div>
         ),
         enableSorting: true
       },
@@ -68,7 +68,11 @@ const DiscountsTable = ({
             showHideButton={false}
           />
         ),
-        cell: ({ row }) => <div>{row.getValue('description')}</div>,
+        cell: ({ row }) => (
+          <div className="text-xs sm:text-sm break-words max-w-[200px] sm:max-w-none">
+            {row.getValue('description')}
+          </div>
+        ),
         enableSorting: true
       },
       {
@@ -80,7 +84,11 @@ const DiscountsTable = ({
             showHideButton={false}
           />
         ),
-        cell: ({ row }) => <div>{row.getValue('discountPercentage')}%</div>,
+        cell: ({ row }) => (
+          <div className="text-xs sm:text-sm font-semibold text-green-600">
+            {row.getValue('discountPercentage')}%
+          </div>
+        ),
         enableSorting: true
       },
       {
@@ -88,13 +96,22 @@ const DiscountsTable = ({
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title='Límite de uso'
+            title='Límite'
             showHideButton={false}
           />
         ),
         cell: ({ row }) => {
           const limit = row.getValue('usageLimit')
-          return <div>{limit === null ? 'Ilimitado' : limit}</div>
+          return (
+            <div className="text-xs sm:text-sm">
+              <span className="hidden sm:inline">
+                {limit === null ? 'Ilimitado' : limit}
+              </span>
+              <span className="sm:hidden">
+                {limit === null ? '∞' : limit}
+              </span>
+            </div>
+          )
         },
         enableSorting: true
       },
@@ -103,7 +120,7 @@ const DiscountsTable = ({
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title='Usos actuales'
+            title='Usos'
             showHideButton={false}
           />
         ),
@@ -112,11 +129,12 @@ const DiscountsTable = ({
           const usageLimit = row.original.usageLimit
 
           return (
-            <div className="flex items-center gap-2">
-              <span>{currentUsage}</span>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+              <span className="text-xs sm:text-sm font-medium">{currentUsage}</span>
               {usageLimit && currentUsage >= usageLimit && (
                 <Badge variant="destructive" className="text-xs">
-                  Límite alcanzado
+                  <span className="hidden sm:inline">Límite alcanzado</span>
+                  <span className="sm:hidden">Límite</span>
                 </Badge>
               )}
             </div>
@@ -136,7 +154,7 @@ const DiscountsTable = ({
         cell: ({ row }) => {
           const isActive = row.getValue('isActive') as boolean
           return (
-            <Badge variant={isActive ? 'success' : 'destructive'}>
+            <Badge variant={isActive ? 'success' : 'destructive'} className="text-xs">
               {isActive ? 'Activo' : 'Inactivo'}
             </Badge>
           )
@@ -154,7 +172,22 @@ const DiscountsTable = ({
         ),
         cell: ({ row }) => {
           const date = row.getValue('startDate') as Date
-          return <div>{date ? formatDateTime(new Date(date)) : 'N/A'}</div>
+          return (
+            <div className="text-xs sm:text-sm text-gray-600">
+              {date ? (
+                <div className="break-words">
+                  <div className="hidden sm:block">
+                    {formatDateTime(new Date(date))}
+                  </div>
+                  <div className="sm:hidden">
+                    {new Date(date).toLocaleDateString()}
+                  </div>
+                </div>
+              ) : (
+                'N/A'
+              )}
+            </div>
+          )
         },
         enableSorting: true
       },
@@ -169,7 +202,22 @@ const DiscountsTable = ({
         ),
         cell: ({ row }) => {
           const date = row.getValue('endDate') as Date
-          return <div>{date ? formatDateTime(new Date(date)) : 'N/A'}</div>
+          return (
+            <div className="text-xs sm:text-sm text-gray-600">
+              {date ? (
+                <div className="break-words">
+                  <div className="hidden sm:block">
+                    {formatDateTime(new Date(date))}
+                  </div>
+                  <div className="sm:hidden">
+                    {new Date(date).toLocaleDateString()}
+                  </div>
+                </div>
+              ) : (
+                'N/A'
+              )}
+            </div>
+          )
         },
         enableSorting: true
       },
@@ -181,30 +229,31 @@ const DiscountsTable = ({
           const currentUsage = row.original.currentUsageCount
 
           return (
-            <div className='flex items-center justify-end gap-2'>
+            <div className='flex items-center justify-end gap-1 sm:gap-2'>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant='outline' size='sm'>
-                    <MoreHorizontal className='h-4 w-4' />
+                  <Button variant='outline' size='sm' className="h-6 w-6 sm:h-8 sm:w-8 p-0">
+                    <MoreHorizontal className='h-3 w-3 sm:h-4 sm:w-4' />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent align="end" className="text-xs sm:text-sm">
                   <DropdownMenuItem onClick={() => onEdit(row.original)}>
-                    <Pencil className='mr-2 h-4 w-4' />
+                    <Pencil className='mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4' />
                     Editar
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => onViewHistory(row.original)}
                     disabled={currentUsage === 0}
                   >
-                    <History className='mr-2 h-4 w-4' />
-                    Ver Historial ({currentUsage})
+                    <History className='mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4' />
+                    <span className="hidden sm:inline">Ver Historial ({currentUsage})</span>
+                    <span className="sm:hidden">Historial ({currentUsage})</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => onDelete(row.original)}
                     className='text-red-600'
                   >
-                    <Trash className='mr-2 h-4 w-4' />
+                    <Trash className='mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4' />
                     Eliminar
                   </DropdownMenuItem>
                 </DropdownMenuContent>

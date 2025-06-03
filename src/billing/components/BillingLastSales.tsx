@@ -40,7 +40,7 @@ const columns: ColumnDef<Sale>[] = [
     accessorKey: 'date',
     header: 'Fecha',
     cell: ({ row }) => {
-      return <div>{formatDateTime(new Date(row.original.createdAt))}</div>
+      return <div className='text-xs sm:text-sm'>{formatDateTime(new Date(row.original.createdAt))}</div>
     }
   },
   {
@@ -48,7 +48,7 @@ const columns: ColumnDef<Sale>[] = [
     header: 'Tipo',
     cell: ({ row }) => {
       const invoice = row.original.invoice
-      return <div>{invoice.type}</div>
+      return <div className='text-xs sm:text-sm'>{invoice.type}</div>
     }
   },
   {
@@ -56,7 +56,11 @@ const columns: ColumnDef<Sale>[] = [
     header: 'Cliente',
     cell: ({ row }) => {
       const invoice = row.original.invoice
-      return <div>{invoice.customerName || 'Consumidor Final'}</div>
+      return (
+        <div className='text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none'>
+          {invoice.customerName || 'Consumidor Final'}
+        </div>
+      )
     }
   },
   {
@@ -64,18 +68,26 @@ const columns: ColumnDef<Sale>[] = [
     header: 'Productos',
     cell: ({ row }) => {
       const items = row.original.items
-      return <div>{items.length} productos</div>
+      return <div className='text-xs sm:text-sm'>{items.length} productos</div>
     }
   },
   {
     accessorKey: 'total',
     header: 'Total',
-    cell: ({ row }) => <div>{formatCurrency(row.getValue('total'))}</div>
+    cell: ({ row }) => (
+      <div className='text-xs sm:text-sm font-medium'>
+        {formatCurrency(row.getValue('total'))}
+      </div>
+    )
   },
   {
     accessorKey: 'createdBy',
     header: 'Vendedor',
-    cell: ({ row }) => <div>{row.original.seller.name}</div>
+    cell: ({ row }) => (
+      <div className='text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none'>
+        {row.original.seller.name}
+      </div>
+    )
   },
   {
     accessorKey: 'actions',
@@ -86,8 +98,8 @@ const columns: ColumnDef<Sale>[] = [
           <Tooltip>
             <TooltipTrigger asChild className='cursor-pointer'>
               <Link to={`/sale/${row.original._id}`}>
-                <Button variant='outline' size='sm'>
-                  <Eye className='h-4 w-4' />
+                <Button variant='outline' size='sm' className='h-6 w-6 sm:h-8 sm:w-8 p-0'>
+                  <Eye className='h-3 w-3 sm:h-4 sm:w-4' />
                 </Button>
               </Link>
             </TooltipTrigger>
@@ -114,7 +126,7 @@ const BillingLastSales = ({
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
+  const [pageSize] = useState(10)
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'date', desc: true }
   ])
@@ -179,23 +191,23 @@ const BillingLastSales = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-[90vw] max-h-[90vh] overflow-y-auto'>
+      <DialogContent className='w-[95vw] max-w-[90vw] max-h-[90vh] flex flex-col'>
         <DialogHeader>
-          <DialogTitle>Últimas ventas</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className='text-lg sm:text-xl'>Últimas ventas</DialogTitle>
+          <DialogDescription className='text-sm sm:text-base'>
             Aquí puedes ver las últimas ventas realizadas
           </DialogDescription>
         </DialogHeader>
 
-        <div className='space-y-4'>
+        <div className='flex-1 flex flex-col min-h-0 space-y-4'>
           {/* Barra de búsqueda */}
-          <div className='flex items-center justify-between'>
+          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3'>
             <div className='flex w-full max-w-sm items-center space-x-2'>
               <Input
                 placeholder='Buscar ventas...'
                 value={searchTerm}
                 onChange={handleSearch}
-                className='h-8'
+                className='h-8 text-sm'
               />
             </div>
             <Button
@@ -203,63 +215,66 @@ const BillingLastSales = ({
               size='sm'
               onClick={loadSales}
               disabled={loading}
+              className='w-full sm:w-auto'
             >
               {loading ? 'Cargando...' : 'Actualizar'}
             </Button>
           </div>
 
           {/* Tabla */}
-          <div className='rounded-md border'>
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
+          <div className='flex-1 border rounded-md overflow-hidden'>
+            <div className='overflow-auto max-h-[55vh]'>
+              <Table>
+                <TableHeader className='sticky top-0 bg-background'>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id} className='text-xs sm:text-sm'>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
                               header.column.columnDef.header,
                               header.getContext()
                             )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length > 0 ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && 'selected'}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
+                        </TableHead>
                       ))}
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns?.length || 0}
-                      className='h-24 text-center'
-                    >
-                      {loading
-                        ? 'Cargando...'
-                        : error
-                        ? error
-                        : 'No hay ventas registradas.'}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows?.length > 0 ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && 'selected'}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id} className='py-2 sm:py-3'>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns?.length || 0}
+                        className='h-24 text-center text-sm'
+                      >
+                        {loading
+                          ? 'Cargando...'
+                          : error
+                            ? error
+                            : 'No hay ventas registradas.'}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
 
           {/* Paginación */}

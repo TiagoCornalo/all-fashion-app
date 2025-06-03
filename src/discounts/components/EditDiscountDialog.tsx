@@ -139,132 +139,65 @@ const EditDiscountDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className='sm:max-w-[500px]'>
-        <DialogHeader>
-          <DialogTitle>Editar Descuento</DialogTitle>
+      <DialogContent className='w-[95vw] max-w-lg sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col'>
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="text-base sm:text-lg">Editar Descuento</DialogTitle>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
-            <FormField
-              control={form.control}
-              name='code'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Código</FormLabel>
-                  <FormControl>
-                    <Input placeholder='Ej. BIENVENIDA20' {...field} disabled />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name='description'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descripción</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder='Describe el propósito del descuento'
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name='discountPercentage'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Porcentaje de Descuento (%)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type='number'
-                      min={1}
-                      max={100}
-                      placeholder='Ej. 20'
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className='flex items-center space-x-2'>
-              <Switch
-                id='limitless'
-                checked={isLimitless}
-                onCheckedChange={setIsLimitless}
-              />
-              <Label htmlFor='limitless'>Sin límite de usos</Label>
-            </div>
-
-            {!isLimitless && (
+        <div className="flex-1 overflow-auto">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-3 sm:space-y-4'>
               <FormField
                 control={form.control}
-                name='usageLimit'
+                name='code'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Límite de Usos</FormLabel>
+                    <FormLabel className="text-xs sm:text-sm">Código</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder='Ej. BIENVENIDA20'
+                        className="text-xs sm:text-sm"
+                        {...field}
+                        disabled
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='description'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs sm:text-sm">Descripción</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder='Describe el propósito del descuento'
+                        className="min-h-[60px] sm:min-h-[80px] text-xs sm:text-sm"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='discountPercentage'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs sm:text-sm">Porcentaje de Descuento (%)</FormLabel>
                     <FormControl>
                       <Input
                         type='number'
                         min={1}
-                        placeholder='Ej. 100'
+                        max={100}
+                        placeholder='Ej. 20'
+                        className="text-xs sm:text-sm"
                         {...field}
-                        value={field.value === null ? '' : field.value}
-                        onChange={(e) => {
-                          const value =
-                            e.target.value === ''
-                              ? null
-                              : parseInt(e.target.value, 10)
-                          field.onChange(value)
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            <FormField
-              control={form.control}
-              name='isActive'
-              render={({ field }) => (
-                <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
-                  <div className='space-y-0.5'>
-                    <FormLabel>Activo</FormLabel>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <div className='grid grid-cols-2 gap-4'>
-              <FormField
-                control={form.control}
-                name='startDate'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fecha de Inicio</FormLabel>
-                    <FormControl>
-                      <DatePicker
-                        date={field.value}
-                        onChange={field.onChange}
-                        placeholder='Seleccionar fecha de inicio'
                       />
                     </FormControl>
                     <FormMessage />
@@ -272,44 +205,134 @@ const EditDiscountDialog = ({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name='endDate'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fecha de Fin</FormLabel>
-                    <FormControl>
-                      <DatePicker
-                        date={field.value}
-                        onChange={field.onChange}
-                        placeholder='Seleccionar fecha de fin'
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className='mt-4 flex justify-between'>
-              <div className='text-sm text-gray-500'>
-                <p>
-                  Creado: {new Date(discount.createdAt).toLocaleDateString()}
-                </p>
-                <p>Usos actuales: {discount.currentUsageCount}</p>
+              <div className='flex items-center space-x-2 p-3 sm:p-4 border rounded-lg'>
+                <Switch
+                  id='limitless'
+                  checked={isLimitless}
+                  onCheckedChange={setIsLimitless}
+                />
+                <Label htmlFor='limitless' className="text-xs sm:text-sm">Sin límite de usos</Label>
               </div>
-            </div>
 
-            <DialogFooter>
-              <Button type='button' variant='outline' onClick={handleClose}>
-                Cancelar
-              </Button>
-              <Button type='submit' disabled={isSubmitting}>
-                {isSubmitting ? 'Guardando...' : 'Guardar'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+              {!isLimitless && (
+                <FormField
+                  control={form.control}
+                  name='usageLimit'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs sm:text-sm">Límite de Usos</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          min={1}
+                          placeholder='Ej. 100'
+                          className="text-xs sm:text-sm"
+                          {...field}
+                          value={field.value === null ? '' : field.value}
+                          onChange={(e) => {
+                            const value =
+                              e.target.value === ''
+                                ? null
+                                : parseInt(e.target.value, 10)
+                            field.onChange(value)
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              <FormField
+                control={form.control}
+                name='isActive'
+                render={({ field }) => (
+                  <FormItem className='flex flex-row items-center justify-between rounded-lg border p-3 sm:p-4'>
+                    <div className='space-y-0.5'>
+                      <FormLabel className="text-xs sm:text-sm">Activo</FormLabel>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4'>
+                <FormField
+                  control={form.control}
+                  name='startDate'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs sm:text-sm">Fecha de Inicio</FormLabel>
+                      <FormControl>
+                        <DatePicker
+                          date={field.value}
+                          onChange={field.onChange}
+                          placeholder='Seleccionar fecha de inicio'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='endDate'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs sm:text-sm">Fecha de Fin</FormLabel>
+                      <FormControl>
+                        <DatePicker
+                          date={field.value}
+                          onChange={field.onChange}
+                          placeholder='Seleccionar fecha de fin'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className='mt-3 sm:mt-4 p-3 sm:p-4 bg-gray-50 rounded-lg'>
+                <div className='text-xs sm:text-sm text-gray-500 space-y-1'>
+                  <p className="break-words">
+                    <span className="font-medium">Creado:</span> {new Date(discount.createdAt).toLocaleDateString()}
+                  </p>
+                  <p>
+                    <span className="font-medium">Usos actuales:</span> {discount.currentUsageCount}
+                  </p>
+                </div>
+              </div>
+
+              <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={handleClose}
+                  className="w-full sm:w-auto text-xs sm:text-sm order-2 sm:order-1"
+                  size="sm"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type='submit'
+                  disabled={isSubmitting}
+                  className="w-full sm:w-auto text-xs sm:text-sm order-1 sm:order-2"
+                  size="sm"
+                >
+                  {isSubmitting ? 'Guardando...' : 'Guardar'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </div>
       </DialogContent>
     </Dialog>
   )

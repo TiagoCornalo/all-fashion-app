@@ -71,18 +71,24 @@ const CombosContainer = () => {
 
   return (
     <LayoutMultiRole allowedRoles={['ADMIN', 'MANAGER']}>
-      <div className='p-4'>
+      <div className='p-2 sm:p-4 lg:p-6'>
         <Card className='w-full'>
-          <CardHeader className='flex flex-row items-center justify-between'>
-            <CardTitle className='flex items-center gap-2'>
-              <Package className='h-6 w-6' />
-              Gestión de Combos
+          <CardHeader className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 p-3 sm:p-4 lg:p-6'>
+            <CardTitle className='flex flex-col sm:flex-row sm:items-center gap-2 text-center sm:text-left'>
+              <Package className='h-5 w-5 sm:h-6 sm:w-6 mx-auto sm:mx-0' />
+              <span className='text-lg sm:text-xl lg:text-2xl'>Gestión de Combos</span>
             </CardTitle>
-            <Button onClick={() => setIsAddDialogOpen(true)}>
-              <Plus className='mr-2 h-4 w-4' /> Nuevo Combo
+            <Button
+              onClick={() => setIsAddDialogOpen(true)}
+              size="sm"
+              className="w-full sm:w-auto text-xs sm:text-sm"
+            >
+              <Plus className='mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4' />
+              <span className="hidden sm:inline">Nuevo Combo</span>
+              <span className="sm:hidden">Nuevo</span>
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-4 lg:p-6">
             <CombosTable
               combos={combos?.data || []}
               pageCount={combos?.meta?.totalPages || 0}

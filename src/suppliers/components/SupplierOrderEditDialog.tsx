@@ -314,193 +314,212 @@ const SupplierOrderEditDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[1200px] max-h-[80vh] overflow-y-auto'>
-        <DialogHeader>
-          <DialogTitle>Editar Pedido</DialogTitle>
-          <DialogDescription>
+      <DialogContent className='w-[95vw] max-w-2xl sm:max-w-4xl lg:max-w-[1200px] max-h-[90vh] overflow-hidden flex flex-col'>
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className='text-lg sm:text-xl'>Editar Pedido</DialogTitle>
+          <DialogDescription className='text-sm sm:text-base'>
             Actualice la información del pedido
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className='grid w-full grid-cols-2'>
-                <TabsTrigger value='details'>Detalles</TabsTrigger>
-                <TabsTrigger value='products'>
-                  Productos ({products.length})
-                </TabsTrigger>
-              </TabsList>
+        <div className="flex-1 overflow-auto">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4 sm:space-y-6'>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className='mb-4 sm:mb-6 grid w-full grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-0 h-auto p-1 sm:p-1'>
+                  <TabsTrigger value='details' className='text-xs sm:text-sm h-10 w-full justify-center'>
+                    Detalles
+                  </TabsTrigger>
+                  <TabsTrigger value='products' className='text-xs sm:text-sm h-10 w-full justify-center'>
+                    Productos ({products.length})
+                  </TabsTrigger>
+                </TabsList>
 
-              <TabsContent value='details' className='space-y-4'>
-                <div>
-                  <FormField
-                    control={form.control}
-                    name='status'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Estado</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                <TabsContent value='details' className='mt-4 space-y-3 sm:space-y-4'>
+                  <div>
+                    <FormField
+                      control={form.control}
+                      name='status'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-sm sm:text-base'>Estado</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className='text-sm'>
+                                <SelectValue placeholder='Seleccione un estado' />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value='PENDING'>Pendiente</SelectItem>
+                              <SelectItem value='SENT'>Enviado</SelectItem>
+                              <SelectItem value='APPROVED'>Aprobado</SelectItem>
+                              <SelectItem value='REJECTED'>Rechazado</SelectItem>
+                              <SelectItem value='COMPLETED'>
+                                Completado
+                              </SelectItem>
+                              <SelectItem value='IN_TRANSIT'>En tránsito</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div>
+                    <FormField
+                      control={form.control}
+                      name='notes'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-sm sm:text-base'>Notas</FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder='Seleccione un estado' />
-                            </SelectTrigger>
+                            <Textarea
+                              {...field}
+                              placeholder='Notas adicionales para el pedido...'
+                              className='resize-none text-sm'
+                              rows={3}
+                            />
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value='PENDING'>Pendiente</SelectItem>
-                            <SelectItem value='SENT'>Enviado</SelectItem>
-                            <SelectItem value='APPROVED'>Aprobado</SelectItem>
-                            <SelectItem value='REJECTED'>Rechazado</SelectItem>
-                            <SelectItem value='COMPLETED'>
-                              Completado
-                            </SelectItem>
-                            <SelectItem value='IN_TRANSIT'>En tránsito</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                <div>
-                  <FormField
-                    control={form.control}
-                    name='notes'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notas</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            placeholder='Notas adicionales para el pedido...'
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                  <div className='pt-2'>
+                    <div className='space-y-1'>
+                      <p className='text-xs sm:text-sm text-muted-foreground'>
+                        <strong>Proveedor:</strong> {order?.supplier.name}
+                      </p>
+                      <p className='text-xs sm:text-sm text-muted-foreground'>
+                        <strong>Fecha de creación:</strong>{' '}
+                        {order?.createdAt
+                          ? new Date(order.createdAt).toLocaleString()
+                          : ''}
+                      </p>
+                      <p className='text-xs sm:text-sm text-muted-foreground'>
+                        <strong>Origen:</strong> {order?.createdFrom}
+                      </p>
+                    </div>
+                  </div>
+                </TabsContent>
 
-                <div className='pt-2'>
-                  <p className='text-sm text-muted-foreground'>
-                    <strong>Proveedor:</strong> {order?.supplier.name}
-                  </p>
-                  <p className='text-sm text-muted-foreground'>
-                    <strong>Fecha de creación:</strong>{' '}
-                    {order?.createdAt
-                      ? new Date(order.createdAt).toLocaleString()
-                      : ''}
-                  </p>
-                  <p className='text-sm text-muted-foreground'>
-                    <strong>Origen:</strong> {order?.createdFrom}
-                  </p>
-                </div>
-              </TabsContent>
+                <TabsContent value='products' className='mt-4 space-y-3 sm:space-y-4'>
+                  <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3'>
+                    <h3 className='font-medium text-sm sm:text-base'>Productos en el Pedido</h3>
+                    <Button
+                      type='button'
+                      variant={showProductSearch ? 'default' : 'success'}
+                      size='sm'
+                      onClick={toggleProductSearch}
+                      className='w-full sm:w-auto text-xs sm:text-sm'
+                    >
+                      {!showProductSearch && <Plus className='h-3 w-3 sm:h-4 sm:w-4 mr-2' />}
+                      {showProductSearch
+                        ? 'Ocultar búsqueda'
+                        : 'Agregar productos'}
+                    </Button>
+                  </div>
 
-              <TabsContent value='products' className='space-y-4'>
-                <div className='flex justify-between items-center'>
-                  <h3 className='font-medium'>Productos en el Pedido</h3>
-                  <Button
-                    type='button'
-                    variant={showProductSearch ? 'default' : 'success'}
-                    size='sm'
-                    onClick={toggleProductSearch}
-                  >
-                    {!showProductSearch && <Plus className=' h-4 w-4' />}
-                    {showProductSearch
-                      ? 'Ocultar búsqueda'
-                      : 'Agregar productos'}
-                  </Button>
-                </div>
+                  {/* Tabla de productos disponibles con overflow controlado */}
+                  {showProductSearch && (
+                    <div className="overflow-x-auto">
+                      <SupplierProductsTable
+                        products={availableProducts}
+                        isLoading={isLoadingProducts}
+                        pageCount={pageCount}
+                        onPaginationChange={handlePaginationChange}
+                        onSortingChange={handleSortingChange}
+                        onSearchChange={handleSearchChange}
+                        onFilterChange={handleFilterChange}
+                        onRefresh={handleRefresh}
+                        initialPage={pagination.page - 1}
+                        initialPageSize={pagination.pageSize}
+                        onAddProduct={handleAddProduct}
+                        selectedProductIds={products.map((p) => p._id)}
+                      />
+                    </div>
+                  )}
 
-                {/* Reemplazamos la búsqueda manual con el componente de tabla */}
-                {showProductSearch && (
-                  <SupplierProductsTable
-                    products={availableProducts}
-                    isLoading={isLoadingProducts}
-                    pageCount={pageCount}
-                    onPaginationChange={handlePaginationChange}
-                    onSortingChange={handleSortingChange}
-                    onSearchChange={handleSearchChange}
-                    onFilterChange={handleFilterChange}
-                    onRefresh={handleRefresh}
-                    initialPage={pagination.page - 1}
-                    initialPageSize={pagination.pageSize}
-                    onAddProduct={handleAddProduct}
-                    selectedProductIds={products.map((p) => p._id)}
-                  />
-                )}
-
-                <div className='border rounded-md p-4'>
-                  {products.length > 0 ? (
-                    <div className='space-y-4'>
-                      {products.map((product, index) => (
-                        <div
-                          key={index}
-                          className='flex items-center justify-between gap-4 p-2 border rounded-md'
-                        >
-                          <div className='flex-1'>
-                            <div className='font-medium'>{product.name}</div>
-                            <div className='text-sm text-muted-foreground'>
-                              Código: {product.code} | Stock actual:{' '}
-                              {product.stock}
+                  <div className='border rounded-md p-3 sm:p-4'>
+                    {products.length > 0 ? (
+                      <div className='space-y-3 sm:space-y-4 max-h-60 overflow-y-auto'>
+                        {products.map((product, index) => (
+                          <div
+                            key={index}
+                            className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-2 sm:p-3 border rounded-md'
+                          >
+                            <div className='flex-1 min-w-0'>
+                              <div className='font-medium text-sm sm:text-base truncate'>{product.name}</div>
+                              <div className='text-xs sm:text-sm text-muted-foreground'>
+                                Código: {product.code} | Stock actual:{' '}
+                                {product.stock}
+                              </div>
+                            </div>
+                            <div className='flex items-center gap-2 flex-shrink-0'>
+                              <div className='text-xs sm:text-sm whitespace-nowrap'>Cantidad:</div>
+                              <Input
+                                type='number'
+                                className='w-16 sm:w-20 h-8 sm:h-9 text-sm'
+                                min={1}
+                                defaultValue={
+                                  form.getValues(`items.${index}.quantity`) || 1
+                                }
+                                onChange={(e) =>
+                                  handleQuantityChange(
+                                    index,
+                                    parseInt(e.target.value) || 1
+                                  )
+                                }
+                              />
+                              <Button
+                                type='button'
+                                variant='ghost'
+                                size='icon'
+                                onClick={() => handleRemoveProduct(index)}
+                                className='h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0'
+                              >
+                                <Trash className='h-3 w-3 sm:h-4 sm:w-4' />
+                              </Button>
                             </div>
                           </div>
-                          <div className='flex items-center gap-2'>
-                            <div className='text-sm'>Cantidad:</div>
-                            <Input
-                              type='number'
-                              className='w-20'
-                              min={1}
-                              defaultValue={
-                                form.getValues(`items.${index}.quantity`) || 1
-                              }
-                              onChange={(e) =>
-                                handleQuantityChange(
-                                  index,
-                                  parseInt(e.target.value) || 1
-                                )
-                              }
-                            />
-                            <Button
-                              type='button'
-                              variant='ghost'
-                              size='icon'
-                              onClick={() => handleRemoveProduct(index)}
-                            >
-                              <Trash className='h-4 w-4' />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className='text-sm text-muted-foreground'>
-                      No hay productos en este pedido
-                    </p>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className='text-xs sm:text-sm text-muted-foreground text-center py-8'>
+                        No hay productos en este pedido
+                      </p>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
 
-            <DialogFooter>
-              <Button
-                variant='outline'
-                onClick={() => onOpenChange(false)}
-                type='button'
-              >
-                Cancelar
-              </Button>
-              <Button type='submit' disabled={isSubmitting}>
-                {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+              <DialogFooter className="flex-shrink-0 pt-4 border-t">
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  <Button
+                    variant='outline'
+                    onClick={() => onOpenChange(false)}
+                    type='button'
+                    className='w-full sm:w-auto h-9 sm:h-10 order-2 sm:order-1 text-xs sm:text-sm'
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type='submit'
+                    disabled={isSubmitting}
+                    className='w-full sm:w-auto h-9 sm:h-10 order-1 sm:order-2 text-xs sm:text-sm'
+                  >
+                    {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
+                  </Button>
+                </div>
+              </DialogFooter>
+            </form>
+          </Form>
+        </div>
       </DialogContent>
     </Dialog>
   )

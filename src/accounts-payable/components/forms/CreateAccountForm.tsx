@@ -139,13 +139,13 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
   const renderStep1 = () => (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <User className="h-5 w-5" />
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <User className="h-4 w-4 sm:h-5 sm:w-5" />
           Información del Cliente
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <CardContent className="space-y-3 sm:space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
           <FormField
             control={form.control}
             name="customerName"
@@ -155,9 +155,13 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
             }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nombre del Cliente *</FormLabel>
+                <FormLabel className="text-xs sm:text-sm">Nombre del Cliente *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Nombre completo o razón social" {...field} />
+                  <Input
+                    placeholder="Nombre completo o razón social"
+                    className="text-xs sm:text-sm"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -170,10 +174,10 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
             rules={{ required: "El tipo de documento es requerido" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tipo de Documento *</FormLabel>
+                <FormLabel className="text-xs sm:text-sm">Tipo de Documento *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="text-xs sm:text-sm">
                       <SelectValue placeholder="Seleccionar tipo" />
                     </SelectTrigger>
                   </FormControl>
@@ -199,9 +203,13 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
             }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Número de Documento *</FormLabel>
+                <FormLabel className="text-xs sm:text-sm">Número de Documento *</FormLabel>
                 <FormControl>
-                  <Input placeholder="12345678" {...field} />
+                  <Input
+                    placeholder="12345678"
+                    className="text-xs sm:text-sm"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -213,9 +221,13 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Teléfono</FormLabel>
+                <FormLabel className="text-xs sm:text-sm">Teléfono</FormLabel>
                 <FormControl>
-                  <Input placeholder="+54 11 1234-5678" {...field} />
+                  <Input
+                    placeholder="+54 11 1234-5678"
+                    className="text-xs sm:text-sm"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -233,9 +245,14 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
             }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="text-xs sm:text-sm">Email</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="cliente@email.com" {...field} />
+                  <Input
+                    type="email"
+                    placeholder="cliente@email.com"
+                    className="text-xs sm:text-sm"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -246,10 +263,14 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
             control={form.control}
             name="street"
             render={({ field }) => (
-              <FormItem className="md:col-span-2">
-                <FormLabel>Dirección</FormLabel>
+              <FormItem className="lg:col-span-2">
+                <FormLabel className="text-xs sm:text-sm">Dirección</FormLabel>
                 <FormControl>
-                  <Input placeholder="Calle y número" {...field} />
+                  <Input
+                    placeholder="Calle y número"
+                    className="text-xs sm:text-sm"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -261,9 +282,13 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
             name="city"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Ciudad</FormLabel>
+                <FormLabel className="text-xs sm:text-sm">Ciudad</FormLabel>
                 <FormControl>
-                  <Input placeholder="Corrientes" {...field} />
+                  <Input
+                    placeholder="Corrientes"
+                    className="text-xs sm:text-sm"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -275,9 +300,13 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
             name="state"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Provincia</FormLabel>
+                <FormLabel className="text-xs sm:text-sm">Provincia</FormLabel>
                 <FormControl>
-                  <Input placeholder="Corrientes" {...field} />
+                  <Input
+                    placeholder="Corrientes"
+                    className="text-xs sm:text-sm"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -289,9 +318,13 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
             name="postalCode"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Código Postal</FormLabel>
+                <FormLabel className="text-xs sm:text-sm">Código Postal</FormLabel>
                 <FormControl>
-                  <Input placeholder="3400" {...field} />
+                  <Input
+                    placeholder="3400"
+                    className="text-xs sm:text-sm"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -303,16 +336,16 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
   )
 
   const renderStep2 = () => (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
             Configuración de Crédito
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <CardContent className="space-y-3 sm:space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
             <FormField
               control={form.control}
               name="creditLimit"
@@ -322,13 +355,14 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
               }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Límite de Crédito *</FormLabel>
+                  <FormLabel className="text-xs sm:text-sm">Límite de Crédito *</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       min="0"
                       step="0.01"
                       placeholder="0.00"
+                      className="text-xs sm:text-sm"
                       {...field}
                       value={field.value === 0 ? '' : field.value}
                       onChange={(e) => {
@@ -362,12 +396,13 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
               }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Días de Pago *</FormLabel>
+                  <FormLabel className="text-xs sm:text-sm">Días de Pago *</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       min="1"
                       placeholder="30"
+                      className="text-xs sm:text-sm"
                       {...field}
                       value={field.value || ''}
                       onChange={(e) => {
@@ -402,7 +437,7 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
               }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tasa de Interés (%) *</FormLabel>
+                  <FormLabel className="text-xs sm:text-sm">Tasa de Interés (%) *</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -410,6 +445,7 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
                       max="100"
                       step="0.01"
                       placeholder="5.00"
+                      className="text-xs sm:text-sm"
                       {...field}
                       value={
                         field.value === '' ? '' :
@@ -445,22 +481,22 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
             Notas y Comentarios
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 sm:space-y-4">
           <FormField
             control={form.control}
             name="notes"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Notas Públicas</FormLabel>
+                <FormLabel className="text-xs sm:text-sm">Notas Públicas</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Comentarios visibles para el cliente..."
-                    className="min-h-[80px]"
+                    className="min-h-[60px] sm:min-h-[80px] text-xs sm:text-sm"
                     {...field}
                   />
                 </FormControl>
@@ -474,11 +510,11 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
             name="internalNotes"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Notas Internas</FormLabel>
+                <FormLabel className="text-xs sm:text-sm">Notas Internas</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Comentarios internos solo para el equipo..."
-                    className="min-h-[80px]"
+                    className="min-h-[60px] sm:min-h-[80px] text-xs sm:text-sm"
                     {...field}
                   />
                 </FormControl>
@@ -493,25 +529,25 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
         {/* Indicador de pasos */}
-        <div className="flex items-center justify-center space-x-4 mb-6">
+        <div className="flex items-center justify-center space-x-2 sm:space-x-4 mb-4 sm:mb-6">
           <div className={`flex items-center ${step >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 1 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'
+            <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 text-xs sm:text-sm ${step >= 1 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'
               }`}>
               1
             </div>
-            <span className="ml-2 font-medium">Cliente</span>
+            <span className="ml-2 font-medium text-xs sm:text-sm">Cliente</span>
           </div>
 
-          <div className={`w-16 h-1 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-300'}`} />
+          <div className={`w-8 sm:w-16 h-1 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-300'}`} />
 
           <div className={`flex items-center ${step >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 2 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'
+            <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 text-xs sm:text-sm ${step >= 2 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'
               }`}>
               2
             </div>
-            <span className="ml-2 font-medium">Configuración</span>
+            <span className="ml-2 font-medium text-xs sm:text-sm">Configuración</span>
           </div>
         </div>
 
@@ -519,21 +555,25 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
         {step === 1 ? renderStep1() : renderStep2()}
 
         {/* Botones de navegación */}
-        <div className="flex justify-between">
+        <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-0">
           <Button
             type="button"
             variant="outline"
             onClick={step === 1 ? onCancel : () => setStep(1)}
+            className="w-full sm:w-auto text-xs sm:text-sm order-2 sm:order-1"
+            size="sm"
           >
             {step === 1 ? 'Cancelar' : 'Anterior'}
           </Button>
 
-          <div className="space-x-2">
+          <div className="order-1 sm:order-2">
             {step === 1 ? (
               <Button
                 type="button"
                 onClick={handleNextStep}
                 disabled={form.formState.isSubmitting}
+                className="w-full sm:w-auto text-xs sm:text-sm"
+                size="sm"
               >
                 Siguiente
               </Button>
@@ -541,9 +581,11 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
               <Button
                 type="submit"
                 disabled={createAccountMutation.isPending || form.formState.isSubmitting}
+                className="w-full sm:w-auto text-xs sm:text-sm"
+                size="sm"
               >
                 {(createAccountMutation.isPending || form.formState.isSubmitting) && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                 )}
                 Crear Cuenta
               </Button>

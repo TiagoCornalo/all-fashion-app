@@ -41,19 +41,27 @@ const DeleteProductDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[425px]'>
+      <DialogContent className='w-[95vw] max-w-sm sm:max-w-md'>
         <DialogHeader>
-          <DialogTitle>Confirmar Eliminación</DialogTitle>
-          <DialogDescription>
-            ¿Está seguro que desea eliminar el producto {product?.name}? Esta
+          <DialogTitle className='text-lg sm:text-xl'>Confirmar Eliminación</DialogTitle>
+          <DialogDescription className='text-sm sm:text-base'>
+            ¿Está seguro que desea eliminar el producto <span className='font-semibold'>{product?.name}</span>? Esta
             acción no se puede deshacer.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant='outline' onClick={() => onOpenChange(false)}>
+          <Button
+            variant='outline'
+            onClick={() => onOpenChange(false)}
+            className='w-full sm:w-auto h-9 sm:h-10'
+          >
             Cancelar
           </Button>
-          <Button variant='destructive' onClick={handleDelete}>
+          <Button
+            variant='destructive'
+            onClick={handleDelete}
+            className='w-full sm:w-auto h-9 sm:h-10'
+          >
             Eliminar
           </Button>
         </DialogFooter>

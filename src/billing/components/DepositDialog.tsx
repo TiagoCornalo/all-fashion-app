@@ -66,10 +66,10 @@ const DepositDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className='w-[95vw] max-w-[425px]'>
         <DialogHeader>
-          <DialogTitle>Depósito</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className='text-lg sm:text-xl'>Depósito</DialogTitle>
+          <DialogDescription className='text-sm sm:text-base'>
             Ingrese el monto a depositar y las notas
           </DialogDescription>
         </DialogHeader>
@@ -81,11 +81,12 @@ const DepositDialog = ({
               name='amount'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Monto a depositar</FormLabel>
+                  <FormLabel className='text-sm sm:text-base'>Monto a depositar</FormLabel>
                   <FormControl>
                     <Input
                       type='number'
                       {...field}
+                      className='h-9 sm:h-10'
                       onChange={(e) => {
                         const value =
                           e.target.value === '' ? '' : Number(e.target.value)
@@ -103,9 +104,13 @@ const DepositDialog = ({
               name='notes'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notas</FormLabel>
+                  <FormLabel className='text-sm sm:text-base'>Notas</FormLabel>
                   <FormControl>
-                    <Textarea {...field} placeholder='Notas adicionales...' />
+                    <Textarea
+                      {...field}
+                      placeholder='Notas adicionales...'
+                      className='min-h-[80px] sm:min-h-[100px]'
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -113,10 +118,19 @@ const DepositDialog = ({
             />
 
             <DialogFooter>
-              <Button variant='outline' onClick={() => onOpenChange(false)}>
+              <Button
+                variant='outline'
+                onClick={() => onOpenChange(false)}
+                className='w-full sm:w-auto h-9 sm:h-10'
+              >
                 Cancelar
               </Button>
-              <Button type='submit' disabled={isSubmitting} variant='success'>
+              <Button
+                type='submit'
+                disabled={isSubmitting}
+                variant='success'
+                className='w-full sm:w-auto h-9 sm:h-10'
+              >
                 {isSubmitting ? 'Depositando...' : 'Depositar'}
               </Button>
             </DialogFooter>

@@ -20,6 +20,21 @@ import { orderVerificationService, ArrivedOrder, AdminApprovalData } from '../..
 import { formatDateTime } from '../../../utils'
 import { RECEPTION_STATUS } from './constants'
 
+// Tipo para errores de API
+interface ApiError {
+  response?: {
+    data?: {
+      error?: string
+    }
+  }
+}
+
+// Tipo para el contacto del proveedor
+interface SupplierContact {
+  phone?: string
+  email?: string
+}
+
 /**
  * Lista de pedidos pendientes de aprobación por admin/manager
  */
@@ -51,8 +66,10 @@ const PendingApprovalList = () => {
       setSelectedOrder(null)
       setApprovalAction(null)
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Error al procesar aprobación')
+    onError: (error: unknown) => {
+      const apiError = error as ApiError
+      const errorMessage = apiError.response?.data?.error || 'Error al procesar aprobación'
+      toast.error(errorMessage)
     }
   })
 
@@ -138,59 +155,63 @@ const PendingApprovalList = () => {
       {/* Header con información */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-orange-600" />
-            Pedidos Pendientes de Aprobación
-            <Badge variant="secondary" className="ml-auto">
+          <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
+              <span className="text-base sm:text-lg">Pedidos Pendientes de Aprobación</span>
+            </div>
+            <Badge variant="secondary" className="ml-0 sm:ml-auto w-fit">
               {orders.length} pedido{orders.length !== 1 ? 's' : ''}
             </Badge>
           </CardTitle>
-          <p className="text-sm text-gray-600">
+          <p className="text-xs sm:text-sm text-gray-600">
             Estos pedidos fueron verificados por empleados y requieren tu aprobación
           </p>
         </CardHeader>
       </Card>
 
       {/* Lista de pedidos */}
-      <div className="grid gap-4">
+      <div className="grid gap-3 sm:gap-4">
         {orders.map((order) => (
           <Card key={order._id} className="border-orange-200 hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
+            <CardContent className="p-3 sm:p-6">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Package className="h-5 w-5 text-orange-600" />
-                    <h3 className="font-semibold text-lg">{order.supplier.name}</h3>
-                    <Badge variant="outline" className="bg-orange-50 text-orange-700">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
+                      <h3 className="font-semibold text-base sm:text-lg">{order.supplier.name}</h3>
+                    </div>
+                    <Badge variant="outline" className="bg-orange-50 text-orange-700 text-xs w-fit">
                       {RECEPTION_STATUS[order.receptionStatus as keyof typeof RECEPTION_STATUS]}
                     </Badge>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
                     <div>
-                      <p className="text-sm font-medium text-gray-700">Verificado el:</p>
-                      <p className="text-gray-900">
+                      <p className="text-xs sm:text-sm font-medium text-gray-700">Verificado el:</p>
+                      <p className="text-sm sm:text-base text-gray-900">
                         {order.employeeVerification && formatDateTime(order.employeeVerification.verificationDate)}
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-sm font-medium text-gray-700">Verificado por:</p>
-                      <p className="text-gray-900 flex items-center gap-1">
-                        <User className="h-4 w-4" />
+                      <p className="text-xs sm:text-sm font-medium text-gray-700">Verificado por:</p>
+                      <p className="text-sm sm:text-base text-gray-900 flex items-center gap-1">
+                        <User className="h-3 w-3 sm:h-4 sm:w-4" />
                         {order.employeeVerification?.verifiedBy.name || 'N/A'}
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-sm font-medium text-gray-700">Productos:</p>
-                      <p className="text-gray-900">{order.items.length} artículos</p>
+                      <p className="text-xs sm:text-sm font-medium text-gray-700">Productos:</p>
+                      <p className="text-sm sm:text-base text-gray-900">{order.items.length} artículos</p>
                     </div>
 
                     {order.totalValue && (
                       <div>
-                        <p className="text-sm font-medium text-gray-700">Valor Total:</p>
-                        <p className="text-gray-900 font-semibold">
+                        <p className="text-xs sm:text-sm font-medium text-gray-700">Valor Total:</p>
+                        <p className="text-sm sm:text-base text-gray-900 font-semibold">
                           ${order.totalValue.toLocaleString()}
                         </p>
                       </div>
@@ -199,13 +220,13 @@ const PendingApprovalList = () => {
 
                   {/* Estado de verificación */}
                   {order.employeeVerification && (
-                    <div className={`p-4 rounded-lg mb-4 ${order.employeeVerification.allCorrect
+                    <div className={`p-3 sm:p-4 rounded-lg mb-4 ${order.employeeVerification.allCorrect
                       ? 'bg-green-50 border border-green-200'
                       : 'bg-red-50 border border-red-200'
                       }`}>
                       <div className="flex items-start justify-between">
                         <div>
-                          <h4 className={`font-medium ${order.employeeVerification.allCorrect ? 'text-green-800' : 'text-red-800'
+                          <h4 className={`font-medium text-sm sm:text-base ${order.employeeVerification.allCorrect ? 'text-green-800' : 'text-red-800'
                             }`}>
                             {order.employeeVerification.allCorrect
                               ? '✅ Verificación Exitosa'
@@ -215,13 +236,13 @@ const PendingApprovalList = () => {
 
                           {!order.employeeVerification.allCorrect && (
                             <div className="mt-2 space-y-2">
-                              <p className="text-sm text-red-700 font-medium">
+                              <p className="text-xs sm:text-sm text-red-700 font-medium">
                                 Productos con problemas:
                               </p>
                               {order.employeeVerification.issues.map((issue, index) => {
                                 const product = order.items.find(item => item.product._id === issue.product)
                                 return (
-                                  <div key={index} className="text-sm text-red-700 bg-white p-2 rounded border">
+                                  <div key={index} className="text-xs sm:text-sm text-red-700 bg-white p-2 rounded border">
                                     <p className="font-medium">
                                       {product?.product.name || 'Producto'} ({product?.product.code || 'N/A'})
                                     </p>
@@ -241,17 +262,33 @@ const PendingApprovalList = () => {
                                 )
                               })}
 
-                              <Button variant='outline' onClick={() => handleOpenWhatsApp(order.supplier.contact.phone)}>
-                                <MessageCircle className='h-4 w-4 mr-2' />
-                                Enviar mensaje al proveedor
+                              <Button
+                                variant='outline'
+                                size="sm"
+                                onClick={() => {
+                                  // Manejar diferentes formatos de contact
+                                  let phone = ''
+                                  if (order.supplier.contact) {
+                                    if (typeof order.supplier.contact === 'string') {
+                                      phone = order.supplier.contact
+                                    } else if (typeof order.supplier.contact === 'object' && 'phone' in order.supplier.contact) {
+                                      phone = (order.supplier.contact as SupplierContact).phone || ''
+                                    }
+                                  }
+                                  handleOpenWhatsApp(phone)
+                                }}
+                                className="w-full sm:w-auto"
+                              >
+                                <MessageCircle className='h-3 w-3 sm:h-4 sm:w-4 mr-2' />
+                                <span className="text-xs sm:text-sm">Enviar mensaje al proveedor</span>
                               </Button>
                             </div>
                           )}
 
                           {order.employeeVerification.notes && (
                             <div className="mt-2">
-                              <p className="text-sm font-medium">Notas del empleado:</p>
-                              <p className="text-sm">{order.employeeVerification.notes}</p>
+                              <p className="text-xs sm:text-sm font-medium">Notas del empleado:</p>
+                              <p className="text-xs sm:text-sm">{order.employeeVerification.notes}</p>
                             </div>
                           )}
                         </div>
@@ -260,22 +297,24 @@ const PendingApprovalList = () => {
                   )}
                 </div>
 
-                <div className="ml-4 flex flex-col gap-2">
+                <div className="lg:ml-4 flex flex-col sm:flex-row lg:flex-col gap-2 w-full sm:w-auto lg:w-auto">
                   <Button
                     onClick={() => handleApprovalAction(order, 'approve')}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 w-full sm:w-auto text-xs sm:text-sm"
                     disabled={approvalMutation.isPending}
+                    size="sm"
                   >
-                    <CheckCircle className="h-4 w-4" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                     Aprobar
                   </Button>
                   <Button
                     onClick={() => handleApprovalAction(order, 'reject')}
                     variant="destructive"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 w-full sm:w-auto text-xs sm:text-sm"
                     disabled={approvalMutation.isPending}
+                    size="sm"
                   >
-                    <XCircle className="h-4 w-4" />
+                    <XCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                     Rechazar
                   </Button>
                 </div>

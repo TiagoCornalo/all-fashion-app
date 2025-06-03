@@ -16,17 +16,17 @@ const SuppliersHeader = ({
 }) => {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Acciones</CardTitle>
+      <CardHeader className='pb-3 sm:pb-6'>
+        <CardTitle className='text-lg sm:text-xl text-center sm:text-left'>Acciones</CardTitle>
       </CardHeader>
-      <CardContent className='flex gap-2'>
-        <Button variant='success' size='sm' onClick={onAddSupplier}>
-          <Plus className='h-4 w-4' />
-          Agregar Proveedor
+      <CardContent className='flex flex-col sm:flex-row gap-2 sm:gap-2'>
+        <Button variant='success' size='sm' onClick={onAddSupplier} className='w-full sm:w-auto h-9 sm:h-10'>
+          <Plus className='h-4 w-4 mr-2' />
+          <span className='text-xs sm:text-sm'>Agregar Proveedor</span>
         </Button>
-        <Button size='sm' onClick={onCreateOrder}>
-          <Plus className='h-4 w-4' />
-          Crear Nueva Orden
+        <Button size='sm' onClick={onCreateOrder} className='w-full sm:w-auto h-9 sm:h-10'>
+          <Plus className='h-4 w-4 mr-2' />
+          <span className='text-xs sm:text-sm'>Crear Nueva Orden</span>
         </Button>
       </CardContent>
     </Card>

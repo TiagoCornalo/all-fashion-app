@@ -38,6 +38,9 @@ const AccountsPayableContainer = lazy(() => import('./accounts-payable/AccountsP
 const AccountDetailContainer = lazy(() => import('./accounts-payable/AccountDetailContainer'))
 const EditAccountContainer = lazy(() => import('./accounts-payable/EditAccountContainer'))
 
+// Remitos y presupuestos
+const QuotesContainer = lazy(() => import('./quotes/QuotesContainer'))
+
 const SuspenseFallback = () => (
   <div className='fixed inset-0 flex justify-center items-center bg-white z-50'>
     <Loader className='h-8 w-8' />
@@ -78,6 +81,9 @@ function App() {
                 <Route path='/accounts-payable' element={<AccountsPayableContainer />} />
                 <Route path='/accounts-payable/:id' element={<AccountDetailContainer />} />
                 <Route path='/accounts-payable/:id/edit' element={<EditAccountContainer />} />
+
+                {/* Rutas para remitos y presupuestos */}
+                <Route path='/quotes' element={<QuotesContainer />} />
               </Routes>
             </Suspense>
           </NotificationsProvider>

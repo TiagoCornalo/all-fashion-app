@@ -261,12 +261,12 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
       header: 'Cliente',
       cell: ({ row }) => {
         const account = row.original
-        if (!account?.customer) return <span className="text-gray-400">Sin datos</span>
+        if (!account?.customer) return <span className="text-gray-400 text-xs sm:text-sm">Sin datos</span>
 
         return (
-          <div>
-            <p className="font-medium">{account.customer.name || 'Sin nombre'}</p>
-            <p className="text-sm text-gray-500">
+          <div className="min-w-0">
+            <p className="font-medium text-xs sm:text-sm break-words">{account.customer.name || 'Sin nombre'}</p>
+            <p className="text-xs text-gray-500 break-all">
               {account.customer.documentType || 'DNI'}: {account.customer.documentNumber || 'Sin documento'}
             </p>
           </div>
@@ -280,7 +280,7 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
         const balance = Number(row.getValue('currentBalance')) || 0
         return (
           <div className="text-right">
-            <p className={`font-semibold ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
+            <p className={`font-semibold text-xs sm:text-sm ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
               {formatCurrency(balance)}
             </p>
           </div>
@@ -294,7 +294,7 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
         const overdue = Number(row.getValue('overdueAmount')) || 0
         return (
           <div className="text-right">
-            <p className={`font-semibold ${overdue > 0 ? 'text-orange-600' : 'text-gray-400'}`}>
+            <p className={`font-semibold text-xs sm:text-sm ${overdue > 0 ? 'text-orange-600' : 'text-gray-400'}`}>
               {formatCurrency(overdue)}
             </p>
           </div>
@@ -311,7 +311,7 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
 
         return (
           <div className="text-right">
-            <p className="font-medium">{formatCurrency(limit)}</p>
+            <p className="font-medium text-xs sm:text-sm">{formatCurrency(limit)}</p>
             <p className={`text-xs ${utilization > 80 ? 'text-red-500' :
               utilization > 60 ? 'text-yellow-500' : 'text-green-500'
               }`}>
@@ -334,14 +334,14 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
       header: 'Condiciones',
       cell: ({ row }) => {
         const terms = row.original?.paymentTerms
-        if (!terms) return <span className="text-gray-400">Sin datos</span>
+        if (!terms) return <span className="text-gray-400 text-xs sm:text-sm">Sin datos</span>
 
         const days = Number(terms.days) || 30
         const interestRate = Number(terms.interestRate) || 0
 
         return (
-          <div className="text-sm">
-            <p>{days} días</p>
+          <div className="text-xs sm:text-sm">
+            <p className="font-medium">{days} días</p>
             <p className="text-gray-500">{(interestRate * 100).toFixed(2)}% interés</p>
           </div>
         )
@@ -352,10 +352,10 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
       header: 'Creada',
       cell: ({ row }) => {
         const date = row.getValue('createdAt') as string
-        if (!date) return <span className="text-gray-400">Sin fecha</span>
+        if (!date) return <span className="text-gray-400 text-xs sm:text-sm">Sin fecha</span>
 
         return (
-          <div className="text-sm text-gray-600">
+          <div className="text-xs sm:text-sm text-gray-600">
             {formatDateTime(date)}
           </div>
         )
@@ -369,14 +369,15 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
         if (!account) return null
 
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => handleViewAccount(account)}
               title="Ver detalles"
+              className="h-6 w-6 sm:h-8 sm:w-8 p-0"
             >
-              <Eye className="h-4 w-4" />
+              <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
 
             {isAdmin && (
@@ -385,8 +386,9 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
                 size="sm"
                 onClick={() => handleEditAccount(account)}
                 title="Editar cuenta"
+                className="h-6 w-6 sm:h-8 sm:w-8 p-0"
               >
-                <Edit className="h-4 w-4" />
+                <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             )}
 
@@ -395,10 +397,10 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleStatusChange(account, 'OVERDUE')}
-                className="text-orange-600 hover:text-orange-700"
+                className="text-orange-600 hover:text-orange-700 h-6 w-6 sm:h-8 sm:w-8 p-0"
                 title="Marcar como vencida"
               >
-                <AlertTriangle className="h-4 w-4" />
+                <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             )}
           </div>
@@ -412,19 +414,23 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
     const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
 
     return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-900">Cuentas Corrientes</h2>
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 text-center sm:text-left">Cuentas Corrientes</h2>
         </div>
 
         <div className="flex items-center justify-center min-h-96 bg-red-50 rounded-lg">
-          <div className="text-center">
-            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <div className="text-center p-4">
+            <AlertTriangle className="h-8 w-8 sm:h-12 sm:w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
               Error al cargar cuentas
             </h3>
-            <p className="text-gray-600 mb-4">{errorMessage}</p>
-            <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['accounts-payable'] })}>
+            <p className="text-sm sm:text-base text-gray-600 mb-4">{errorMessage}</p>
+            <Button
+              onClick={() => queryClient.invalidateQueries({ queryKey: ['accounts-payable'] })}
+              size="sm"
+              className="text-xs sm:text-sm"
+            >
               Reintentar
             </Button>
           </div>
@@ -438,19 +444,23 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
   const currentPage = filters.page || 1
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Cuentas Corrientes</h2>
-          <p className="text-gray-600">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
+        <div className="text-center sm:text-left">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Cuentas Corrientes</h2>
+          <p className="text-sm sm:text-base text-gray-600">
             {accountsData?.meta?.total || 0} cuentas registradas
           </p>
         </div>
 
         {isAdmin && (
-          <Button onClick={() => setShowCreateForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
+          <Button
+            onClick={() => setShowCreateForm(true)}
+            className="w-full sm:w-auto text-xs sm:text-sm"
+            size="sm"
+          >
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
             Nueva Cuenta
           </Button>
         )}
@@ -486,36 +496,36 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
 
       {/* Resumen */}
       {accountsData?.meta?.summary && (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
           <div className="text-center">
-            <p className="text-2xl font-bold text-red-600">
+            <p className="text-lg sm:text-2xl font-bold text-red-600">
               {formatCurrency(accountsData.meta.summary.totalBalance || 0)}
             </p>
-            <p className="text-sm text-gray-600">Deuda Total</p>
+            <p className="text-xs sm:text-sm text-gray-600">Deuda Total</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-orange-600">
+            <p className="text-lg sm:text-2xl font-bold text-orange-600">
               {formatCurrency(accountsData.meta.summary.totalOverdue || 0)}
             </p>
-            <p className="text-sm text-gray-600">Vencido</p>
+            <p className="text-xs sm:text-sm text-gray-600">Vencido</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-blue-600">
+            <p className="text-lg sm:text-2xl font-bold text-blue-600">
               {formatCurrency(accountsData.meta.summary.avgBalance || 0)}
             </p>
-            <p className="text-sm text-gray-600">Promedio</p>
+            <p className="text-xs sm:text-sm text-gray-600">Promedio</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-green-600">
+            <p className="text-lg sm:text-2xl font-bold text-green-600">
               {accountsData.meta.summary.accountsWithDebt || 0}
             </p>
-            <p className="text-sm text-gray-600">Con Deuda</p>
+            <p className="text-xs sm:text-sm text-gray-600">Con Deuda</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-yellow-600">
+            <p className="text-lg sm:text-2xl font-bold text-yellow-600">
               {accountsData.meta.summary.accountsOverdue || 0}
             </p>
-            <p className="text-sm text-gray-600">Vencidas</p>
+            <p className="text-xs sm:text-sm text-gray-600">Vencidas</p>
           </div>
         </div>
       )}
@@ -523,17 +533,21 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
       {/* Mensaje si no hay datos */}
       {!isLoading && (!accountsData?.data || accountsData.data.length === 0) && (
         <div className="flex items-center justify-center min-h-96 bg-gray-50 rounded-lg">
-          <div className="text-center">
-            <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <div className="text-center p-4">
+            <CreditCard className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
               No hay cuentas corrientes
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-sm sm:text-base text-gray-600 mb-4">
               Comienza creando tu primera cuenta corriente
             </p>
             {isAdmin && (
-              <Button onClick={() => setShowCreateForm(true)}>
-                <Plus className="h-4 w-4 mr-2" />
+              <Button
+                onClick={() => setShowCreateForm(true)}
+                size="sm"
+                className="text-xs sm:text-sm"
+              >
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                 Crear Primera Cuenta
               </Button>
             )}
@@ -543,20 +557,22 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
 
       {/* Modal para crear cuenta */}
       <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
+        <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
               Nueva Cuenta Corriente
             </DialogTitle>
           </DialogHeader>
-          <CreateAccountForm
-            onSuccess={() => {
-              setShowCreateForm(false)
-              queryClient.invalidateQueries({ queryKey: ['accounts-payable'] })
-            }}
-            onCancel={() => setShowCreateForm(false)}
-          />
+          <div className="flex-1 overflow-auto">
+            <CreateAccountForm
+              onSuccess={() => {
+                setShowCreateForm(false)
+                queryClient.invalidateQueries({ queryKey: ['accounts-payable'] })
+              }}
+              onCancel={() => setShowCreateForm(false)}
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </div>

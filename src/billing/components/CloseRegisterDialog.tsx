@@ -88,29 +88,29 @@ const CloseRegisterDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-2xl'>
+      <DialogContent className='w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
-          <DialogTitle>Cerrar Caja</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className='text-lg sm:text-xl'>Cerrar Caja</DialogTitle>
+          <DialogDescription className='text-sm sm:text-base'>
             Ingrese el monto final y las notas para cerrar la caja
           </DialogDescription>
         </DialogHeader>
 
         {/* Alerta de transferencias pendientes */}
         {pendingTransfers?.data && pendingTransfers.data.length > 0 && (
-          <div className='border border-yellow-200 bg-yellow-50 p-4 rounded-md'>
-            <div className='flex items-start gap-3'>
-              <AlertTriangle className='h-5 w-5 text-yellow-600 mt-0.5' />
-              <div className='flex-1'>
-                <div className='flex items-center justify-between'>
-                  <span className='text-yellow-800'>
+          <div className='border border-yellow-200 bg-yellow-50 p-3 sm:p-4 rounded-md'>
+            <div className='flex flex-col sm:flex-row sm:items-start gap-3'>
+              <AlertTriangle className='h-5 w-5 text-yellow-600 mt-0.5 mx-auto sm:mx-0' />
+              <div className='flex-1 text-center sm:text-left'>
+                <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
+                  <span className='text-yellow-800 text-sm'>
                     Hay <strong>{pendingTransfers.data.length}</strong> transferencia(s) pendiente(s) de verificación.
                   </span>
                   <Button
                     variant='outline'
                     size='sm'
                     onClick={() => setShowPendingTransfers(true)}
-                    className='ml-2'
+                    className='w-full sm:w-auto'
                   >
                     Ver Transferencias
                   </Button>
@@ -127,11 +127,12 @@ const CloseRegisterDialog = ({
               name='actualCash'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Monto Final</FormLabel>
+                  <FormLabel className='text-sm sm:text-base'>Monto Final</FormLabel>
                   <FormControl>
                     <Input
                       type='number'
                       {...field}
+                      className='h-9 sm:h-10'
                       onChange={(e) => {
                         const value =
                           e.target.value === '' ? '' : Number(e.target.value)
@@ -149,9 +150,13 @@ const CloseRegisterDialog = ({
               name='notes'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notas</FormLabel>
+                  <FormLabel className='text-sm sm:text-base'>Notas</FormLabel>
                   <FormControl>
-                    <Textarea {...field} placeholder='Notas adicionales...' />
+                    <Textarea
+                      {...field}
+                      placeholder='Notas adicionales...'
+                      className='min-h-[80px] sm:min-h-[100px]'
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -159,10 +164,18 @@ const CloseRegisterDialog = ({
             />
 
             <DialogFooter>
-              <Button variant='outline' onClick={() => onOpenChange(false)}>
+              <Button
+                variant='outline'
+                onClick={() => onOpenChange(false)}
+                className='w-full sm:w-auto h-9 sm:h-10'
+              >
                 Cancelar
               </Button>
-              <Button type='submit' disabled={isSubmitting}>
+              <Button
+                type='submit'
+                disabled={isSubmitting}
+                className='w-full sm:w-auto h-9 sm:h-10'
+              >
                 {isSubmitting ? 'Cerrando...' : 'Cerrar Caja'}
               </Button>
             </DialogFooter>
@@ -172,9 +185,9 @@ const CloseRegisterDialog = ({
 
       {/* Modal de transferencias pendientes */}
       <Dialog open={showPendingTransfers} onOpenChange={setShowPendingTransfers}>
-        <DialogContent className='max-w-6xl max-h-[80vh] overflow-hidden'>
+        <DialogContent className='w-[95vw] max-w-6xl max-h-[80vh] overflow-hidden'>
           <DialogHeader>
-            <DialogTitle className='flex items-center gap-2'>
+            <DialogTitle className='flex items-center gap-2 text-lg sm:text-xl'>
               <AlertTriangle className='h-5 w-5 text-yellow-600' />
               Transferencias Pendientes de Verificación
             </DialogTitle>

@@ -1,48 +1,47 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '../components'
 import { useQuery } from '@tanstack/react-query'
-import { getDiscounts } from '../services/discounts'
-import { Discount } from '../types/discount.types'
-import { Plus } from 'lucide-react'
+import { getQuotes } from '../services/quote.service'
+import { Quote } from '../types/quote.types'
+import { Plus, FileText } from 'lucide-react'
 import { LayoutMultiRole } from '../layout'
 import {
-  AddDiscountDialog,
-  DeleteDiscountDialog,
-  DiscountsTable,
-  EditDiscountDialog,
-  PromotionUsageHistoryModal
+  QuotesTable,
+  CreateQuoteDialog,
+  EditQuoteDialog,
+  DeleteQuoteDialog,
+  QuotePreviewDialog
 } from './components'
-import { Label } from '../assets'
 
-const DiscountsContainer = () => {
+const QuotesContainer = () => {
   const [pagination, setPagination] = useState({ page: 1, pageSize: 10 })
   const [sorting, setSorting] = useState({
     sortBy: 'createdAt',
     sortOrder: 'desc' as 'asc' | 'desc'
   })
   const [search, setSearch] = useState('')
-  const [selectedDiscount, setSelectedDiscount] = useState<Discount | null>(
-    null
-  )
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [filters, setFilters] = useState<Record<string, string>>({})
+  const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false)
+  const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false)
 
-  // Consultar los descuentos con React Query
+  // Consultar los remitos con React Query
   const {
-    data: discounts,
+    data: quotes,
     isLoading,
     refetch
   } = useQuery({
-    queryKey: ['discounts', pagination, sorting, search],
+    queryKey: ['quotes', pagination, sorting, search, filters],
     queryFn: async () =>
-      getDiscounts({
+      getQuotes({
         page: pagination.page,
         pageSize: pagination.pageSize,
         sortBy: sorting.sortBy,
         sortOrder: sorting.sortOrder,
-        search
+        search,
+        ...filters
       })
   })
 
@@ -58,19 +57,23 @@ const DiscountsContainer = () => {
     setSearch(value)
   }
 
-  const handleEdit = (discount: Discount) => {
-    setSelectedDiscount(discount)
+  const handleFilterChange = (newFilters: Record<string, string>) => {
+    setFilters(newFilters)
+  }
+
+  const handleEdit = (quote: Quote) => {
+    setSelectedQuote(quote)
     setIsEditDialogOpen(true)
   }
 
-  const handleDelete = (discount: Discount) => {
-    setSelectedDiscount(discount)
+  const handleDelete = (quote: Quote) => {
+    setSelectedQuote(quote)
     setIsDeleteDialogOpen(true)
   }
 
-  const handleViewHistory = (discount: Discount) => {
-    setSelectedDiscount(discount)
-    setIsHistoryModalOpen(true)
+  const handlePreview = (quote: Quote) => {
+    setSelectedQuote(quote)
+    setIsPreviewDialogOpen(true)
   }
 
   const handleRefresh = async () => {
@@ -79,36 +82,36 @@ const DiscountsContainer = () => {
   }
 
   return (
-    <LayoutMultiRole allowedRoles={['ADMIN', 'MANAGER']}>
+    <LayoutMultiRole allowedRoles={['ADMIN', 'MANAGER', 'SELLER']}>
       <div className='p-2 sm:p-4 lg:p-6'>
         <Card className='w-full'>
           <CardHeader className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 p-3 sm:p-4 lg:p-6'>
             <CardTitle className='flex flex-col sm:flex-row sm:items-center gap-2 text-center sm:text-left'>
-              {/* @ts-ignore */}
-              <Label className='h-5 w-5 sm:h-6 sm:w-6 mx-auto sm:mx-0' />
-              <span className='text-lg sm:text-xl lg:text-2xl'>Gestión de Descuentos</span>
+              <FileText className='h-5 w-5 sm:h-6 sm:w-6 mx-auto sm:mx-0' />
+              <span className='text-lg sm:text-xl lg:text-2xl'>Gestión de Remitos y Presupuestos</span>
             </CardTitle>
             <Button
-              onClick={() => setIsAddDialogOpen(true)}
+              onClick={() => setIsCreateDialogOpen(true)}
               size="sm"
               className="w-full sm:w-auto text-xs sm:text-sm"
             >
               <Plus className='mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4' />
-              <span className="hidden sm:inline">Nuevo Descuento</span>
+              <span className="hidden sm:inline">Nuevo Remito</span>
               <span className="sm:hidden">Nuevo</span>
             </Button>
           </CardHeader>
           <CardContent className="p-3 sm:p-4 lg:p-6">
-            <DiscountsTable
-              discounts={discounts?.data || []}
-              pageCount={discounts?.meta?.totalPages || 0}
+            <QuotesTable
+              quotes={quotes?.data || []}
+              pageCount={quotes?.meta?.totalPages || 0}
               onPaginationChange={handlePaginationChange}
               onSortingChange={handleSortingChange}
               onSearchChange={handleSearchChange}
+              onFilterChange={handleFilterChange}
               onRefresh={handleRefresh}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onViewHistory={handleViewHistory}
+              onPreview={handlePreview}
               isLoading={isLoading}
               initialPage={pagination.page - 1}
               initialPageSize={pagination.pageSize}
@@ -117,33 +120,33 @@ const DiscountsContainer = () => {
         </Card>
       </div>
 
-      <AddDiscountDialog
-        isOpen={isAddDialogOpen}
-        onOpenChange={setIsAddDialogOpen}
-        onDiscountAdded={handleRefresh}
+      <CreateQuoteDialog
+        isOpen={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onQuoteCreated={handleRefresh}
       />
 
-      <EditDiscountDialog
-        discount={selectedDiscount}
+      <EditQuoteDialog
+        quote={selectedQuote}
         isOpen={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
-        onDiscountUpdated={handleRefresh}
+        onQuoteUpdated={handleRefresh}
       />
 
-      <DeleteDiscountDialog
-        discount={selectedDiscount}
+      <DeleteQuoteDialog
+        quote={selectedQuote}
         isOpen={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
-        onDiscountDeleted={handleRefresh}
+        onQuoteDeleted={handleRefresh}
       />
 
-      <PromotionUsageHistoryModal
-        isOpen={isHistoryModalOpen}
-        onOpenChange={setIsHistoryModalOpen}
-        discount={selectedDiscount}
+      <QuotePreviewDialog
+        quote={selectedQuote}
+        isOpen={isPreviewDialogOpen}
+        onOpenChange={setIsPreviewDialogOpen}
       />
     </LayoutMultiRole>
   )
 }
 
-export default DiscountsContainer
+export default QuotesContainer

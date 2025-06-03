@@ -105,23 +105,27 @@ const InventoryAlerts = () => {
 
   if (loading) {
     return (
-      <div className='flex justify-center items-center'>
+      <div className='flex justify-center items-center py-4'>
         <Loader />
       </div>
     )
   }
 
   return (
-    <div className='space-y-4 mb-6'>
-      <div className='flex items-center gap-2 mb-4 sm:flex-row flex-col'>
+    <div className='space-y-4 mb-4 sm:mb-6'>
+      <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4'>
         {/* @ts-ignore */}
-        <TriangularFlag className='h-6 w-6' />
-        <h2 className='text-2xl font-bold'>Alertas de Inventario</h2>
+        <TriangularFlag className='h-5 w-5 sm:h-6 sm:w-6 mx-auto sm:mx-0' />
+        <h2 className='text-xl sm:text-2xl font-bold text-center sm:text-left'>
+          Alertas de Inventario
+        </h2>
       </div>
       {alerts.length === 0 ? (
-        <p>No hay alertas pendientes</p>
+        <p className='text-center sm:text-left text-muted-foreground'>
+          No hay alertas pendientes
+        </p>
       ) : (
-        <div className='grid gap-4 max-h-[500px] overflow-y-auto scroll-shadow'>
+        <div className='grid gap-3 sm:gap-4 max-h-[400px] sm:max-h-[500px] overflow-y-auto scroll-shadow'>
           {alerts.length > 0 &&
             alerts.map((alert) => (
               <AlertCard

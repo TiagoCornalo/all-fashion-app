@@ -14,13 +14,13 @@ const SaleNotes = ({ notes }: SaleNotesProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='flex items-center'>
-          <FileText className='mr-2 h-5 w-5' />
+        <CardTitle className='flex items-center text-base sm:text-lg'>
+          <FileText className='mr-2 h-4 w-4 sm:h-5 sm:w-5' />
           Notas
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p>{notes}</p>
+        <p className='text-sm sm:text-base break-words'>{notes}</p>
       </CardContent>
     </Card>
   )

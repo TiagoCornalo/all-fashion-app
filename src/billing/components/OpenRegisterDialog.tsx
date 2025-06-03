@@ -119,10 +119,10 @@ const OpenRegisterDialog = ({ isOpen, onClose }: OpenRegisterDialogProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className='w-[95vw] max-w-[425px]'>
         <DialogHeader>
-          <DialogTitle>Abrir Caja</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className='text-lg sm:text-xl'>Abrir Caja</DialogTitle>
+          <DialogDescription className='text-sm sm:text-base'>
             Ingrese el saldo inicial para abrir la caja del día
           </DialogDescription>
         </DialogHeader>
@@ -134,7 +134,7 @@ const OpenRegisterDialog = ({ isOpen, onClose }: OpenRegisterDialogProps) => {
               name='initialBalance'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Saldo Inicial</FormLabel>
+                  <FormLabel className='text-sm sm:text-base'>Saldo Inicial</FormLabel>
                   <FormControl>
                     <Input
                       type='text'
@@ -161,6 +161,7 @@ const OpenRegisterDialog = ({ isOpen, onClose }: OpenRegisterDialogProps) => {
                           field.onChange(Number(value))
                         }
                       }}
+                      className='h-9 sm:h-10'
                     />
                   </FormControl>
                   <FormMessage />
@@ -170,11 +171,19 @@ const OpenRegisterDialog = ({ isOpen, onClose }: OpenRegisterDialogProps) => {
 
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant='outline' type='button'>
+                <Button
+                  variant='outline'
+                  type='button'
+                  className='w-full sm:w-auto h-9 sm:h-10'
+                >
                   Cancelar
                 </Button>
               </DialogClose>
-              <Button type='submit' disabled={isSubmitting || isLoading}>
+              <Button
+                type='submit'
+                disabled={isSubmitting || isLoading}
+                className='w-full sm:w-auto h-9 sm:h-10'
+              >
                 {isSubmitting ? 'Abriendo...' : 'Abrir Caja'}
               </Button>
             </DialogFooter>

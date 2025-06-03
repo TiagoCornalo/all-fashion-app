@@ -63,39 +63,43 @@ const InventoryContainer = () => {
   return (
     <LayoutAdmin>
       <InventoryProvider onRefresh={handleRefresh}>
-        <section className='w-full p-4'>
-          <InventoryAlerts />
-          <div className='flex items-center gap-2 text-center'>
-            {/* @ts-ignore */}
-            <Package className='h-6 w-6' />
-            <h1 className='text-3xl font-bold'>Inventario</h1>
-          </div>
-        </section>
+        <div className='space-y-4 p-2 sm:p-4'>
+          <section className='w-full'>
+            <InventoryAlerts />
+            <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4'>
+              {/* @ts-ignore */}
+              <Package className='h-6 w-6 sm:h-8 sm:w-8 mx-auto sm:mx-0' />
+              <h1 className='text-2xl sm:text-3xl font-bold text-center sm:text-left'>
+                Inventario
+              </h1>
+            </div>
+          </section>
 
-        <section className='w-full p-4'>
-          <DataTable
-            columns={({ onEdit, onDelete }) => columns({ onEdit, onDelete })}
-            data={tableData.data}
-            pageCount={tableData.meta.totalPages}
-            onPaginationChange={(page: number, pageSize: number) =>
-              handleTableChange({ page, pageSize })
-            }
-            onSortingChange={(sortBy: string, sortOrder: 'asc' | 'desc') =>
-              handleTableChange({ sortBy, sortOrder })
-            }
-            onFilterChange={(filters: Record<string, string>) =>
-              handleTableChange({ filters })
-            }
-            onSearchChange={(search: string) =>
-              handleTableChange({
-                search
-              })
-            }
-            initialPage={tableData.meta.page - 1}
-            initialPageSize={tableData.meta.pageSize}
-            onRefresh={handleRefresh}
-          />
-        </section>
+          <section className='w-full'>
+            <DataTable
+              columns={({ onEdit, onDelete }) => columns({ onEdit, onDelete })}
+              data={tableData.data}
+              pageCount={tableData.meta.totalPages}
+              onPaginationChange={(page: number, pageSize: number) =>
+                handleTableChange({ page, pageSize })
+              }
+              onSortingChange={(sortBy: string, sortOrder: 'asc' | 'desc') =>
+                handleTableChange({ sortBy, sortOrder })
+              }
+              onFilterChange={(filters: Record<string, string>) =>
+                handleTableChange({ filters })
+              }
+              onSearchChange={(search: string) =>
+                handleTableChange({
+                  search
+                })
+              }
+              initialPage={tableData.meta.page - 1}
+              initialPageSize={tableData.meta.pageSize}
+              onRefresh={handleRefresh}
+            />
+          </section>
+        </div>
       </InventoryProvider>
     </LayoutAdmin>
   )

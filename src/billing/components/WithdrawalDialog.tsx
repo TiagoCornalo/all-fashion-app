@@ -82,10 +82,10 @@ const WithdrawalDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className='w-[95vw] max-w-[425px]'>
         <DialogHeader>
-          <DialogTitle>Depósito</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className='text-lg sm:text-xl'>Retiro</DialogTitle>
+          <DialogDescription className='text-sm sm:text-base'>
             Ingrese el monto a retirar y las notas
           </DialogDescription>
         </DialogHeader>
@@ -97,11 +97,12 @@ const WithdrawalDialog = ({
               name='amount'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Monto a retirar</FormLabel>
+                  <FormLabel className='text-sm sm:text-base'>Monto a retirar</FormLabel>
                   <FormControl>
                     <Input
                       type='number'
                       {...field}
+                      className='h-9 sm:h-10'
                       onChange={(e) => {
                         const value =
                           e.target.value === '' ? '' : Number(e.target.value)
@@ -119,9 +120,13 @@ const WithdrawalDialog = ({
               name='notes'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notas</FormLabel>
+                  <FormLabel className='text-sm sm:text-base'>Notas</FormLabel>
                   <FormControl>
-                    <Textarea {...field} placeholder='Notas adicionales...' />
+                    <Textarea
+                      {...field}
+                      placeholder='Notas adicionales...'
+                      className='min-h-[80px] sm:min-h-[100px]'
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -129,10 +134,19 @@ const WithdrawalDialog = ({
             />
 
             <DialogFooter>
-              <Button variant='outline' onClick={() => onOpenChange(false)}>
+              <Button
+                variant='outline'
+                onClick={() => onOpenChange(false)}
+                className='w-full sm:w-auto h-9 sm:h-10'
+              >
                 Cancelar
               </Button>
-              <Button type='submit' disabled={isSubmitting} variant='error'>
+              <Button
+                type='submit'
+                disabled={isSubmitting}
+                variant='error'
+                className='w-full sm:w-auto h-9 sm:h-10'
+              >
                 {isSubmitting ? 'Retirando...' : 'Retirar'}
               </Button>
             </DialogFooter>

@@ -76,18 +76,20 @@ export default function BillingContainer() {
 
   return (
     <LayoutMultiRole allowedRoles={['ADMIN', 'SELLER', 'MANAGER']}>
-      <div className='p-4'>
-        <div className='flex items-center gap-2 mb-4'>
+      <div className='space-y-4 p-2 sm:p-4'>
+        <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4'>
           {/* @ts-ignore */}
-          <Receipt className='h-6 w-6' />
-          <h1 className='text-2xl font-bold'>Facturación</h1>
+          <Receipt className='h-6 w-6 sm:h-8 sm:w-8 mx-auto sm:mx-0' />
+          <h1 className='text-2xl sm:text-3xl font-bold text-center sm:text-left'>
+            Facturación
+          </h1>
         </div>
 
         {!currentRegister ? (
-          <>
+          <div className='space-y-4'>
             <Button
               onClick={() => setIsOpenRegisterOpen(true)}
-              className='bg-green-600 hover:bg-green-700'
+              className='bg-green-600 hover:bg-green-700 w-full sm:w-auto'
             >
               Abrir Caja
             </Button>
@@ -97,11 +99,11 @@ export default function BillingContainer() {
                 onClose={() => setIsOpenRegisterOpen(false)}
               />
             )}
-          </>
+          </div>
         ) : (
           <Card className='space-y-4'>
             <CardHeader>
-              <CardTitle>
+              <CardTitle className='text-lg sm:text-xl'>
                 Balance actual:{' '}
                 <span
                   className={`${getBalanceColor(
@@ -112,15 +114,15 @@ export default function BillingContainer() {
                 </span>
               </CardTitle>
               <CardDescription>
-                <div className='flex flex-col gap-2'>
-                  <span className='text-sm text-gray-500'>
+                <div className='flex flex-col gap-2 text-sm'>
+                  <span className='text-gray-500'>
                     Abierta el:{' '}
                     {new Date(currentRegister.openedAt).toLocaleString('es-ES')}
                   </span>
-                  <span className='text-sm text-gray-500'>
+                  <span className='text-gray-500'>
                     Abierta por: {currentRegister.openedBy.name}
                   </span>
-                  <span className='text-sm text-gray-500'>
+                  <span className='text-gray-500'>
                     Ultima venta:{' '}
                     {currentRegister.movements.length > 0
                       ? new Date(

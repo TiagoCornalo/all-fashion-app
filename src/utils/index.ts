@@ -64,6 +64,27 @@ export const formatCurrency = (amount: number) => {
 }
 
 /**
+ * Formatear fecha para mostrar (solo fecha, sin hora)
+ * @param date - Fecha a formatear (Date object o string ISO)
+ * @returns Fecha formateada en español
+ */
+export const formatDate = (date: Date | string): string => {
+  if (!date) return ''
+
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+
+  if (isNaN(dateObj.getTime())) {
+    return ''
+  }
+
+  return dateObj.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+}
+
+/**
  * Formatear fecha y hora para mostrar
  * @param date - Fecha a formatear (Date object o string ISO)
  * @returns Fecha formateada

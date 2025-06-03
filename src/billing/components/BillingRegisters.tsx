@@ -20,34 +20,46 @@ const BillingRegisters = () => {
   }
 
   return (
-    <div className='p-4'>
-      {isAdmin && <>
-        <div className='flex items-center gap-2 mb-4'>
-          {/* @ts-ignore */}
-          <CardIndexDividers className='h-6 w-6' />
-          <h1 className='text-2xl font-bold'>Registros</h1>
-        </div>
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-          <Button variant='outline' onClick={handleOpenCashRegisters}>
-            Ultimas cajas
-          </Button>
-          <Button variant='outline' onClick={handleOpenLastSales}>
-            Ultimas ventas
-          </Button>
-        </div>
-        {isOpenCashRegisters && (
-          <BillingLastCashRegisters
-            isOpen={isOpenCashRegisters}
-            onOpenChange={setIsOpenCashRegisters}
-          />
-        )}
-        {isOpenLastSales && (
-          <BillingLastSales
-            isOpen={isOpenLastSales}
-            onOpenChange={setIsOpenLastSales}
-          />
-        )}
-      </>}
+    <div className='p-2 sm:p-4'>
+      {isAdmin && (
+        <>
+          <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4'>
+            {/* @ts-ignore */}
+            <CardIndexDividers className='h-5 w-5 sm:h-6 sm:w-6 mx-auto sm:mx-0' />
+            <h1 className='text-xl sm:text-2xl font-bold text-center sm:text-left'>
+              Registros
+            </h1>
+          </div>
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4'>
+            <Button
+              variant='outline'
+              onClick={handleOpenCashRegisters}
+              className='w-full h-10 sm:h-auto'
+            >
+              Últimas cajas
+            </Button>
+            <Button
+              variant='outline'
+              onClick={handleOpenLastSales}
+              className='w-full h-10 sm:h-auto'
+            >
+              Últimas ventas
+            </Button>
+          </div>
+          {isOpenCashRegisters && (
+            <BillingLastCashRegisters
+              isOpen={isOpenCashRegisters}
+              onOpenChange={setIsOpenCashRegisters}
+            />
+          )}
+          {isOpenLastSales && (
+            <BillingLastSales
+              isOpen={isOpenLastSales}
+              onOpenChange={setIsOpenLastSales}
+            />
+          )}
+        </>
+      )}
     </div>
   )
 }

@@ -106,8 +106,6 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
     }
   })
 
-
-
   /**
    * Abre el modal de verificación
    */
@@ -159,8 +157,6 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
     })
   }
 
-
-
   /**
    * Obtiene el estado visual del pago
    */
@@ -182,38 +178,40 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
     <>
       <Card>
         <CardHeader>
-          <CardTitle className='flex items-center gap-2'>
-            <Phone className='h-5 w-5' />
+          <CardTitle className='flex items-center gap-2 text-base sm:text-lg'>
+            <Phone className='h-4 w-4 sm:h-5 sm:w-5' />
             Verificación de Transferencias
           </CardTitle>
         </CardHeader>
-        <CardContent className='space-y-4'>
+        <CardContent className='space-y-3 sm:space-y-4'>
           {transferPayments.map((payment, index) => {
             const status = getPaymentStatus(payment)
             const StatusIcon = status.icon
 
             return (
-              <div key={payment._id || index} className='border rounded-lg p-4 space-y-3'>
-                <div className='flex items-center justify-between'>
+              <div key={payment._id || index} className='border rounded-lg p-3 sm:p-4 space-y-3 sm:space-y-4'>
+                <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
                   <div className='flex items-center gap-2'>
-                    <StatusIcon className='h-5 w-5' />
-                    <span className='font-medium'>Transferencia ${payment.amount.toFixed(2)}</span>
-                    <Badge className={status.color}>{status.text}</Badge>
+                    <StatusIcon className='h-4 w-4 sm:h-5 sm:w-5' />
+                    <span className='font-medium text-sm sm:text-base'>Transferencia ${payment.amount.toFixed(2)}</span>
+                    <Badge className={`${status.color} text-xs`}>{status.text}</Badge>
                   </div>
                 </div>
 
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-sm'>
+                <div className='grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm'>
                   <div>
                     <span className='font-medium'>Teléfono del cliente:</span>
-                    <div className='flex items-center gap-2'>
-                      <Phone className='h-4 w-4' />
-                      <span>{payment.customerPhone || 'No proporcionado'}</span>
+                    <div className='flex flex-col sm:flex-row sm:items-center gap-2 mt-1'>
+                      <div className='flex items-center gap-2'>
+                        <Phone className='h-3 w-3 sm:h-4 sm:w-4' />
+                        <span>{payment.customerPhone || 'No proporcionado'}</span>
+                      </div>
                       {payment.customerPhone && (
                         <Button
                           size='sm'
                           variant='outline'
                           onClick={() => handleOpenWhatsApp(payment.customerPhone!)}
-                          className='ml-2 h-6 px-2 text-xs'
+                          className='h-6 sm:h-7 px-2 text-xs w-full sm:w-auto'
                         >
                           <MessageCircle className='h-3 w-3 mr-1' />
                           WhatsApp
@@ -223,17 +221,17 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                   </div>
                   <div>
                     <span className='font-medium'>Referencia:</span>
-                    <div>{payment.transferReference || 'No proporcionado'}</div>
+                    <div className='mt-1 break-all'>{payment.transferReference || 'No proporcionado'}</div>
                   </div>
                 </div>
 
                 {/* Información de proveedores */}
                 {suppliers && suppliers.length > 0 && (
-                  <div className='bg-blue-50 p-3 rounded-md'>
-                    <div className='text-sm font-medium text-blue-800 mb-3'>
+                  <div className='bg-blue-50 p-3 sm:p-4 rounded-md'>
+                    <div className='text-xs sm:text-sm font-medium text-blue-800 mb-3'>
                       {suppliers.length === 1 ? 'Proveedor:' : `Proveedores (${suppliers.length}):`}
                     </div>
-                    <div className='space-y-3'>
+                    <div className='space-y-2 sm:space-y-3'>
                       {suppliers.map((supplier) => {
                         // Encontrar productos de este proveedor
                         const supplierProducts = items.filter(item =>
@@ -241,12 +239,12 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                         );
 
                         return (
-                          <div key={supplier._id} className='bg-white p-3 rounded border'>
-                            <div className='flex items-center justify-between mb-2'>
-                              <div>
-                                <span className='font-medium text-gray-900'>{supplier.name}</span>
+                          <div key={supplier._id} className='bg-white p-2 sm:p-3 rounded border'>
+                            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2'>
+                              <div className='flex-1 min-w-0'>
+                                <span className='font-medium text-gray-900 text-sm sm:text-base truncate block'>{supplier.name}</span>
                                 {supplier.contact?.phone && (
-                                  <span className='text-gray-600 ml-2 text-sm'>
+                                  <span className='text-gray-600 text-xs sm:text-sm'>
                                     📞 {supplier.contact.phone}
                                   </span>
                                 )}
@@ -256,7 +254,7 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                                   size='sm'
                                   variant='outline'
                                   onClick={() => handleOpenWhatsApp(supplier.contact.phone)}
-                                  className='h-7 px-2 text-xs'
+                                  className='h-6 sm:h-7 px-2 text-xs w-full sm:w-auto flex-shrink-0'
                                 >
                                   <MessageCircle className='h-3 w-3 mr-1' />
                                   WhatsApp
@@ -266,14 +264,15 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
 
                             {/* Productos de este proveedor */}
                             {supplierProducts.length > 0 && (
-                              <div className='text-xs text-gray-600'>
+                              <div className='text-xs text-gray-600 bg-gray-50 p-2 rounded'>
                                 <span className='font-medium'>Productos: </span>
-                                {supplierProducts.map((item, idx) => (
-                                  <span key={item.product._id}>
-                                    {item.product.name} (x{item.quantity})
-                                    {idx < supplierProducts.length - 1 ? ', ' : ''}
-                                  </span>
-                                ))}
+                                <div className='mt-1 space-y-1'>
+                                  {supplierProducts.map((item, idx) => (
+                                    <div key={item.product._id} className='break-words'>
+                                      • {item.product.name} (x{item.quantity})
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             )}
                           </div>
@@ -284,60 +283,62 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                 )}
 
                 {payment.verified !== undefined && (
-                  <div className='bg-gray-50 p-3 rounded-md space-y-2'>
-                    <div className='flex items-center gap-2 text-sm'>
-                      <User className='h-4 w-4' />
+                  <div className='bg-gray-50 p-3 sm:p-4 rounded-md space-y-2'>
+                    <div className='flex items-center gap-2 text-xs sm:text-sm'>
+                      <User className='h-3 w-3 sm:h-4 sm:w-4' />
                       <span className='font-medium'>
                         {payment.verified ? 'Verificado' : 'Rechazado'}
                         {payment.verificationDate && ` el ${formatDateTime(new Date(payment.verificationDate))}`}
                       </span>
                     </div>
                     {payment.verificationNotes && (
-                      <div className='text-sm text-gray-600'>
+                      <div className='text-xs sm:text-sm text-gray-600'>
                         <span className='font-medium'>Notas:</span> {payment.verificationNotes}
                       </div>
                     )}
                   </div>
                 )}
 
-                <div className='flex gap-2 pt-2'>
+                <div className='flex flex-col sm:flex-row gap-2 pt-2'>
                   {payment.verified === undefined && (
                     <>
                       <Button
                         size='sm'
                         onClick={() => handleVerificationClick(payment, 'verify')}
-                        className='bg-green-600 hover:bg-green-700'
+                        className='bg-green-600 hover:bg-green-700 w-full sm:w-auto text-xs sm:text-sm'
                       >
-                        <CheckCircle className='h-4 w-4 mr-1' />
+                        <CheckCircle className='h-3 w-3 sm:h-4 sm:w-4 mr-1' />
                         Verificar
                       </Button>
                       <Button
                         size='sm'
                         variant='destructive'
                         onClick={() => handleVerificationClick(payment, 'reject')}
+                        className='w-full sm:w-auto text-xs sm:text-sm'
                       >
-                        <XCircle className='h-4 w-4 mr-1' />
+                        <XCircle className='h-3 w-3 sm:h-4 sm:w-4 mr-1' />
                         Rechazar
                       </Button>
                       <Button
                         size='sm'
                         variant='outline'
                         onClick={() => handleResendClick(payment)}
+                        className='w-full sm:w-auto text-xs sm:text-sm'
                       >
-                        <MessageCircle className='h-4 w-4 mr-1' />
+                        <MessageCircle className='h-3 w-3 sm:h-4 sm:w-4 mr-1' />
                         Ver Comprobante
                       </Button>
                     </>
                   )}
 
                   {payment.verified === true && (
-                    <div className='text-sm text-green-700 font-medium'>
+                    <div className='text-xs sm:text-sm text-green-700 font-medium text-center sm:text-left'>
                       ✅ Transferencia verificada y procesada
                     </div>
                   )}
 
                   {payment.verified === false && (
-                    <div className='text-sm text-red-700 font-medium'>
+                    <div className='text-xs sm:text-sm text-red-700 font-medium text-center sm:text-left'>
                       ❌ Transferencia rechazada
                     </div>
                   )}
@@ -350,13 +351,13 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
 
       {/* Modal de Verificación */}
       <Dialog open={showVerificationModal} onOpenChange={setShowVerificationModal}>
-        <DialogContent className='sm:max-w-[425px]'>
+        <DialogContent className='w-[95vw] max-w-md sm:max-w-[425px]'>
           <DialogHeader>
-            <DialogTitle className='flex items-center gap-2'>
+            <DialogTitle className='flex items-center gap-2 text-base sm:text-lg'>
               {verificationAction === 'verify' ? (
-                <CheckCircle className='h-5 w-5 text-green-600' />
+                <CheckCircle className='h-4 w-4 sm:h-5 sm:w-5 text-green-600' />
               ) : (
-                <XCircle className='h-5 w-5 text-red-600' />
+                <XCircle className='h-4 w-4 sm:h-5 sm:w-5 text-red-600' />
               )}
               {verificationAction === 'verify' ? 'Verificar' : 'Rechazar'} Transferencia
             </DialogTitle>
@@ -365,10 +366,10 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
           <Form {...verificationForm}>
             <form onSubmit={verificationForm.handleSubmit(handleVerificationSubmit)} className='space-y-4'>
               <div className='space-y-2'>
-                <div className='text-sm text-gray-600'>
+                <div className='text-xs sm:text-sm text-gray-600'>
                   <strong>Monto:</strong> ${selectedPayment?.amount.toFixed(2)}
                 </div>
-                <div className='text-sm text-gray-600'>
+                <div className='text-xs sm:text-sm text-gray-600'>
                   <strong>Teléfono:</strong> {selectedPayment?.customerPhone}
                 </div>
               </div>
@@ -378,10 +379,12 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                 name='notes'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notas (opcional)</FormLabel>
+                    <FormLabel className='text-sm'>Notas (opcional)</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder='Agregar notas sobre la verificación...'
+                        className='text-sm'
+                        rows={3}
                         {...field}
                       />
                     </FormControl>
@@ -390,18 +393,19 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                 )}
               />
 
-              <DialogFooter>
+              <DialogFooter className='flex flex-col sm:flex-row gap-2'>
                 <Button
                   type='button'
                   variant='outline'
                   onClick={() => setShowVerificationModal(false)}
+                  className='w-full sm:w-auto order-2 sm:order-1 text-xs sm:text-sm'
                 >
                   Cancelar
                 </Button>
                 <Button
                   type='submit'
                   disabled={verifyMutation.isPending}
-                  className={verificationAction === 'verify' ? 'bg-green-600 hover:bg-green-700' : ''}
+                  className={`w-full sm:w-auto order-1 sm:order-2 text-xs sm:text-sm ${verificationAction === 'verify' ? 'bg-green-600 hover:bg-green-700' : ''}`}
                   variant={verificationAction === 'verify' ? 'default' : 'destructive'}
                 >
                   {verifyMutation.isPending ? 'Procesando...' :
@@ -415,10 +419,10 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
 
       {/* Modal de Reenvío */}
       <Dialog open={showResendModal} onOpenChange={setShowResendModal}>
-        <DialogContent className='sm:max-w-[425px]'>
-          <DialogHeader>
-            <DialogTitle className='flex items-center gap-2'>
-              <MessageCircle className='h-5 w-5 text-blue-600' />
+        <DialogContent className='w-[95vw] max-w-md sm:max-w-[425px] max-h-[90vh] overflow-hidden flex flex-col'>
+          <DialogHeader className='flex-shrink-0'>
+            <DialogTitle className='flex items-center gap-2 text-base sm:text-lg'>
+              <MessageCircle className='h-4 w-4 sm:h-5 sm:w-5 text-blue-600' />
               {selectedPayment?.verified === undefined
                 ? 'Verificar Comprobante de Transferencia'
                 : 'Ver Comprobante de Transferencia'
@@ -426,17 +430,17 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
             </DialogTitle>
           </DialogHeader>
 
-          <div className='space-y-4'>
+          <div className='flex-1 overflow-auto space-y-4'>
             {/* Información de la transferencia */}
-            <div className='space-y-2 text-sm bg-gray-50 p-3 rounded-md'>
+            <div className='space-y-2 text-xs sm:text-sm bg-gray-50 p-3 rounded-md'>
               <div><strong>Cliente:</strong> {selectedPayment?.customerPhone}</div>
               <div><strong>Monto:</strong> ${selectedPayment?.amount.toFixed(2)}</div>
-              <div><strong>Referencia:</strong> {selectedPayment?.transferReference}</div>
+              <div className='break-all'><strong>Referencia:</strong> {selectedPayment?.transferReference}</div>
             </div>
 
             {/* Botón para abrir WhatsApp del cliente */}
             <div className='bg-green-50 p-3 rounded-md'>
-              <div className='text-sm font-medium text-green-800 mb-2'>
+              <div className='text-xs sm:text-sm font-medium text-green-800 mb-2'>
                 {selectedPayment?.verified === undefined
                   ? '1. Ver comprobante del cliente:'
                   : 'Ver comprobante del cliente:'
@@ -447,9 +451,9 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                 variant='outline'
                 onClick={() => selectedPayment?.customerPhone && handleOpenWhatsApp(selectedPayment.customerPhone)}
                 disabled={!selectedPayment?.customerPhone}
-                className='w-full'
+                className='w-full text-xs sm:text-sm'
               >
-                <MessageCircle className='h-4 w-4 mr-2' />
+                <MessageCircle className='h-3 w-3 sm:h-4 sm:w-4 mr-2' />
                 Abrir WhatsApp del Cliente
                 <ExternalLink className='h-3 w-3 ml-2' />
               </Button>
@@ -458,7 +462,7 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
             {/* Información de proveedores disponibles */}
             {suppliers && suppliers.length > 0 && selectedPayment?.verified === undefined && (
               <div className='bg-blue-50 p-3 rounded-md'>
-                <div className='text-sm font-medium text-blue-800 mb-3'>
+                <div className='text-xs sm:text-sm font-medium text-blue-800 mb-3'>
                   2. Reenviar al proveedor ({suppliers.length === 1 ? '1 proveedor' : `${suppliers.length} proveedores`}):
                 </div>
                 <div className='space-y-3'>
@@ -469,15 +473,15 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                     );
 
                     return (
-                      <div key={supplier._id} className='p-3 bg-white rounded border'>
-                        <div className='flex items-center justify-between mb-2'>
-                          <div className='flex-1'>
-                            <div className='font-medium text-gray-900'>{supplier.name}</div>
+                      <div key={supplier._id} className='p-2 sm:p-3 bg-white rounded border'>
+                        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2'>
+                          <div className='flex-1 min-w-0'>
+                            <div className='font-medium text-gray-900 text-sm truncate'>{supplier.name}</div>
                             {supplier.contact?.phone && (
-                              <div className='text-sm text-gray-600'>📞 {supplier.contact.phone}</div>
+                              <div className='text-xs text-gray-600'>📞 {supplier.contact.phone}</div>
                             )}
                             {supplier.contact?.email && (
-                              <div className='text-sm text-gray-600'>✉️ {supplier.contact.email}</div>
+                              <div className='text-xs text-gray-600'>✉️ {supplier.contact.email}</div>
                             )}
                           </div>
                           {supplier.contact?.phone && (
@@ -485,9 +489,9 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                               type='button'
                               size='sm'
                               onClick={() => handleOpenWhatsApp(supplier.contact.phone)}
-                              className='bg-green-600 hover:bg-green-700'
+                              className='bg-green-600 hover:bg-green-700 w-full sm:w-auto text-xs flex-shrink-0'
                             >
-                              <MessageCircle className='h-4 w-4 mr-1' />
+                              <MessageCircle className='h-3 w-3 sm:h-4 sm:w-4 mr-1' />
                               WhatsApp
                             </Button>
                           )}
@@ -497,12 +501,11 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                         {supplierProducts.length > 0 && (
                           <div className='bg-gray-50 p-2 rounded text-xs'>
                             <span className='font-medium text-gray-700'>Sus productos en esta venta: </span>
-                            <div className='mt-1'>
+                            <div className='mt-1 space-y-1'>
                               {supplierProducts.map((item, idx) => (
-                                <span key={item.product._id} className='text-gray-600'>
+                                <div key={item.product._id} className='text-gray-600 break-words'>
                                   • {item.product.name} (x{item.quantity})
-                                  {idx < supplierProducts.length - 1 ? ' ' : ''}
-                                </span>
+                                </div>
                               ))}
                             </div>
                           </div>
@@ -516,11 +519,11 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
 
             {/* Instrucciones del proceso */}
             {selectedPayment?.verified === undefined ? (
-              <div className='bg-yellow-50 p-4 rounded-md flex items-start gap-3'>
-                <AlertTriangle className='h-5 w-5 text-yellow-600 mt-0.5' />
-                <div className='text-sm text-yellow-800'>
+              <div className='bg-yellow-50 p-3 sm:p-4 rounded-md flex items-start gap-3'>
+                <AlertTriangle className='h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 mt-0.5 flex-shrink-0' />
+                <div className='text-xs sm:text-sm text-yellow-800'>
                   <div className='font-medium mb-2'>Proceso de verificación:</div>
-                  <ol className='list-decimal list-inside space-y-1'>
+                  <ol className='list-decimal list-inside space-y-1 text-xs sm:text-sm'>
                     <li>Haga clic en &quot;Abrir WhatsApp del Cliente&quot; para ver el comprobante</li>
                     <li>Descargue o tome captura del comprobante</li>
                     <li>Use los botones de WhatsApp de cada proveedor para reenviar</li>
@@ -529,9 +532,9 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                 </div>
               </div>
             ) : (
-              <div className='bg-green-50 p-4 rounded-md flex items-start gap-3'>
-                <CheckCircle className='h-5 w-5 text-green-600 mt-0.5' />
-                <div className='text-sm text-green-800'>
+              <div className='bg-green-50 p-3 sm:p-4 rounded-md flex items-start gap-3'>
+                <CheckCircle className='h-4 w-4 sm:h-5 sm:w-5 text-green-600 mt-0.5 flex-shrink-0' />
+                <div className='text-xs sm:text-sm text-green-800'>
                   <div className='font-medium mb-2'>Transferencia ya verificada</div>
                   <p>Esta transferencia fue verificada el {selectedPayment.verificationDate && new Date(selectedPayment.verificationDate).toLocaleString('es-ES')}.</p>
                   {selectedPayment.verificationNotes && (
@@ -540,17 +543,18 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                 </div>
               </div>
             )}
-
-            <DialogFooter>
-              <Button
-                type='button'
-                variant='outline'
-                onClick={() => setShowResendModal(false)}
-              >
-                Cerrar
-              </Button>
-            </DialogFooter>
           </div>
+
+          <DialogFooter className='flex-shrink-0 pt-3 border-t'>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => setShowResendModal(false)}
+              className='w-full text-xs sm:text-sm'
+            >
+              Cerrar
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

@@ -11,6 +11,7 @@ import { CheckCircle, Eye, Package, User, Calendar } from 'lucide-react'
 import { DataTableColumnHeader } from '../../../components/shared/DataTableColumnHeader'
 import { orderVerificationService, VerifiedOrder, VerifiedOrdersFilters } from '../../../services/orderVerification.service'
 import { formatDateTime } from '../../../utils'
+import { RECEPTION_STATUS } from '../../../utils/constants'
 
 /**
  * Componente para mostrar pedidos verificados en formato de tabla
@@ -66,7 +67,7 @@ const VerifiedOrders = () => {
         ),
         cell: ({ row }) => (
           <Badge variant="outline" className="bg-green-50 text-green-700">
-            {row.original.status}
+            {RECEPTION_STATUS[row.original.status as keyof typeof RECEPTION_STATUS]}
           </Badge>
         ),
         enableSorting: true

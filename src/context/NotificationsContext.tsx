@@ -88,7 +88,7 @@ export const NotificationsProvider = ({
       if (error.message === 'Authentication failed') {
         startTransition(() => {
           authService.logout()
-          navigate('/login')
+          navigate('/')
           toast.error('Sesión expirada. Por favor, inicia sesión nuevamente.')
         })
       }

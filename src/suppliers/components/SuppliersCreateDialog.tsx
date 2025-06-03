@@ -81,31 +81,31 @@ const SuppliersCreateDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[600px]'>
+      <DialogContent className='w-[95vw] max-w-md sm:max-w-lg'>
         <DialogHeader>
-          <DialogTitle>Crear Nuevo Proveedor</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className='text-lg sm:text-xl'>Crear Nuevo Proveedor</DialogTitle>
+          <DialogDescription className='text-sm sm:text-base'>
             Ingrese la información del proveedor
           </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className='grid w-full grid-cols-2'>
-            <TabsTrigger value='basic'>Información Básica</TabsTrigger>
-            <TabsTrigger value='products'>Productos</TabsTrigger>
+          <TabsList className='grid w-full grid-cols-2 mb-3 sm:mb-4'>
+            <TabsTrigger value='basic' className='text-xs sm:text-sm'>Información Básica</TabsTrigger>
+            <TabsTrigger value='products' className='text-xs sm:text-sm'>Productos</TabsTrigger>
           </TabsList>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
-              <TabsContent value='basic'>
+            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-3 sm:space-y-4'>
+              <TabsContent value='basic' className='space-y-3 sm:space-y-4'>
                 <FormField
                   control={form.control}
                   name='name'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nombre</FormLabel>
+                      <FormLabel className='text-sm sm:text-base'>Nombre</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} className='h-9 sm:h-10' />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -116,9 +116,9 @@ const SuppliersCreateDialog = ({
                   name='contact.email'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel className='text-sm sm:text-base'>Email</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} className='h-9 sm:h-10' />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -129,18 +129,18 @@ const SuppliersCreateDialog = ({
                   name='contact.phone'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Teléfono</FormLabel>
+                      <FormLabel className='text-sm sm:text-base'>Teléfono</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} className='h-9 sm:h-10' />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </TabsContent>
-              <TabsContent value='products'>
+              <TabsContent value='products' className='space-y-3 sm:space-y-4'>
                 <div className='space-y-4'>
-                  <p className='text-sm text-muted-foreground'>
+                  <p className='text-xs sm:text-sm text-muted-foreground text-center'>
                     Podrá agregar productos después de crear el proveedor
                   </p>
                 </div>
@@ -151,10 +151,11 @@ const SuppliersCreateDialog = ({
                   variant='outline'
                   onClick={() => onOpenChange(false)}
                   type='button'
+                  className='w-full sm:w-auto h-9 sm:h-10'
                 >
                   Cancelar
                 </Button>
-                <Button type='submit' disabled={isSubmitting}>
+                <Button type='submit' disabled={isSubmitting} className='w-full sm:w-auto h-9 sm:h-10'>
                   {isSubmitting ? 'Guardando...' : 'Crear Proveedor'}
                 </Button>
               </DialogFooter>

@@ -4,8 +4,7 @@ import {
   SuppliersHeader,
   SuppliersTable,
   SuppliersCreateDialog,
-  SuppliersCreateOrder,
-  PendingApprovalTable
+  SuppliersCreateOrder
 } from './components'
 import { getSuppliers } from '../services/suppliers'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -121,28 +120,27 @@ const SuppliersContainer = () => {
 
   return (
     <LayoutMultiRole allowedRoles={['ADMIN']}>
-      <section className='p-4'>
-        <div className='flex items-center gap-2 mb-4'>
+      <section className='p-2 sm:p-4'>
+        <div className='flex flex-col sm:flex-row sm:items-center gap-2 mb-4'>
           {/* @ts-ignore */}
-          <HandShake className='h-6 w-6' />
-          <h1 className='text-2xl font-bold'>Proveedores</h1>
+          <HandShake className='h-5 w-5 sm:h-6 sm:w-6' />
+          <h1 className='text-xl sm:text-2xl font-bold text-center sm:text-left'>Proveedores</h1>
         </div>
       </section>
-      <section className='p-4'>
+      <section className='p-2 sm:p-4'>
         <SuppliersHeader
           onAddSupplier={handleAddSupplier}
           onCreateOrder={handleCreateOrder}
         />
       </section>
-      <section className='p-4'>
+      <section className='p-2 sm:p-4'>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className='mb-4'>
-            <TabsTrigger value='suppliers'>Proveedores</TabsTrigger>
-            <TabsTrigger value='orders'>Pedidos</TabsTrigger>
-            <TabsTrigger value='pending-approval'>Pendientes de Aprobación</TabsTrigger>
+          <TabsList className='mb-4 sm:mb-6 grid w-full grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-0 h-auto p-1 sm:p-1'>
+            <TabsTrigger value='suppliers' className='text-xs sm:text-sm h-10 w-full justify-center'>Proveedores</TabsTrigger>
+            <TabsTrigger value='orders' className='text-xs sm:text-sm h-10 w-full justify-center'>Pedidos</TabsTrigger>
           </TabsList>
 
-          <TabsContent value='suppliers'>
+          <TabsContent value='suppliers' className='mt-4'>
             <SuppliersTable
               suppliers={suppliers?.data}
               isLoading={isLoading}
@@ -159,12 +157,8 @@ const SuppliersContainer = () => {
             />
           </TabsContent>
 
-          <TabsContent value='orders'>
+          <TabsContent value='orders' className='mt-4'>
             <SuppliersOrders />
-          </TabsContent>
-
-          <TabsContent value='pending-approval'>
-            <PendingApprovalTable />
           </TabsContent>
         </Tabs>
       </section>

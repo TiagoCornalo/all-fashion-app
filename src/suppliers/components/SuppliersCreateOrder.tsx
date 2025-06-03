@@ -200,148 +200,165 @@ const SuppliersCreateOrder = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[900px] overflow-y-auto max-h-[90vh]'>
-        <DialogHeader>
-          <DialogTitle>Crear Nueva Orden</DialogTitle>
-          <DialogDescription>
+      <DialogContent className='w-[95vw] max-w-2xl sm:max-w-4xl max-h-[90vh] overflow-hidden flex flex-col'>
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className='text-lg sm:text-xl'>Crear Nueva Orden</DialogTitle>
+          <DialogDescription className='text-sm sm:text-base'>
             Seleccione el proveedor y los productos para la orden
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
-            <FormField
-              control={form.control}
-              name='supplierId'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Proveedor</FormLabel>
-                  <FormControl>
-                    <ComboboxSuppliers
-                      value={field.value}
-                      onChange={handleSupplierChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <div className="flex-1 overflow-auto">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4 sm:space-y-6'>
+              <FormField
+                control={form.control}
+                name='supplierId'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='text-sm sm:text-base'>Proveedor</FormLabel>
+                    <FormControl>
+                      <ComboboxSuppliers
+                        value={field.value}
+                        onChange={handleSupplierChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {selectedSupplierId && (
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className='grid w-full grid-cols-2'>
-                  <TabsTrigger value='products'>Productos</TabsTrigger>
-                  <TabsTrigger
-                    value='order'
-                    disabled={selectedProducts.length === 0}
-                  >
-                    Pedido ({selectedProducts.length})
-                  </TabsTrigger>
-                </TabsList>
+              {selectedSupplierId && (
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList className='mb-4 sm:mb-6 grid w-full grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-0 h-auto p-1 sm:p-1'>
+                    <TabsTrigger value='products' className='text-xs sm:text-sm h-10 w-full justify-center'>
+                      Productos
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value='order'
+                      disabled={selectedProducts.length === 0}
+                      className='text-xs sm:text-sm h-10 w-full justify-center'
+                    >
+                      Pedido ({selectedProducts.length})
+                    </TabsTrigger>
+                  </TabsList>
 
-                <TabsContent value='products' className='space-y-4'>
-                  <SupplierProductsTable
-                    products={products}
-                    isLoading={isLoadingProducts}
-                    pageCount={pageCount}
-                    onPaginationChange={handlePaginationChange}
-                    onSortingChange={handleSortingChange}
-                    onSearchChange={handleSearchChange}
-                    onFilterChange={handleFilterChange}
-                    onRefresh={handleRefresh}
-                    initialPage={pagination.page - 1}
-                    initialPageSize={pagination.pageSize}
-                    onAddProduct={handleAddProduct}
-                    selectedProductIds={selectedProducts.map((p) => p._id)}
-                  />
-                </TabsContent>
+                  <TabsContent value='products' className='mt-4 space-y-3 sm:space-y-4'>
+                    <div className="overflow-x-auto">
+                      <SupplierProductsTable
+                        products={products}
+                        isLoading={isLoadingProducts}
+                        pageCount={pageCount}
+                        onPaginationChange={handlePaginationChange}
+                        onSortingChange={handleSortingChange}
+                        onSearchChange={handleSearchChange}
+                        onFilterChange={handleFilterChange}
+                        onRefresh={handleRefresh}
+                        initialPage={pagination.page - 1}
+                        initialPageSize={pagination.pageSize}
+                        onAddProduct={handleAddProduct}
+                        selectedProductIds={selectedProducts.map((p) => p._id)}
+                      />
+                    </div>
+                  </TabsContent>
 
-                <TabsContent value='order' className='space-y-4'>
-                  <div className='border rounded-md p-4'>
-                    <h3 className='font-medium mb-4'>
-                      Productos Seleccionados
-                    </h3>
-                    {selectedProducts.length === 0 ? (
-                      <p className='text-sm text-muted-foreground'>
-                        No hay productos seleccionados
-                      </p>
-                    ) : (
-                      <div className='space-y-4'>
-                        {selectedProducts.map((product) => (
-                          <div
-                            key={product._id}
-                            className='flex items-center justify-between gap-4 p-2 border rounded-md'
-                          >
-                            <div className='flex-1'>
-                              <div className='font-medium'>{product.name}</div>
-                              <div className='text-sm text-muted-foreground'>
-                                Código: {product.code} | Stock actual:{' '}
-                                {product.stock}
+                  <TabsContent value='order' className='mt-4 space-y-3 sm:space-y-4'>
+                    <div className='border rounded-md p-3 sm:p-4'>
+                      <h3 className='font-medium mb-3 sm:mb-4 text-sm sm:text-base'>
+                        Productos Seleccionados
+                      </h3>
+                      {selectedProducts.length === 0 ? (
+                        <p className='text-xs sm:text-sm text-muted-foreground text-center py-8'>
+                          No hay productos seleccionados
+                        </p>
+                      ) : (
+                        <div className='space-y-3 sm:space-y-4 max-h-60 overflow-y-auto'>
+                          {selectedProducts.map((product) => (
+                            <div
+                              key={product._id}
+                              className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-2 sm:p-3 border rounded-md'
+                            >
+                              <div className='flex-1 min-w-0'>
+                                <div className='font-medium text-sm sm:text-base truncate'>{product.name}</div>
+                                <div className='text-xs sm:text-sm text-muted-foreground'>
+                                  Código: {product.code} | Stock actual:{' '}
+                                  {product.stock}
+                                </div>
+                              </div>
+                              <div className='flex items-center gap-2 flex-shrink-0'>
+                                <div className='text-xs sm:text-sm whitespace-nowrap'>Cantidad:</div>
+                                <Input
+                                  type='number'
+                                  className='w-16 sm:w-20 h-8 sm:h-9'
+                                  min={1}
+                                  defaultValue={1}
+                                  onChange={(e) =>
+                                    handleQuantityChange(
+                                      product._id,
+                                      parseInt(e.target.value) || 1
+                                    )
+                                  }
+                                />
+                                <Button
+                                  type='button'
+                                  variant='ghost'
+                                  size='icon'
+                                  onClick={() => handleRemoveProduct(product._id)}
+                                  className='h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0'
+                                >
+                                  <Trash className='h-3 w-3 sm:h-4 sm:w-4' />
+                                </Button>
                               </div>
                             </div>
-                            <div className='flex items-center gap-2'>
-                              <div className='text-sm'>Cantidad:</div>
-                              <Input
-                                type='number'
-                                className='w-20'
-                                min={1}
-                                defaultValue={1}
-                                onChange={(e) =>
-                                  handleQuantityChange(
-                                    product._id,
-                                    parseInt(e.target.value) || 1
-                                  )
-                                }
-                              />
-                              <Button
-                                type='button'
-                                variant='ghost'
-                                size='icon'
-                                onClick={() => handleRemoveProduct(product._id)}
-                              >
-                                <Trash className='h-4 w-4' />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
 
-                  <FormField
-                    control={form.control}
-                    name='notes'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notas</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            placeholder='Notas adicionales para el pedido...'
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </TabsContent>
-              </Tabs>
-            )}
+                    <FormField
+                      control={form.control}
+                      name='notes'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-sm sm:text-base'>Notas</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              placeholder='Notas adicionales para el pedido...'
+                              className='resize-none text-sm'
+                              rows={3}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                </Tabs>
+              )}
 
-            <DialogFooter>
-              <Button
-                variant='outline'
-                onClick={() => onOpenChange(false)}
-                type='button'
-              >
-                Cancelar
-              </Button>
-              <Button type='submit' disabled={isSubmitting}>
-                {isSubmitting ? 'Creando...' : 'Crear Orden'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+              <DialogFooter className="flex-shrink-0 pt-4 border-t">
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  <Button
+                    variant='outline'
+                    onClick={() => onOpenChange(false)}
+                    type='button'
+                    className='w-full sm:w-auto h-9 sm:h-10 order-2 sm:order-1'
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type='submit'
+                    disabled={isSubmitting}
+                    className='w-full sm:w-auto h-9 sm:h-10 order-1 sm:order-2'
+                  >
+                    {isSubmitting ? 'Creando...' : 'Crear Orden'}
+                  </Button>
+                </div>
+              </DialogFooter>
+            </form>
+          </Form>
+        </div>
       </DialogContent>
     </Dialog>
   )

@@ -8,42 +8,50 @@ import {
   DialogFooter,
   Button
 } from '../../components'
-import { Discount } from '../../types/discount.types'
+import { Quote } from '../../types/quote.types'
 import { toast } from 'react-toastify'
 import { AlertTriangle } from 'lucide-react'
-import { updateDiscount } from '../../services/discounts'
+import { deleteQuote } from '../../services/quote.service'
 
-interface DeleteDiscountDialogProps {
-  discount: Discount | null
+interface DeleteQuoteDialogProps {
+  quote: Quote | null
   isOpen: boolean
   onOpenChange: (open: boolean) => void
-  onDiscountDeleted: () => Promise<void>
+  onQuoteDeleted: () => Promise<void>
 }
 
-const DeleteDiscountDialog = ({
-  discount,
+const DeleteQuoteDialog = ({
+  quote,
   isOpen,
   onOpenChange,
-  onDiscountDeleted
-}: DeleteDiscountDialogProps) => {
+  onQuoteDeleted
+}: DeleteQuoteDialogProps) => {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleDelete = async () => {
-    if (!discount) return
+    if (!quote?._id) return
 
     setIsDeleting(true)
     try {
-      // La API realiza un soft delete (cambia isActive a false)
-      await updateDiscount(discount._id, { ...discount, isActive: false })
-      toast.success('Descuento desactivado correctamente')
+      await deleteQuote(quote._id)
+      toast.success('Remito eliminado correctamente')
       onOpenChange(false)
-      await onDiscountDeleted()
+      await onQuoteDeleted()
     } catch (error) {
-      console.error('Error al desactivar descuento:', error)
-      toast.error('Error al desactivar el descuento')
+      console.error('Error al eliminar remito:', error)
+      toast.error('Error al eliminar el remito')
     } finally {
       setIsDeleting(false)
     }
+  }
+
+  const getTypeLabel = (type: string) => {
+    const typeLabels = {
+      'QUOTE': 'Presupuesto',
+      'ESTIMATE': 'Cotización',
+      'INVOICE': 'Factura'
+    }
+    return typeLabels[type as keyof typeof typeLabels] || type
   }
 
   return (
@@ -51,16 +59,24 @@ const DeleteDiscountDialog = ({
       <DialogContent className='w-[95vw] max-w-md sm:max-w-lg'>
         <DialogHeader className='flex flex-col items-center gap-2 sm:gap-3 text-center'>
           <AlertTriangle className='h-10 w-10 sm:h-12 sm:w-12 text-yellow-500' />
-          <DialogTitle className="text-base sm:text-lg">Desactivar Descuento</DialogTitle>
+          <DialogTitle className="text-base sm:text-lg">Eliminar Remito</DialogTitle>
         </DialogHeader>
 
         <DialogDescription className='text-center text-xs sm:text-sm text-gray-600 break-words'>
-          ¿Estás seguro de que deseas desactivar el descuento{' '}
-          <strong className="break-all">{discount?.code}</strong>?
+          ¿Estás seguro de que deseas eliminar el{' '}
+          <strong className="break-all">
+            {quote ? getTypeLabel(quote.type) : 'documento'} N° {quote?.number}
+          </strong>
+          {quote?.customer && (
+            <>
+              <br />
+              de <strong className="break-words">{quote.customer.name}</strong>
+            </>
+          )}
+          ?
           <br />
           <br />
-          Esta acción desactivará el descuento y no podrá ser utilizado en
-          nuevas ventas.
+          Esta acción no se puede deshacer.
         </DialogDescription>
 
         <DialogFooter className='flex flex-col sm:flex-row gap-2 sm:gap-0 sm:justify-between'>
@@ -82,7 +98,7 @@ const DeleteDiscountDialog = ({
             className="w-full sm:w-auto text-xs sm:text-sm order-1 sm:order-2"
             size="sm"
           >
-            {isDeleting ? 'Desactivando...' : 'Desactivar'}
+            {isDeleting ? 'Eliminando...' : 'Eliminar'}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -90,4 +106,4 @@ const DeleteDiscountDialog = ({
   )
 }
 
-export default DeleteDiscountDialog
+export default DeleteQuoteDialog

@@ -95,18 +95,18 @@ const AccountFilters = ({
 
   return (
     <Card>
-      <CardContent className="p-4">
-        <div className="space-y-4">
+      <CardContent className="p-3 sm:p-4">
+        <div className="space-y-3 sm:space-y-4">
           {/* Filtros básicos */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {/* Búsqueda */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <div className="relative sm:col-span-2 lg:col-span-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3 sm:h-4 sm:w-4" />
               <Input
                 placeholder="Buscar cliente o documento..."
                 value={filters.search || ''}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-10"
+                className="pl-8 sm:pl-10 text-xs sm:text-sm"
               />
             </div>
 
@@ -115,7 +115,7 @@ const AccountFilters = ({
               value={filters.status || 'all'}
               onValueChange={handleStatusChange}
             >
-              <SelectTrigger>
+              <SelectTrigger className="text-xs sm:text-sm">
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
@@ -135,7 +135,7 @@ const AccountFilters = ({
               value={filters.documentType || 'all'}
               onValueChange={handleDocumentTypeChange}
             >
-              <SelectTrigger>
+              <SelectTrigger className="text-xs sm:text-sm">
                 <SelectValue placeholder="Tipo documento" />
               </SelectTrigger>
               <SelectContent>
@@ -152,12 +152,14 @@ const AccountFilters = ({
             <Button
               variant={showAdvancedFilters ? "default" : "outline"}
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm w-full sm:w-auto"
+              size="sm"
             >
-              <SlidersHorizontal className="h-4 w-4" />
-              Filtros Avanzados
+              <SlidersHorizontal className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Filtros Avanzados</span>
+              <span className="sm:hidden">Avanzados</span>
               {hasActiveFilters && (
-                <Badge variant="secondary" className="ml-1">
+                <Badge variant="secondary" className="ml-1 text-xs">
                   {getActiveFiltersCount()}
                 </Badge>
               )}
@@ -170,6 +172,7 @@ const AccountFilters = ({
               variant={filters.hasOverdue ? "default" : "outline"}
               size="sm"
               onClick={() => handleOverdueFilter(!filters.hasOverdue)}
+              className="text-xs sm:text-sm"
             >
               Solo Vencidas
             </Button>
@@ -179,25 +182,26 @@ const AccountFilters = ({
                 variant="ghost"
                 size="sm"
                 onClick={handleClearFilters}
-                className="text-red-600 hover:text-red-700"
+                className="text-red-600 hover:text-red-700 text-xs sm:text-sm"
               >
-                <X className="h-4 w-4 mr-1" />
-                Limpiar Filtros
+                <X className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                <span className="hidden sm:inline">Limpiar Filtros</span>
+                <span className="sm:hidden">Limpiar</span>
               </Button>
             )}
           </div>
 
           {/* Filtros avanzados */}
           {showAdvancedFilters && (
-            <div className="border-t pt-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-3">
+            <div className="border-t pt-3 sm:pt-4">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-700 mb-3">
                 Filtros Avanzados
               </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {/* Saldo mínimo */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Saldo Mínimo
                   </label>
                   <Input
@@ -207,12 +211,13 @@ const AccountFilters = ({
                     onChange={(e) => setLocalMinBalance(e.target.value)}
                     onBlur={handleBalanceFilter}
                     onKeyPress={(e) => e.key === 'Enter' && handleBalanceFilter()}
+                    className="text-xs sm:text-sm"
                   />
                 </div>
 
                 {/* Saldo máximo */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Saldo Máximo
                   </label>
                   <Input
@@ -222,18 +227,21 @@ const AccountFilters = ({
                     onChange={(e) => setLocalMaxBalance(e.target.value)}
                     onBlur={handleBalanceFilter}
                     onKeyPress={(e) => e.key === 'Enter' && handleBalanceFilter()}
+                    className="text-xs sm:text-sm"
                   />
                 </div>
 
                 {/* Botón aplicar filtros de saldo */}
-                <div className="flex items-end">
+                <div className="flex items-end sm:col-span-2 lg:col-span-1">
                   <Button
                     onClick={handleBalanceFilter}
                     variant="outline"
-                    className="w-full"
+                    className="w-full text-xs sm:text-sm"
+                    size="sm"
                   >
-                    <Filter className="h-4 w-4 mr-2" />
-                    Aplicar Filtros de Saldo
+                    <Filter className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Aplicar Filtros de Saldo</span>
+                    <span className="sm:hidden">Aplicar</span>
                   </Button>
                 </div>
               </div>
@@ -242,36 +250,40 @@ const AccountFilters = ({
 
           {/* Filtros activos */}
           {hasActiveFilters && (
-            <div className="border-t pt-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">
+            <div className="border-t pt-3 sm:pt-4">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-700 mb-2">
                 Filtros Activos:
               </h4>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1 sm:gap-2">
                 {filters.search && (
-                  <Badge variant="secondary">
-                    Búsqueda: &quot;{filters.search}&quot;
+                  <Badge variant="secondary" className="text-xs">
+                    <span className="hidden sm:inline">Búsqueda: &quot;{filters.search}&quot;</span>
+                    <span className="sm:hidden">"{filters.search}"</span>
                   </Badge>
                 )}
                 {filters.status && (
-                  <Badge variant="secondary">
-                    Estado: {filters.status === 'ACTIVE' ? 'Activa' :
+                  <Badge variant="secondary" className="text-xs">
+                    <span className="hidden sm:inline">Estado: </span>
+                    {filters.status === 'ACTIVE' ? 'Activa' :
                       filters.status === 'OVERDUE' ? 'Vencida' :
                         filters.status === 'SUSPENDED' ? 'Suspendida' : 'Cerrada'}
                   </Badge>
                 )}
                 {filters.documentType && (
-                  <Badge variant="secondary">
-                    Documento: {filters.documentType}
+                  <Badge variant="secondary" className="text-xs">
+                    <span className="hidden sm:inline">Documento: </span>
+                    {filters.documentType}
                   </Badge>
                 )}
                 {filters.hasOverdue && (
-                  <Badge variant="secondary">
+                  <Badge variant="secondary" className="text-xs">
                     Solo Vencidas
                   </Badge>
                 )}
                 {(filters.minBalance || filters.maxBalance) && (
-                  <Badge variant="secondary">
-                    Saldo: {filters.minBalance ? formatCurrency(filters.minBalance) : '0'} - {filters.maxBalance ? formatCurrency(filters.maxBalance) : '∞'}
+                  <Badge variant="secondary" className="text-xs break-all">
+                    <span className="hidden sm:inline">Saldo: </span>
+                    {filters.minBalance ? formatCurrency(filters.minBalance) : '0'} - {filters.maxBalance ? formatCurrency(filters.maxBalance) : '∞'}
                   </Badge>
                 )}
               </div>

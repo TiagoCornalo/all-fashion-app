@@ -31,8 +31,8 @@ const SaleCombos = ({ combos }: SaleCombosProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='flex items-center'>
-          <Package className='mr-2 h-5 w-5' />
+        <CardTitle className='flex items-center text-base sm:text-lg'>
+          <Package className='mr-2 h-4 w-4 sm:h-5 sm:w-5' />
           Combos Aplicados
         </CardTitle>
       </CardHeader>
@@ -41,23 +41,25 @@ const SaleCombos = ({ combos }: SaleCombosProps) => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Código</TableHead>
-                <TableHead>Combo</TableHead>
-                <TableHead className='text-right'>Cantidad</TableHead>
-                <TableHead className='text-right'>Precio</TableHead>
-                <TableHead className='text-right'>Total</TableHead>
+                <TableHead className='text-xs sm:text-sm'>Código</TableHead>
+                <TableHead className='text-xs sm:text-sm'>Combo</TableHead>
+                <TableHead className='text-right text-xs sm:text-sm'>Cantidad</TableHead>
+                <TableHead className='text-right text-xs sm:text-sm'>Precio</TableHead>
+                <TableHead className='text-right text-xs sm:text-sm'>Total</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {combos.map((combo) => (
                 <TableRow key={combo._id}>
-                  <TableCell className='font-medium'>{combo.code}</TableCell>
-                  <TableCell>{combo.name}</TableCell>
-                  <TableCell className='text-right'>{combo.quantity}</TableCell>
-                  <TableCell className='text-right'>
+                  <TableCell className='font-medium text-xs sm:text-sm'>{combo.code}</TableCell>
+                  <TableCell className='text-xs sm:text-sm'>
+                    <div className='min-w-0 truncate'>{combo.name}</div>
+                  </TableCell>
+                  <TableCell className='text-right text-xs sm:text-sm'>{combo.quantity}</TableCell>
+                  <TableCell className='text-right text-xs sm:text-sm'>
                     {formatCurrency(combo.originalPrice)}
                   </TableCell>
-                  <TableCell className='text-right'>
+                  <TableCell className='text-right text-xs sm:text-sm font-medium'>
                     {formatCurrency(combo.totalPrice)}
                   </TableCell>
                 </TableRow>
