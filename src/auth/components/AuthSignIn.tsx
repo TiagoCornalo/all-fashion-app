@@ -9,7 +9,8 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-  Separator
+  Separator,
+  Loader
 } from '../../components'
 import { validateEmail } from '../../utils'
 import { useAuth } from '../../context/auth/useAuth'
@@ -27,20 +28,24 @@ const AuthSignIn = () => {
   const [password, setPassword] = useState('')
   const [emailError, setEmailError] = useState('')
   const [loginError, setLoginError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setLoginError('')
+    setIsLoading(true)
 
     // Validación básica del email
     const emailValidation = validateEmail(email)
     if (!emailValidation.isValid) {
       setEmailError(emailValidation.error)
+      setIsLoading(false)
       return
     }
 
     if (!password) {
       setLoginError('Por favor ingresa tu contraseña')
+      setIsLoading(false)
       return
     }
 
@@ -57,6 +62,8 @@ const AuthSignIn = () => {
     } catch (error) {
       console.error('Error al iniciar sesión:', error)
       setLoginError('Error al iniciar sesión')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -120,9 +127,15 @@ const AuthSignIn = () => {
             <Button
               type='submit'
               className='w-full'
-              disabled={!email || !password}
+              disabled={!email || !password || isLoading}
             >
-              Iniciar sesión
+              {isLoading ? (
+                <>
+                  <Loader className='mr-2 h-4 w-4' />
+                </>
+              ) : (
+                'Iniciar sesión'
+              )}
             </Button>
           </form>
         </CardContent>
