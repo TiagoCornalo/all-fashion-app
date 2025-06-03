@@ -1,4 +1,4 @@
-import { Package, HandShake, Bill, Label, BarChart, CreditCard } from '../assets'
+import { Package, HandShake, Bill, Label, BarChart, CreditCard, Memo } from '../assets'
 import { CheckCircle, Users, FileText } from 'lucide-react'
 
 export const MENU_ITEMS = [
@@ -17,7 +17,7 @@ export const MENU_ITEMS = [
   {
     title: 'Remitos/Presupuestos',
     url: '/quotes',
-    icon: FileText,
+    icon: Memo,
     roles: ['ADMIN', 'SELLER', 'MANAGER']
   },
   {
