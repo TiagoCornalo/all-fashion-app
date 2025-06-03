@@ -1,4 +1,4 @@
-import { Package, HandShake, Bill, Label, BarChart, CreditCard } from '../assets'
+import { Package, HandShake, Bill, Label, BarChart, CreditCard, Hammer } from '../assets'
 import { CheckCircle, Users, FileText } from 'lucide-react'
 
 export const MENU_ITEMS = [
@@ -18,6 +18,12 @@ export const MENU_ITEMS = [
     title: 'Remitos/Presupuestos',
     url: '/quotes',
     icon: FileText,
+    roles: ['ADMIN', 'SELLER', 'MANAGER']
+  },
+  {
+    title: 'Servicios Técnicos',
+    url: '/technical-services',
+    icon: Hammer,
     roles: ['ADMIN', 'SELLER', 'MANAGER']
   },
   {
@@ -61,12 +67,5 @@ export const MENU_ITEMS = [
     url: '/users',
     icon: Users,
     roles: ['ADMIN']
-  },
-/*   {
-    title: 'Servicios',
-    url: '/services',
-    icon: Hammer,
-    roles: ['ADMIN', 'SELLER', 'MANAGER'],
-    disabled: true
-  } */
+  }
 ]
