@@ -51,8 +51,7 @@ interface FormData {
 
   // Account settings
   creditLimit: number
-  paymentDays: number
-  interestRate: number
+  frequency: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY'
   status: 'ACTIVE' | 'SUSPENDED' | 'CLOSED' | 'OVERDUE'
   notes: string
   internalNotes: string
@@ -78,8 +77,7 @@ export const EditAccountForm = ({ account, onSuccess, onCancel }: EditAccountFor
       state: '',
       postalCode: '',
       creditLimit: 0,
-      paymentDays: 30,
-      interestRate: 5,
+      frequency: 'MONTHLY',
       status: 'ACTIVE',
       notes: '',
       internalNotes: ''
@@ -89,35 +87,24 @@ export const EditAccountForm = ({ account, onSuccess, onCancel }: EditAccountFor
   // Cargar datos de la cuenta al montar el componente o cuando cambien los datos
   useEffect(() => {
     if (account && account.customer) {
-      // El backend devuelve interestRate como decimal (ej: 0.005 = 0.5%)
-      // Lo convertimos a porcentaje para mostrar en el formulario
-      const interestRateAsPercentage = (account.paymentTerms?.interestRate || 0) * 100
-
-      // Usar setTimeout para asegurar que el form esté completamente montado
       setTimeout(() => {
-        // Cargar datos del cliente
         form.setValue('customerName', account.customer.name || '')
         form.setValue('documentType', (account.customer.documentType as 'DNI' | 'CUIT') || 'DNI')
         form.setValue('documentNumber', account.customer.documentNumber || '')
         form.setValue('phone', account.customer.phone || '')
         form.setValue('email', account.customer.email || '')
 
-        // Cargar dirección
         form.setValue('street', account.customer.address?.street || '')
         form.setValue('city', account.customer.address?.city || '')
         form.setValue('state', account.customer.address?.state || '')
         form.setValue('postalCode', account.customer.address?.postalCode || '')
 
-        // Cargar configuración de crédito - IMPORTANTE: Convertir a números
-        const creditLimit = Number(account.creditLimit) || 0
-        const paymentDays = Number(account.paymentTerms?.days) || 30
-        const interestRate = Number(interestRateAsPercentage) || 5
+        form.setValue('creditLimit', Number(account.creditLimit) || 0)
+        form.setValue(
+          'frequency',
+          (account.paymentTerms?.frequency as 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY') || 'MONTHLY'
+        )
 
-        form.setValue('creditLimit', creditLimit)
-        form.setValue('paymentDays', paymentDays)
-        form.setValue('interestRate', interestRate)
-
-        // Cargar estado y notas
         form.setValue('status', (account.status as 'ACTIVE' | 'SUSPENDED' | 'CLOSED' | 'OVERDUE') || 'ACTIVE')
         form.setValue('notes', account.notes || '')
         form.setValue('internalNotes', account.internalNotes || '')
@@ -161,8 +148,9 @@ export const EditAccountForm = ({ account, onSuccess, onCancel }: EditAccountFor
       },
       creditLimit: data.creditLimit,
       paymentTerms: {
-        days: data.paymentDays,
-        interestRate: data.interestRate / 100
+        days: account.paymentTerms?.days || 30,            // legacy preservado
+        interestRate: account.paymentTerms?.interestRate || 0, // legacy preservado
+        frequency: data.frequency || 'MONTHLY'
       },
       status: data.status,
       notes: data.notes || undefined,
@@ -181,7 +169,7 @@ export const EditAccountForm = ({ account, onSuccess, onCancel }: EditAccountFor
     const fieldsToValidate = step === 1
       ? ['customerName' as const, 'documentType' as const, 'documentNumber' as const]
       : step === 2
-        ? ['creditLimit' as const, 'paymentDays' as const, 'interestRate' as const]
+        ? ['creditLimit' as const, 'frequency' as const]
         : ['status' as const]
 
     const isValid = await form.trigger(fieldsToValidate)
@@ -454,126 +442,32 @@ export const EditAccountForm = ({ account, onSuccess, onCancel }: EditAccountFor
           />
 
           <FormField
-            key="paymentDays-field"
+            key='frequency-field'
             control={form.control}
-            name="paymentDays"
-            rules={{
-              required: "Los días de pago son requeridos",
-              min: { value: 1, message: "Debe ser al menos 1 día" }
-            }}
-            render={({ field }) => {
-              return (
-                <FormItem>
-                  <FormLabel>Días de Pago *</FormLabel>
+            name='frequency'
+            rules={{ required: 'La periodicidad es requerida' }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Periodicidad por defecto de cuotas *</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value || 'MONTHLY'}>
                   <FormControl>
-                    <Input
-                      key="paymentDays-input"
-                      type="number"
-                      min="1"
-                      placeholder="30"
-                      value={field.value === null || field.value === undefined ? '' : String(field.value)}
-                      onChange={(e) => {
-                        const value = e.target.value
-                        // Permitir string vacío temporalmente mientras edita
-                        if (value === '') {
-                          field.onChange('')
-                        } else {
-                          const numValue = parseInt(value)
-                          if (!isNaN(numValue)) {
-                            field.onChange(numValue)
-                          } else if (/^\d+$/.test(value)) {
-                            // Permitir escribir números válidos como string
-                            field.onChange(value)
-                          }
-                        }
-                      }}
-                      onBlur={(e) => {
-                        // En onBlur, convertir string vacío a valor por defecto
-                        const value = e.target.value
-                        if (value === '' || value === null || value === undefined) {
-                          field.onChange(30)
-                        } else {
-                          // Convertir a número si es string
-                          const numValue = parseInt(value)
-                          if (!isNaN(numValue)) {
-                            field.onChange(numValue)
-                          } else {
-                            field.onChange(30)
-                          }
-                        }
-                        field.onBlur()
-                      }}
-                      name={field.name}
-                      ref={field.ref}
-                    />
+                    <SelectTrigger>
+                      <SelectValue placeholder='Elegir periodicidad' />
+                    </SelectTrigger>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )
-            }}
-          />
-
-          <FormField
-            key="interestRate-field"
-            control={form.control}
-            name="interestRate"
-            rules={{
-              required: "La tasa de interés es requerida",
-              min: { value: 0, message: "La tasa debe ser mayor o igual a 0" },
-              max: { value: 100, message: "La tasa no puede ser mayor a 100%" }
-            }}
-            render={({ field }) => {
-              return (
-                <FormItem>
-                  <FormLabel>Tasa de Interés (%) *</FormLabel>
-                  <FormControl>
-                    <Input
-                      key="interestRate-input"
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      placeholder="5.00"
-                      value={field.value === null || field.value === undefined ? '' : String(field.value)}
-                      onChange={(e) => {
-                        const value = e.target.value
-                        // Permitir string vacío temporalmente mientras edita
-                        if (value === '') {
-                          field.onChange('')
-                        } else {
-                          const numValue = parseFloat(value)
-                          if (!isNaN(numValue)) {
-                            field.onChange(numValue)
-                          } else if (value === '0' || value.startsWith('0.') || value.startsWith('0,') || /^\d+\.?\d*$/.test(value)) {
-                            // Permitir escribir números decimales válidos como string
-                            field.onChange(value)
-                          }
-                        }
-                      }}
-                      onBlur={(e) => {
-                        // En onBlur, convertir string vacío a valor por defecto
-                        const value = e.target.value
-                        if (value === '' || value === null || value === undefined) {
-                          field.onChange(5)
-                        } else {
-                          // Convertir a número si es string
-                          const numValue = parseFloat(value)
-                          if (!isNaN(numValue)) {
-                            field.onChange(numValue)
-                          } else {
-                            field.onChange(5)
-                          }
-                        }
-                        field.onBlur()
-                      }}
-                      name={field.name}
-                      ref={field.ref}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )
-            }}
+                  <SelectContent>
+                    <SelectItem value='WEEKLY'>Semanal (cada 7 días)</SelectItem>
+                    <SelectItem value='BIWEEKLY'>Quincenal (cada 15 días)</SelectItem>
+                    <SelectItem value='MONTHLY'>Mensual (cada 30 días)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className='text-[10px] text-muted-foreground mt-1'>
+                  Default al armar el plan de cuotas en cada venta. La tasa de interés
+                  se configura por plan en <strong>Configuración de pagos</strong>.
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
       </CardContent>

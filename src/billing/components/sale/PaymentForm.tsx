@@ -16,9 +16,11 @@ import * as z from 'zod'
 import { PaymentType } from '../../../types/sale.types'
 import { Checkbox } from '../../../components'
 import { useSaleForm } from '../hooks/useSaleForm'
+import { useSaleTotals } from '../hooks/useSaleTotals'
 import { useEffect, useState } from 'react'
 import { useSaleStore } from '../../../stores/saleStore'
 import { AccountPayablePaymentForm } from './AccountPayablePaymentForm'
+import { useActiveBanks } from '../../../hooks/useBanks'
 
 const formSchema = z.object({
   selectedMethods: z.array(z.enum(['CASH', 'DEBIT', 'CREDIT', 'TRANSFER', 'ACCOUNT_PAYABLE'])),
@@ -57,8 +59,12 @@ const PaymentForm = () => {
     itemPromotions,
     updateTransferData,
     getTransferData,
-    updatePaymentDetails
+    updatePaymentDetails,
+    paymentBanks,
+    setPaymentBank
   } = useSaleStore()
+
+  const { data: activeBanks = [] } = useActiveBanks()
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -150,17 +156,31 @@ const PaymentForm = () => {
     form.setValue('amounts', paymentAmounts)
   }, [paymentAmounts])
 
+  const { surchargeByMethod, totalSurcharge, totalToCharge } = useSaleTotals()
+
   return (
     <div className='flex flex-col h-full'>
       <Card>
         <CardHeader>
           <CardTitle>
-            Total a pagar: ${total.toFixed(2)}
-            {discount > 0 && (
-              <span className='ml-2 text-sm text-green-600'>
-                (Descuento aplicado: {discount}%)
+            <div className='flex flex-col gap-1'>
+              <span className='text-sm font-normal text-muted-foreground'>
+                Total a cobrar al cliente
               </span>
-            )}
+              <span className='text-2xl sm:text-3xl font-bold'>
+                ${totalToCharge.toFixed(2)}
+              </span>
+              {totalSurcharge > 0 && (
+                <span className='text-xs font-normal text-muted-foreground'>
+                  Subtotal ${total.toFixed(2)} + recargos por tarjeta ${totalSurcharge.toFixed(2)}
+                </span>
+              )}
+              {discount > 0 && (
+                <span className='text-sm text-green-600'>
+                  Descuento aplicado: {discount}%
+                </span>
+              )}
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -236,10 +256,24 @@ const PaymentForm = () => {
                   </div>
                 )}
 
-                {/* Total */}
-                <div className='border-t pt-1 mt-1 font-medium flex justify-between'>
-                  <span>Total:</span>
+                {/* Subtotal antes de recargos */}
+                <div className='border-t pt-1 mt-1 flex justify-between'>
+                  <span>Subtotal:</span>
                   <span>${total.toFixed(2)}</span>
+                </div>
+
+                {/* Recargos por tarjeta */}
+                {totalSurcharge > 0 && (
+                  <div className='flex justify-between text-amber-700'>
+                    <span>Recargo por tarjeta:</span>
+                    <span>+${totalSurcharge.toFixed(2)}</span>
+                  </div>
+                )}
+
+                {/* Total a cobrar */}
+                <div className='border-t pt-1 mt-1 font-medium flex justify-between'>
+                  <span>Total a cobrar al cliente:</span>
+                  <span>${totalToCharge.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -293,42 +327,111 @@ const PaymentForm = () => {
                   className={`grid ${selectedMethods.length > 2 ? 'grid-cols-2' : 'grid-cols-1'
                     } gap-4`}
                 >
-                  {selectedMethods.map((method) => (
-                    <FormField
-                      key={method}
-                      control={form.control}
-                      name={`amounts.${method}`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {method === 'CASH'
-                              ? 'Efectivo'
-                              : method === 'DEBIT'
-                                ? 'Débito'
-                                : method === 'CREDIT'
-                                  ? 'Crédito'
-                                  : method === 'TRANSFER'
-                                    ? 'Transferencia'
-                                    : 'Cuenta Corriente'}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type='number'
-                              {...field}
-                              value={field.value || ''}
-                              onChange={(e) => {
-                                const value =
-                                  e.target.value === ''
-                                    ? ''
-                                    : Number(e.target.value)
-                                handleAmountChange(method, value || 0)
-                              }}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  ))}
+                  {selectedMethods.map((method) => {
+                    const isCard = method === 'DEBIT' || method === 'CREDIT'
+                    const selectedBankId = paymentBanks[method]
+                    const selectedBank = isCard
+                      ? activeBanks.find((b) => b._id === selectedBankId)
+                      : undefined
+                    const baseAmount = paymentAmounts[method] || 0
+                    const pct =
+                      isCard && selectedBank
+                        ? Number(selectedBank.surcharges?.[method] ?? 0)
+                        : 0
+                    const surchargeAmount =
+                      pct > 0 ? Math.round(baseAmount * pct) / 100 : 0
+                    const finalAmount = baseAmount + surchargeAmount
+
+                    return (
+                      <div key={method} className='space-y-2'>
+                        <FormField
+                          control={form.control}
+                          name={`amounts.${method}`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                {method === 'CASH'
+                                  ? 'Efectivo'
+                                  : method === 'DEBIT'
+                                    ? 'Débito'
+                                    : method === 'CREDIT'
+                                      ? 'Crédito'
+                                      : method === 'TRANSFER'
+                                        ? 'Transferencia'
+                                        : 'Cuenta Corriente'}
+                                {isCard && (
+                                  <span className='ml-2 text-xs text-muted-foreground'>
+                                    (sin recargo)
+                                  </span>
+                                )}
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  type='number'
+                                  {...field}
+                                  value={field.value || ''}
+                                  onChange={(e) => {
+                                    const value =
+                                      e.target.value === ''
+                                        ? ''
+                                        : Number(e.target.value)
+                                    handleAmountChange(method, value || 0)
+                                  }}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+
+                        {isCard && (
+                          <div className='rounded-md border border-dashed p-2 space-y-2'>
+                            <label className='text-xs font-medium'>
+                              Banco emisor de la tarjeta
+                            </label>
+                            <select
+                              className='w-full rounded-md border bg-background px-2 py-1 text-sm'
+                              value={selectedBankId ?? ''}
+                              onChange={(e) =>
+                                setPaymentBank(
+                                  method,
+                                  e.target.value || undefined
+                                )
+                              }
+                            >
+                              <option value=''>— Sin banco / sin recargo —</option>
+                              {activeBanks.map((b) => (
+                                <option key={b._id} value={b._id}>
+                                  {b.name} ({b.surcharges?.[method] ?? 0}% en{' '}
+                                  {method === 'DEBIT' ? 'débito' : 'crédito'})
+                                </option>
+                              ))}
+                            </select>
+                            {!selectedBankId && activeBanks.length > 0 && (
+                              <div className='rounded bg-amber-50 px-2 py-1 text-xs text-amber-800'>
+                                ⚠ Estás cobrando sin recargo. Si el cliente paga
+                                con tarjeta y querés aplicar recargo, elegí el
+                                banco emisor.
+                              </div>
+                            )}
+                            {selectedBank && pct > 0 && baseAmount > 0 && (
+                              <div className='text-xs text-amber-700'>
+                                Recargo {pct}%: +${surchargeAmount.toFixed(2)} ·{' '}
+                                <strong>
+                                  Cobrar al cliente: ${finalAmount.toFixed(2)}
+                                </strong>
+                              </div>
+                            )}
+                            {selectedBank && pct === 0 && (
+                              <div className='text-xs text-muted-foreground'>
+                                {selectedBank.name}: sin recargo configurado para{' '}
+                                {method === 'DEBIT' ? 'débito' : 'crédito'}.
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               )}
 
@@ -401,7 +504,19 @@ const PaymentForm = () => {
                 </div>
               )}
 
-              <div className='text-lg font-medium'>Restante: ${remaining}</div>
+              <div className='space-y-1'>
+                <div className='text-sm text-muted-foreground'>
+                  Falta asignar al subtotal: ${remaining.toFixed(2)}
+                </div>
+                {totalSurcharge > 0 && (
+                  <div className='text-base font-medium text-amber-800'>
+                    Total a cobrar al cliente: ${totalToCharge.toFixed(2)}{' '}
+                    <span className='text-xs font-normal text-muted-foreground'>
+                      (incluye ${totalSurcharge.toFixed(2)} de recargo)
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </Form>
         </CardContent>

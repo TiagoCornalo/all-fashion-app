@@ -33,6 +33,9 @@ import {
 import { accountsPayableService, AccountPayable } from '../services/accountsPayable.service'
 import { formatCurrency, formatDateTime } from '../utils'
 import { useAuth } from '../context/auth/useAuth'
+import { RegisterPaymentDialog, InstallmentsList } from './components'
+import { DollarSign as DollarIcon, MessageCircle } from 'lucide-react'
+import { toast } from 'react-toastify'
 
 /**
  * Contenedor para el detalle de una cuenta corriente
@@ -43,11 +46,22 @@ const AccountDetailContainer = () => {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
 
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
+
   // Convertir role a string para la comparación
   const userRole = user?.role as string
   const isAdmin = userRole === 'ADMIN'
   const isManager = userRole === 'MANAGER'
   const canAccessAccounts = isAdmin || isManager
+
+  const handleSendBalanceWhatsApp = async (account: AccountPayable) => {
+    try {
+      const wa = await accountsPayableService.getWhatsAppForBalance(account._id)
+      window.open(wa.url, '_blank', 'noopener,noreferrer')
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'No se pudo armar el mensaje de WhatsApp')
+    }
+  }
 
   // Query para obtener los detalles de la cuenta
   const {
@@ -206,19 +220,46 @@ const AccountDetailContainer = () => {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center gap-2">
             {getStatusBadge(account.status)}
+            <Button
+              onClick={() => setPaymentDialogOpen(true)}
+              size="sm"
+              className="w-full sm:w-auto text-xs sm:text-sm"
+            >
+              <DollarIcon className="mr-1 h-3.5 w-3.5" />
+              Registrar pago
+            </Button>
+            <Button
+              onClick={() => handleSendBalanceWhatsApp(account)}
+              size="sm"
+              variant="outline"
+              className="w-full sm:w-auto text-xs sm:text-sm"
+              disabled={!account.customer.phone}
+              title={!account.customer.phone ? 'El cliente no tiene teléfono cargado' : 'Enviar saldo por WhatsApp'}
+            >
+              <MessageCircle className="mr-1 h-3.5 w-3.5" />
+              WhatsApp saldo
+            </Button>
             {isAdmin && (
               <Button
                 onClick={() => navigate(`/accounts-payable/${id}/edit`)}
                 size="sm"
+                variant="outline"
                 className="w-full sm:w-auto text-xs sm:text-sm"
               >
-                Editar Cuenta
+                Editar
               </Button>
             )}
           </div>
         </div>
+
+        <RegisterPaymentDialog
+          account={account}
+          isOpen={paymentDialogOpen}
+          onOpenChange={setPaymentDialogOpen}
+          onSuccess={() => refetch()}
+        />
 
         {/* Métricas principales */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
@@ -285,11 +326,16 @@ const AccountDetailContainer = () => {
 
         {/* Tabs con información detallada */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-auto">
             <TabsTrigger value="overview" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
               <User className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Información</span>
               <span className="sm:hidden">Info</span>
+            </TabsTrigger>
+            <TabsTrigger value="installments" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
+              <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Cuotas</span>
+              <span className="sm:hidden">Cuotas</span>
             </TabsTrigger>
             <TabsTrigger value="transactions" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
               <Activity className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -426,6 +472,18 @@ const AccountDetailContainer = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Tab: Cuotas */}
+          <TabsContent value="installments" className="mt-4 sm:mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base sm:text-lg">Cuotas pendientes y pagadas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <InstallmentsList account={account} />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Tab: Movimientos */}

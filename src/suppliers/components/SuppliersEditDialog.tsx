@@ -29,8 +29,9 @@ const formSchema = z.object({
     email: z
       .string()
       .email('Formato de email inválido')
-      .min(1, 'El email es requerido'),
-    phone: z.string().min(1, 'El teléfono es requerido')
+      .or(z.literal(''))
+      .optional(),
+    phone: z.string().optional()
   })
 })
 
@@ -67,8 +68,8 @@ const SuppliersEditDialog = ({
       form.reset({
         name: supplier.name,
         contact: {
-          email: supplier.contact.email,
-          phone: supplier.contact.phone
+          email: supplier.contact?.email ?? '',
+          phone: supplier.contact?.phone ?? ''
         }
       })
     }

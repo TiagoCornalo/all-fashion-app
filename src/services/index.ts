@@ -47,6 +47,37 @@ export const bulkDeleteProducts = async (productIds: string[]) => {
   return response.data
 }
 
+export type BulkImportReport = {
+  dryRun: boolean
+  sheetUsed: string
+  totalRowsRead: number
+  productsParsed: number
+  productsCreated: number
+  productsUpdated: number
+  productsWithUSD: number
+  productsARSOnly: number
+  suppliersInExcel: number
+  suppliersCreated: number
+  suppliersMatched: number
+  duplicatesInExcel: Array<{ code: string; kept: number; discarded: number }>
+  skipped: Array<{ row: number; reason: string }>
+  errors: Array<{ row: number; code: string; error: string }>
+}
+
+export const bulkImportProductsFromExcel = async (
+  file: File,
+  options: { dryRun?: boolean } = {}
+): Promise<BulkImportReport> => {
+  const formData = new FormData()
+  formData.append('file', file)
+  const response = await api.post<BulkImportReport>(
+    `/products/bulk-import-excel${options.dryRun ? '?dryRun=true' : ''}`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } }
+  )
+  return response.data
+}
+
 export const findProductsBySupplier = async (
   supplierId: string,
   params: {

@@ -23,6 +23,9 @@ interface SaleStore {
   // Campos para transferencias
   transferData: Record<string, { customerPhone?: string; transferReference?: string }>
 
+  // Bancos seleccionados por método (solo aplica a DEBIT/CREDIT)
+  paymentBanks: Record<string, string>
+
   // Campos para detalles de pago (cuenta corriente, etc.)
   paymentDetails: Record<string, any>
 
@@ -76,6 +79,10 @@ interface SaleStore {
   updateTransferData: (method: PaymentType, data: { customerPhone?: string; transferReference?: string }) => void
   getTransferData: (method: PaymentType) => { customerPhone?: string; transferReference?: string }
 
+  // Acciones para banco por método (DEBIT/CREDIT)
+  setPaymentBank: (method: PaymentType, bankId: string | undefined) => void
+  getPaymentBank: (method: PaymentType) => string | undefined
+
   // Acciones para detalles de pago
   updatePaymentDetails: (method: PaymentType, details: any) => void
   getPaymentDetails: (method: PaymentType) => any
@@ -128,6 +135,7 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
   paymentAmounts: {},
   remaining: 0,
   transferData: {},
+  paymentBanks: {},
   paymentDetails: {},
   promotionCode: '',
   itemPromotions: [],
@@ -239,10 +247,22 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
       selectedMethods: [],
       paymentAmounts: {},
       transferData: {},
+      paymentBanks: {},
       paymentDetails: {},
       remaining: get().total
     })
   },
+
+  setPaymentBank: (method, bankId) => {
+    set((state) => {
+      const next = { ...state.paymentBanks }
+      if (bankId) next[method] = bankId
+      else delete next[method]
+      return { paymentBanks: next }
+    })
+  },
+
+  getPaymentBank: (method) => get().paymentBanks[method],
 
   updateTransferData: (method, data) => {
     set((state) => ({
@@ -416,46 +436,19 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
       promotionCode,
       itemPromotions,
       combos,
-      selectedMethods,
-      paymentAmounts,
-      transferData,
-      paymentDetails,
       promotionCustomerData
     } = get()
 
-    // Construir los pagos con todos los detalles
-    const paymentsWithDetails = selectedMethods.map((method) => {
-      const basePayment = {
-        method: method,
-        amount: paymentAmounts[method] || 0
-      }
-
-      // Agregar datos específicos del método
-      if (method === 'TRANSFER') {
-        const transferInfo = transferData[method] || {}
-        return {
-          ...basePayment,
-          customerPhone: transferInfo.customerPhone,
-          transferReference: transferInfo.transferReference
-        }
-      }
-
-      if (method === 'ACCOUNT_PAYABLE') {
-        const accountInfo = paymentDetails[method] || {}
-        return {
-          ...basePayment,
-          accountPayableId: accountInfo.accountPayableId,
-          customerInfo: accountInfo.customerInfo
-        }
-      }
-
-      return basePayment
-    })
+    // Los payments ya vienen armados desde handleInvoiceSubmit con bank, surcharge,
+    // transferData y customerInfo. Usamos esos directamente.
+    if (!payments || payments.length === 0) {
+      throw new Error('No hay pagos configurados. Volvé al paso de pagos.')
+    }
 
     // Crear la venta
     const sale: CreateSale = {
       items,
-      payments: paymentsWithDetails,
+      payments,
       invoice: {
         ...invoice,
         type: invoice.type === 'TICKET' ? 'X' : invoice.type
@@ -469,8 +462,23 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
       ...(promotionCustomerData && { promotionCustomerData })
     }
 
-    const response = await api.post('/sales', sale)
-    return response.data
+    try {
+      const response = await api.post('/sales', sale)
+      return response.data
+    } catch (err: any) {
+      // Re-lanzamos un error con el message del backend para que el caller lo
+      // muestre en el toast. Axios pone los detalles en err.response.data.
+      const backendError = err?.response?.data
+      const message =
+        backendError?.details ||
+        backendError?.error ||
+        err?.message ||
+        'Error desconocido al crear la venta'
+      const enriched = new Error(message)
+      ;(enriched as any).status = err?.response?.status
+      ;(enriched as any).label = backendError?.error
+      throw enriched
+    }
   },
 
   setDiscount: (percentage) => {

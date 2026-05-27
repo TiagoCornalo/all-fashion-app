@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useSaleStore } from '../../../stores/saleStore'
-import { PaymentType } from '../../../types/sale.types'
+import { PaymentType, Bank } from '../../../types/sale.types'
 import { toast } from 'react-toastify'
+import { useActiveBanks } from '../../../hooks/useBanks'
 
 export const useSaleForm = () => {
   const [step, setStep] = useState(1)
@@ -15,6 +16,7 @@ export const useSaleForm = () => {
     selectedMethods,
     remaining,
     paymentAmounts,
+    paymentBanks,
     combos,
     promotionCustomerData,
     setInvoice,
@@ -27,6 +29,12 @@ export const useSaleForm = () => {
     registerPromotionUsage,
     clearPromotionCustomerData
   } = useSaleStore()
+
+  const { data: activeBanks } = useActiveBanks()
+  const banksById = (activeBanks ?? []).reduce<Record<string, Bank>>((acc, b) => {
+    acc[b._id] = b
+    return acc
+  }, {})
 
   const handleNext = () => {
     if (step === 1 && items.length === 0 && combos.length === 0) {
@@ -101,29 +109,39 @@ export const useSaleForm = () => {
     // Asegúrate de que los pagos estén correctamente configurados antes de continuar
     if (selectedMethods.length > 0) {
       const currentPayments = selectedMethods.map((method) => {
-        const payment = {
-          method: method,
-          amount: paymentAmounts[method] || 0
+        const baseAmount = paymentAmounts[method] || 0
+        const payment: any = {
+          method,
+          amount: baseAmount
+        }
+
+        // Si es DEBIT o CREDIT con banco seleccionado, calcular recargo
+        if ((method === 'DEBIT' || method === 'CREDIT') && paymentBanks[method]) {
+          const bank = banksById[paymentBanks[method]]
+          const pct = Number(bank?.surcharges?.[method] ?? 0)
+          const surchargeAmount = Math.round(baseAmount * pct * 100 / 100) / 100
+          payment.bank = paymentBanks[method]
+          payment.amount = Math.round((baseAmount + surchargeAmount) * 100) / 100
+          payment.surcharge = {
+            applied: pct > 0,
+            percentage: pct,
+            amount: surchargeAmount,
+            baseAmount: Math.round(baseAmount * 100) / 100
+          }
         }
 
         // Agregar datos adicionales para transferencias
         if (method === 'TRANSFER') {
           const transferData = useSaleStore.getState().getTransferData('TRANSFER')
-          return {
-            ...payment,
-            customerPhone: transferData.customerPhone,
-            transferReference: transferData.transferReference
-          }
+          payment.customerPhone = transferData.customerPhone
+          payment.transferReference = transferData.transferReference
         }
 
         // Agregar datos adicionales para cuenta corriente
         if (method === 'ACCOUNT_PAYABLE') {
           const accountData = getPaymentDetails('ACCOUNT_PAYABLE')
-          return {
-            ...payment,
-            accountPayableId: accountData.accountPayableId,
-            customerInfo: accountData.customerInfo
-          }
+          payment.accountPayableId = accountData.accountPayableId
+          payment.customerInfo = accountData.customerInfo
         }
 
         return payment

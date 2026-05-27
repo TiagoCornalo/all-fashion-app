@@ -19,6 +19,57 @@ export interface Customer {
 export interface PaymentTerms {
   days: number
   interestRate: number
+  frequency?: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY'
+}
+
+export interface TransactionInstallment {
+  number: number
+  amount: number
+  dueDate: string
+  paidAmount: number
+  status: 'PENDING' | 'PARTIAL' | 'PAID' | 'OVERDUE'
+  paidAt?: string
+}
+
+export interface UpcomingInstallment {
+  accountId: string
+  customerName: string
+  customerPhone: string | null
+  transactionId: string
+  saleId: string | null
+  planLabel: string
+  number: number
+  dueDate: string
+  amount: number
+  paidAmount: number
+  pendingAmount: number
+  daysToDue: number
+}
+
+export interface OverdueInstallment {
+  accountId: string
+  customerName: string
+  customerPhone: string | null
+  transactionId: string
+  saleId: string | null
+  planLabel: string
+  number: number
+  dueDate: string
+  amount: number
+  paidAmount: number
+  pendingAmount: number
+  daysPastDue: number
+}
+
+export interface TransactionInstallmentPlan {
+  count: number
+  interestRate: number
+  interestAmount: number
+  baseAmount: number
+  frequency: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY'
+  label?: string
+  totalWithInterest?: number
+  installments: TransactionInstallment[]
 }
 
 export interface PaymentDetails {
@@ -58,6 +109,7 @@ export interface Transaction {
   saleDetails?: SaleDetails
   adjustmentReason?: string
   saleId?: string
+  installmentPlan?: TransactionInstallmentPlan
 }
 
 export interface AccountSummary {
@@ -921,6 +973,52 @@ class AccountsPayableService {
       console.error('Error processing overdue accounts:', error)
       throw error
     }
+  }
+
+  /**
+   * Cuotas próximas a vencer en todas las cuentas
+   */
+  async getUpcomingInstallments(days = 7): Promise<{
+    data: UpcomingInstallment[]
+    meta: { count: number; days: number }
+  }> {
+    const response = await api.get(`/accounts-payable/installments/upcoming?days=${days}`)
+    return response.data
+  }
+
+  /**
+   * Cuotas vencidas en todas las cuentas
+   */
+  async getOverdueInstallments(): Promise<{
+    data: OverdueInstallment[]
+    meta: { count: number }
+  }> {
+    const response = await api.get('/accounts-payable/installments/overdue')
+    return response.data
+  }
+
+  /**
+   * Genera mensaje + URL wa.me con las condiciones de una venta
+   */
+  async getWhatsAppForSale(accountId: string, transactionId: string): Promise<{
+    message: string
+    url: string
+    phone: string | null
+  }> {
+    const response = await api.get(`/accounts-payable/${accountId}/whatsapp/sale/${transactionId}`)
+    return response.data
+  }
+
+  /**
+   * Genera mensaje + URL wa.me con el saldo y próximas cuotas
+   */
+  async getWhatsAppForBalance(accountId: string): Promise<{
+    message: string
+    url: string
+    phone: string | null
+  }> {
+    const response = await api.get(`/accounts-payable/${accountId}/whatsapp/balance`)
+    return response.data
   }
 }
 

@@ -18,6 +18,7 @@ import {
   TransferConfirmationModal
 } from './sale'
 import { useSaleForm } from './hooks/useSaleForm'
+import { useSaleTotals } from './hooks/useSaleTotals'
 import { useIsMobile } from '../../hooks'
 
 interface NewSaleDialogProps {
@@ -48,7 +49,8 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
   } = useSaleForm()
 
   // Obtener combos del store
-  const { combos, getTransferData } = useSaleStore()
+  const { combos, getTransferData, setPayments } = useSaleStore()
+  const { paymentsForBackend } = useSaleTotals()
 
   // Verificar si hay elementos para la venta (productos o combos)
   const hasSaleItems = items.length > 0 || combos.length > 0
@@ -61,56 +63,34 @@ const NewSaleDialog = ({ isOpen, onOpenChange }: NewSaleDialogProps) => {
   ]
 
   const handleSubmit = async () => {
-    if (!currentRegister) return
+    if (!currentRegister) {
+      toast.error('No hay caja abierta. Abrí la caja antes de cobrar.')
+      return
+    }
 
     try {
       setIsSubmitting(true)
 
-      // Verificar que los pagos existan antes de enviar
-      const { payments } = useSaleStore.getState()
-      if (!payments || payments.length === 0) {
-        // Recrear los pagos si es necesario, incluyendo datos de transferencia
-        const { selectedMethods, paymentAmounts, getTransferData } = useSaleStore.getState()
-        const currentPayments = selectedMethods.map((method) => {
-          const payment = {
-            method: method,
-            amount: paymentAmounts[method] || 0
-          }
+      // Sincronizar payments del hook (con bank + surcharge calculados en vivo)
+      // antes de crear la venta. Esto es la fuente única de verdad.
+      setPayments(paymentsForBackend)
 
-          // Agregar datos adicionales para transferencias
-          if (method === 'TRANSFER') {
-            const transferData = getTransferData('TRANSFER')
-            return {
-              ...payment,
-              customerPhone: transferData.customerPhone,
-              transferReference: transferData.transferReference
-            }
-          }
-
-          return payment
-        })
-        useSaleStore.getState().setPayments(currentPayments)
-      }
-
-      // Crear la venta
       const saleResult = await createSale(currentRegister._id)
 
-      console.log(saleResult)
-
-      // Registrar el uso de promoción si hay datos
-      if (saleResult.sale && saleResult.sale._id) {
-        console.log('Registrando uso de promoción')
+      if (saleResult?.sale?._id) {
         await handlePromotionRegistration(saleResult.sale._id)
       }
 
-      toast.success('Venta realizada correctamente, actualizando...')
+      toast.success('Venta realizada correctamente')
       await fetchCurrentRegister()
       if (handleCancel()) {
         onOpenChange(false)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
-      toast.error('Error al realizar la venta')
+      const label = error?.label || 'Error al realizar la venta'
+      const message = error?.message || 'Error desconocido'
+      toast.error(`${label}: ${message}`, { autoClose: 8000 })
     } finally {
       setIsSubmitting(false)
     }

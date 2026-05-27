@@ -6,7 +6,12 @@ import {
   PaginatedResponse,
   TableFilters
 } from '../types/inventory.types'
-import { InventoryAlerts, DataTable } from './components'
+import {
+  InventoryAlerts,
+  DataTable,
+  BulkImportExcelDialog,
+  ExchangeRateBadge
+} from './components'
 import { columns } from './components/inventory-table/components/Columns'
 import { fetchProducts } from '../services/index'
 import { authService } from '../services/auth.service'
@@ -72,6 +77,10 @@ const InventoryContainer = () => {
               <h1 className='text-2xl sm:text-3xl font-bold text-center sm:text-left'>
                 Inventario
               </h1>
+              <div className='flex flex-wrap items-center gap-2 sm:ml-auto'>
+                <ExchangeRateBadge />
+                <BulkImportExcelDialog onCompleted={handleRefresh} />
+              </div>
             </div>
           </section>
 

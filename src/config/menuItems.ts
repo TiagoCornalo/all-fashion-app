@@ -1,5 +1,5 @@
 import { Package, HandShake, Bill, Label, BarChart, CreditCard, Memo } from '../assets'
-import { CheckCircle, Users, FileText } from 'lucide-react'
+import { CheckCircle, Users, FileText, Settings } from 'lucide-react'
 
 export const MENU_ITEMS = [
   {
@@ -60,6 +60,12 @@ export const MENU_ITEMS = [
     title: 'Gestión de Usuarios',
     url: '/users',
     icon: Users,
+    roles: ['ADMIN']
+  },
+  {
+    title: 'Configuración de pagos',
+    url: '/payment-settings',
+    icon: Settings,
     roles: ['ADMIN']
   },
 /*   {

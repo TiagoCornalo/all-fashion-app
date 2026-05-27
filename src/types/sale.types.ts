@@ -157,9 +157,60 @@ export interface SaleItem {
 
 export type PaymentType = 'CASH' | 'DEBIT' | 'CREDIT' | 'TRANSFER' | 'ACCOUNT_PAYABLE'
 
+export interface PaymentSurcharge {
+  applied: boolean
+  percentage: number
+  amount: number
+  baseAmount: number
+}
+
+export type InstallmentFrequency = 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY'
+
+export interface InstallmentPlanOption {
+  installments: number
+  interestRate: number
+  label: string
+  isActive?: boolean
+}
+
+export interface PlanInstallment {
+  number: number
+  amount: number
+  dueDate: string
+  paidAmount: number
+  status: 'PENDING' | 'PARTIAL' | 'PAID' | 'OVERDUE'
+  paidAt?: string
+}
+
+export interface SaleInstallmentPlan {
+  count: number
+  interestRate: number
+  interestAmount: number
+  baseAmount: number
+  frequency: InstallmentFrequency
+  label?: string
+  totalWithInterest?: number
+  installments: PlanInstallment[]
+}
+
+export interface Bank {
+  _id: string
+  name: string
+  isActive: boolean
+  surcharges: {
+    DEBIT: number
+    CREDIT: number
+  }
+  notes?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
 export interface Payment {
   method: PaymentType
   amount: number
+  bank?: string
+  surcharge?: PaymentSurcharge
   transferReference?: string
   customerPhone?: string
   _id?: string
@@ -176,6 +227,8 @@ export interface Payment {
   }
   // Campos para cuenta corriente
   accountPayableId?: string
+  installmentPlanIndex?: number | null
+  installmentFrequencyOverride?: InstallmentFrequency
   customerInfo?: {
     name: string
     documentType?: 'DNI' | 'CUIT'

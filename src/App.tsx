@@ -41,6 +41,11 @@ const EditAccountContainer = lazy(() => import('./accounts-payable/EditAccountCo
 // Remitos y presupuestos
 const QuotesContainer = lazy(() => import('./quotes/QuotesContainer'))
 
+// Configuración de pagos
+const PaymentSettingsContainer = lazy(
+  () => import('./payment-settings/PaymentSettingsContainer')
+)
+
 const SuspenseFallback = () => (
   <div className='fixed inset-0 flex justify-center items-center bg-white z-50'>
     <Loader className='h-8 w-8' />
@@ -84,6 +89,12 @@ function App() {
 
                 {/* Rutas para remitos y presupuestos */}
                 <Route path='/quotes' element={<QuotesContainer />} />
+
+                {/* Configuración de pagos */}
+                <Route
+                  path='/payment-settings'
+                  element={<PaymentSettingsContainer />}
+                />
               </Routes>
             </Suspense>
           </NotificationsProvider>

@@ -158,8 +158,13 @@ const SuppliersOrders = () => {
   }
 
   const handleSendOrder = async (order: Order) => {
+    const rawPhone = order.supplier?.contact?.phone
+    if (!rawPhone) {
+      toast.error('Este proveedor no tiene teléfono cargado. Editalo antes de enviar el pedido.')
+      return
+    }
     // Obtener el número de teléfono del proveedor
-    const phoneNumber = order.supplier.contact.phone.replace(/\D/g, '')
+    const phoneNumber = rawPhone.replace(/\D/g, '')
 
     // Construir el mensaje
     const message = `Hola, soy de All Fashion Distribuidora. Te envío el pedido #${order._id.substring(

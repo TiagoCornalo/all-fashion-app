@@ -1,9 +1,10 @@
 export interface Supplier {
   name: string
-  contact: {
-    email: string
-    phone: string
+  contact?: {
+    email?: string
+    phone?: string
   }
+  isPlaceholder?: boolean
   _id?: string
   createdAt?: Date
   updatedAt?: string
@@ -53,9 +54,22 @@ export interface Product {
   stock: number
   stockMinimum: number
   price: number
+  priceUSD?: number | null
   supplier: Supplier
   createdAt: string
   updatedAt: string
+}
+
+export interface ExchangeRate {
+  value: number
+  type: string
+  valueKind: string
+  surchargeArs: number
+  enabled: boolean
+  fetchedAt: string
+  sourceUpdatedAt?: string | null
+  stale: boolean
+  cached: boolean
 }
 
 export interface PaginatedResponse<T> {

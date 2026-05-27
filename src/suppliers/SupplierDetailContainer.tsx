@@ -164,12 +164,21 @@ const SupplierDetailContainer = () => {
             <div className='space-y-1 sm:space-y-2'>
               <p className='text-sm sm:text-base'>
                 <span className='font-medium'>Email:</span>{' '}
-                {supplier.contact.email}
+                {supplier.contact?.email || (
+                  <span className='text-muted-foreground'>Sin cargar</span>
+                )}
               </p>
               <p className='text-sm sm:text-base'>
                 <span className='font-medium'>Teléfono:</span>{' '}
-                {supplier.contact.phone}
+                {supplier.contact?.phone || (
+                  <span className='text-muted-foreground'>Sin cargar</span>
+                )}
               </p>
+              {supplier.isPlaceholder && (
+                <p className='mt-2 inline-flex rounded-md bg-amber-100 px-2 py-1 text-xs text-amber-700'>
+                  Este proveedor fue creado automáticamente desde un Excel. Editá sus datos para completarlo.
+                </p>
+              )}
             </div>
           </div>
           <div className='bg-white p-3 sm:p-4 rounded-lg shadow'>

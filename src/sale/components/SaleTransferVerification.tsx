@@ -253,7 +253,7 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                                 <Button
                                   size='sm'
                                   variant='outline'
-                                  onClick={() => handleOpenWhatsApp(supplier.contact.phone)}
+                                  onClick={() => supplier.contact?.phone && handleOpenWhatsApp(supplier.contact.phone)}
                                   className='h-6 sm:h-7 px-2 text-xs w-full sm:w-auto flex-shrink-0'
                                 >
                                   <MessageCircle className='h-3 w-3 mr-1' />
@@ -488,7 +488,7 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                             <Button
                               type='button'
                               size='sm'
-                              onClick={() => handleOpenWhatsApp(supplier.contact.phone)}
+                              onClick={() => supplier.contact?.phone && handleOpenWhatsApp(supplier.contact.phone)}
                               className='bg-green-600 hover:bg-green-700 w-full sm:w-auto text-xs flex-shrink-0'
                             >
                               <MessageCircle className='h-3 w-3 sm:h-4 sm:w-4 mr-1' />

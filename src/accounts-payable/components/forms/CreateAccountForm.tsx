@@ -46,8 +46,7 @@ interface FormData {
 
   // Account settings
   creditLimit: number | string
-  paymentDays: number | string
-  interestRate: number | string
+  frequency: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY'
   notes: string
   internalNotes: string
 }
@@ -70,8 +69,7 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
       state: '',
       postalCode: '',
       creditLimit: '',
-      paymentDays: '',
-      interestRate: '5', // 5% por defecto como string
+      frequency: 'MONTHLY',
       notes: '',
       internalNotes: ''
     }
@@ -108,10 +106,9 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
       },
       creditLimit: typeof data.creditLimit === 'string' ? parseFloat(data.creditLimit) || 0 : data.creditLimit,
       paymentTerms: {
-        days: typeof data.paymentDays === 'string' ? parseInt(data.paymentDays) || 30 : data.paymentDays,
-        interestRate: typeof data.interestRate === 'string' ?
-          (parseFloat(data.interestRate) || 5) / 100 :
-          typeof data.interestRate === 'number' ? data.interestRate : 0.05
+        days: 30,        // legacy fallback (no se usa con planes de cuotas)
+        interestRate: 0, // legacy fallback (interés vive en los planes globales)
+        frequency: data.frequency || 'MONTHLY'
       },
       notes: data.notes || undefined,
       internalNotes: data.internalNotes || undefined
@@ -128,7 +125,7 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
     // Validar campos del paso actual
     const fieldsToValidate = step === 1
       ? ['customerName' as const, 'documentType' as const, 'documentNumber' as const]
-      : ['creditLimit' as const, 'paymentDays' as const, 'interestRate' as const]
+      : ['creditLimit' as const, 'frequency' as const]
 
     const isValid = await form.trigger(fieldsToValidate)
     if (isValid) {
@@ -389,93 +386,36 @@ export const CreateAccountForm = ({ onSuccess, onCancel }: CreateAccountFormProp
 
             <FormField
               control={form.control}
-              name="paymentDays"
-              rules={{
-                required: "Los días de pago son requeridos",
-                min: { value: 1, message: "Debe ser al menos 1 día" }
-              }}
+              name="frequency"
+              rules={{ required: 'La periodicidad es requerida' }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs sm:text-sm">Días de Pago *</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="1"
-                      placeholder="30"
-                      className="text-xs sm:text-sm"
-                      {...field}
-                      value={field.value || ''}
-                      onChange={(e) => {
-                        const value = e.target.value
-                        if (value === '') {
-                          field.onChange('')
-                        } else {
-                          const numValue = parseInt(value)
-                          field.onChange(isNaN(numValue) ? '' : numValue)
-                        }
-                      }}
-                      onBlur={(e) => {
-                        field.onBlur()
-                        if (e.target.value === '' || parseInt(e.target.value) < 1) {
-                          field.onChange(30)
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="interestRate"
-              rules={{
-                required: "La tasa de interés es requerida",
-                min: { value: 0, message: "La tasa debe ser mayor o igual a 0" },
-                max: { value: 100, message: "La tasa no puede ser mayor a 100%" }
-              }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs sm:text-sm">Tasa de Interés (%) *</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      placeholder="5.00"
-                      className="text-xs sm:text-sm"
-                      {...field}
-                      value={
-                        field.value === '' ? '' :
-                          typeof field.value === 'number' ? (field.value * 100).toString() :
-                            field.value
-                      }
-                      onChange={(e) => {
-                        const value = e.target.value
-                        if (value === '') {
-                          field.onChange('')
-                        } else {
-                          const numValue = parseFloat(value)
-                          if (!isNaN(numValue)) {
-                            field.onChange(numValue.toString())
-                          }
-                        }
-                      }}
-                      onBlur={(e) => {
-                        field.onBlur()
-                        if (e.target.value === '') {
-                          field.onChange('5') // 5% por defecto como string
-                        }
-                      }}
-                    />
-                  </FormControl>
+                  <FormLabel className='text-xs sm:text-sm'>Periodicidad por defecto de cuotas *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className='text-xs sm:text-sm'>
+                        <SelectValue placeholder='Elegir periodicidad' />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value='WEEKLY'>Semanal (cada 7 días)</SelectItem>
+                      <SelectItem value='BIWEEKLY'>Quincenal (cada 15 días)</SelectItem>
+                      <SelectItem value='MONTHLY'>Mensual (cada 30 días)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className='text-[10px] text-muted-foreground mt-1'>
+                    Se usa por defecto al armar el plan de cuotas en cada venta. Podés
+                    cambiarla puntualmente al cobrar.
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
+          <p className='text-[11px] text-muted-foreground'>
+            La tasa de interés se configura por plan en{' '}
+            <strong>Configuración de pagos → Planes de cuotas</strong>, no por cuenta.
+          </p>
         </CardContent>
       </Card>
 

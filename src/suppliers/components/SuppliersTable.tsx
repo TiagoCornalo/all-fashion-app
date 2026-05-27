@@ -59,7 +59,16 @@ const SuppliersTable = ({
             showHideButton={false}
           />
         ),
-        cell: ({ row }) => <span>{row.original.name}</span>,
+        cell: ({ row }) => (
+          <div className='flex items-center gap-2'>
+            <span>{row.original.name}</span>
+            {row.original.isPlaceholder && (
+              <span className='inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700'>
+                Sin completar
+              </span>
+            )}
+          </div>
+        ),
         enableSorting: true
       },
       {
@@ -71,7 +80,11 @@ const SuppliersTable = ({
             showHideButton={false}
           />
         ),
-        cell: ({ row }) => <span>{row.original.contact.email}</span>,
+        cell: ({ row }) => (
+          <span className={row.original.contact?.email ? '' : 'text-muted-foreground'}>
+            {row.original.contact?.email || '—'}
+          </span>
+        ),
         enableSorting: true
       },
       {
@@ -83,7 +96,11 @@ const SuppliersTable = ({
             showHideButton={false}
           />
         ),
-        cell: ({ row }) => <span>{row.original.contact.phone}</span>,
+        cell: ({ row }) => (
+          <span className={row.original.contact?.phone ? '' : 'text-muted-foreground'}>
+            {row.original.contact?.phone || '—'}
+          </span>
+        ),
         enableSorting: true
       },
       {

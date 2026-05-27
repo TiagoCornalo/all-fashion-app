@@ -1,5 +1,6 @@
 import { useSaleForm } from '../hooks/useSaleForm'
 import { useSaleStore } from '../../../stores/saleStore'
+import { useSaleTotals } from '../hooks/useSaleTotals'
 import {
   Card,
   CardContent,
@@ -17,34 +18,13 @@ import {
 } from '../../../components'
 
 const SaleSummary = () => {
-  const { items, invoice, total, handleBack, remaining } = useSaleForm()
+  const { items, invoice, total } = useSaleForm()
 
-  const isSubmitting = false
+  const { promotionCode, itemPromotions, combos } = useSaleStore()
 
-  // Verificar si el pago está completo
-  const paymentComplete = remaining === 0
-
-  // Función para finalizar la venta
-  const handleSubmit = () => {
-    // Esta función será proporcionada por el componente padre
-    // Esta implementación es un marcador de posición
-    console.log('Finalizar venta desde componente hijo')
-  }
-
-  // Obtener los pagos y promociones directamente del store
-  const {
-    selectedMethods,
-    paymentAmounts,
-    promotionCode,
-    itemPromotions,
-    combos
-  } = useSaleStore()
-
-  // Generar los pagos basados en los métodos seleccionados y las cantidades
-  const payments = selectedMethods.map((method) => ({
-    type: method,
-    amount: paymentAmounts[method] || 0
-  }))
+  // Fuente única de verdad: cálculo en vivo desde el estado de la venta.
+  // No depende de que handleInvoiceSubmit haya corrido.
+  const { totalSurcharge, totalToCharge, paymentsForBackend } = useSaleTotals()
 
   const getPaymentTypeLabel = (type: string) => {
     const labels = {
@@ -171,10 +151,19 @@ const SaleSummary = () => {
                 <div>
                   <h3 className='font-medium mb-2'>Pagos</h3>
                   <div className='space-y-2'>
-                    {payments.map((payment, index) => (
-                      <div key={index} className='flex justify-between'>
-                        <span>{getPaymentTypeLabel(payment.type)}</span>
-                        <span>${payment.amount}</span>
+                    {paymentsForBackend.map((payment, index) => (
+                      <div key={index} className='space-y-0.5'>
+                        <div className='flex justify-between'>
+                          <span>{getPaymentTypeLabel(payment.method)}</span>
+                          <span>${payment.amount.toFixed(2)}</span>
+                        </div>
+                        {payment.surcharge?.applied && payment.surcharge.amount > 0 && (
+                          <div className='flex justify-between text-xs text-amber-700 pl-3'>
+                            <span>
+                              ↳ incluye {payment.surcharge.percentage}% de recargo (${payment.surcharge.baseAmount.toFixed(2)} base + ${payment.surcharge.amount.toFixed(2)} recargo)
+                            </span>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -207,10 +196,22 @@ const SaleSummary = () => {
 
                 <Separator />
 
-                {/* Total */}
-                <div className='flex justify-between text-lg font-medium'>
-                  <span>Total</span>
-                  <span>${total}</span>
+                {/* Desglose final */}
+                <div className='space-y-1'>
+                  <div className='flex justify-between text-sm'>
+                    <span>Subtotal</span>
+                    <span>${total.toFixed(2)}</span>
+                  </div>
+                  {totalSurcharge > 0 && (
+                    <div className='flex justify-between text-sm text-amber-700'>
+                      <span>Recargo por tarjeta</span>
+                      <span>+${totalSurcharge.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className='flex justify-between text-lg font-bold border-t pt-1 mt-1'>
+                    <span>Total a cobrar al cliente</span>
+                    <span>${totalToCharge.toFixed(2)}</span>
+                  </div>
                 </div>
               </div>
             </CardContent>
