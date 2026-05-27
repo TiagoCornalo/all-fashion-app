@@ -110,15 +110,20 @@ export const SaleToQuote = ({
         address: invoice?.customer?.address || ''
       }
 
-      // Preparar items del remito según estructura del backend
-      const items: QuoteItem[] = saleItems.map((item) => ({
-        productId: item.product._id,
-        productCode: item.product.code || '',
-        productName: item.product.name,
-        quantity: item.quantity,
-        unitPrice: item.price || 0,
-        subtotal: item.subtotal || (item.quantity * (item.price || 0))
-      }))
+      // Preparar items del remito. Si el producto fue eliminado de la DB
+      // (item.product === null), igual armamos el item con los datos
+      // snapshot guardados en la venta para no romper la conversión.
+      const items: QuoteItem[] = saleItems.map((item) => {
+        const product = (item.product as any) || {}
+        return {
+          productId: product._id || '',
+          productCode: product.code || '',
+          productName: product.name || 'Producto eliminado',
+          quantity: item.quantity,
+          unitPrice: item.price || 0,
+          subtotal: item.subtotal || (item.quantity * (item.price || 0))
+        }
+      })
 
       // Calcular totales
       const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0)

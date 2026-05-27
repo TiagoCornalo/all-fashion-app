@@ -36,7 +36,7 @@ export const MENU_ITEMS = [
     title: 'Cuentas Corrientes',
     url: '/accounts-payable',
     icon: CreditCard,
-    roles: ['ADMIN', 'MANAGER']
+    roles: ['ADMIN', 'MANAGER', 'SELLER']
   },
   {
     title: 'Descuentos',

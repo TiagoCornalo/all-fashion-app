@@ -52,7 +52,10 @@ const AccountDetailContainer = () => {
   const userRole = user?.role as string
   const isAdmin = userRole === 'ADMIN'
   const isManager = userRole === 'MANAGER'
-  const canAccessAccounts = isAdmin || isManager
+  const isSeller = userRole === 'SELLER'
+  // ADMIN y MANAGER siempre. SELLER puede ver y registrar pagos pero no editar.
+  const canAccessAccounts = isAdmin || isManager || isSeller
+  const canEditAccount = isAdmin // crear/editar/eliminar solo admin
 
   const handleSendBalanceWhatsApp = async (account: AccountPayable) => {
     try {
@@ -137,7 +140,7 @@ const AccountDetailContainer = () => {
 
   if (error) {
     return (
-      <LayoutMultiRole allowedRoles={['ADMIN', 'MANAGER']} showGoBackButton={true}>
+      <LayoutMultiRole allowedRoles={['ADMIN', 'MANAGER', 'SELLER']} showGoBackButton={true}>
         <div className="p-2 sm:p-4 lg:p-6">
           <div className="flex items-center justify-center min-h-96 bg-red-50 rounded-lg">
             <div className="text-center p-4">
@@ -160,7 +163,7 @@ const AccountDetailContainer = () => {
 
   if (isLoading) {
     return (
-      <LayoutMultiRole allowedRoles={['ADMIN', 'MANAGER']} showGoBackButton={true}>
+      <LayoutMultiRole allowedRoles={['ADMIN', 'MANAGER', 'SELLER']} showGoBackButton={true}>
         <div className="p-2 sm:p-4 lg:p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -182,7 +185,7 @@ const AccountDetailContainer = () => {
 
   if (!account) {
     return (
-      <LayoutMultiRole allowedRoles={['ADMIN', 'MANAGER']} showGoBackButton={true}>
+      <LayoutMultiRole allowedRoles={['ADMIN', 'MANAGER', 'SELLER']} showGoBackButton={true}>
         <div className="p-2 sm:p-4 lg:p-6">
           <div className="flex items-center justify-center min-h-96 bg-gray-50 rounded-lg">
             <div className="text-center p-4">
@@ -205,7 +208,7 @@ const AccountDetailContainer = () => {
     : 0
 
   return (
-    <LayoutMultiRole allowedRoles={['ADMIN', 'MANAGER']} showGoBackButton={true}>
+    <LayoutMultiRole allowedRoles={['ADMIN', 'MANAGER', 'SELLER']} showGoBackButton={true}>
       <div className="p-2 sm:p-4 lg:p-6">
         {/* Header con navegación */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">

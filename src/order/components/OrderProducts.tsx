@@ -42,24 +42,33 @@ const OrderProducts = ({ items }: OrderProductsProps) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items.map((item) => (
-                <TableRow key={item._id}>
-                  <TableCell className='font-medium'>
-                    {item.product.code}
-                  </TableCell>
-                  <TableCell>{item.product.name}</TableCell>
-                  <TableCell className='text-right'>{item.quantity}</TableCell>
-                  <TableCell className='text-right'>
-                    {item.currentStock}
-                  </TableCell>
-                  <TableCell className='text-right'>
-                    {item.minimumStock}
-                  </TableCell>
-                  <TableCell className='text-right'>
-                    ${item.product.price}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {items.map((item, idx) => {
+                const product = item.product as any
+                return (
+                  <TableRow key={item._id || `item-${idx}`}>
+                    <TableCell className='font-medium'>
+                      {product?.code || <span className='text-muted-foreground'>—</span>}
+                    </TableCell>
+                    <TableCell>
+                      {product?.name || (
+                        <span className='italic text-muted-foreground'>
+                          Producto eliminado
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className='text-right'>{item.quantity}</TableCell>
+                    <TableCell className='text-right'>
+                      {item.currentStock}
+                    </TableCell>
+                    <TableCell className='text-right'>
+                      {item.minimumStock}
+                    </TableCell>
+                    <TableCell className='text-right'>
+                      {product?.price !== undefined ? `$${product.price}` : '—'}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </div>

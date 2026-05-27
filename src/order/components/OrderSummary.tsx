@@ -13,9 +13,10 @@ interface OrderSummaryProps {
 }
 
 const OrderSummary = ({ items }: OrderSummaryProps) => {
-  // Calcular el total estimado basado en los precios y cantidades
+  // Calcular el total estimado basado en los precios y cantidades.
+  // El producto puede ser null si fue eliminado de la DB después del pedido.
   const totalAmount = items.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+    (sum, item) => sum + ((item.product as any)?.price ?? 0) * item.quantity,
     0
   )
 

@@ -72,8 +72,14 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
   // Filtrar solo pagos por transferencia
   const transferPayments = payments.filter(payment => payment.method === 'TRANSFER')
 
-  // Obtener proveedores únicos de los productos
-  const supplierIds = [...new Set(items.map(item => item.product.supplier))]
+  // Obtener proveedores únicos de los productos (excluir productos eliminados)
+  const supplierIds = [
+    ...new Set(
+      items
+        .map((item) => (item.product as any)?.supplier)
+        .filter((s) => !!s)
+    )
+  ]
 
   // Query para obtener información de proveedores
   const { data: suppliers } = useQuery({
@@ -234,8 +240,8 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                     <div className='space-y-2 sm:space-y-3'>
                       {suppliers.map((supplier) => {
                         // Encontrar productos de este proveedor
-                        const supplierProducts = items.filter(item =>
-                          item.product.supplier === supplier._id
+                        const supplierProducts = items.filter(
+                          (item) => (item.product as any)?.supplier === supplier._id
                         );
 
                         return (
@@ -267,11 +273,14 @@ const SaleTransferVerification = ({ saleId, payments, items }: SaleTransferVerif
                               <div className='text-xs text-gray-600 bg-gray-50 p-2 rounded'>
                                 <span className='font-medium'>Productos: </span>
                                 <div className='mt-1 space-y-1'>
-                                  {supplierProducts.map((item, idx) => (
-                                    <div key={item.product._id} className='break-words'>
-                                      • {item.product.name} (x{item.quantity})
-                                    </div>
-                                  ))}
+                                  {supplierProducts.map((item, idx) => {
+                                    const p = item.product as any
+                                    return (
+                                      <div key={p?._id || `item-${idx}`} className='break-words'>
+                                        • {p?.name || 'Producto eliminado'} (x{item.quantity})
+                                      </div>
+                                    )
+                                  })}
                                 </div>
                               </div>
                             )}

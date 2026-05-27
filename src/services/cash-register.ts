@@ -5,15 +5,45 @@ export const openRegister = async (initialBalance: number) => {
   return response.data
 }
 
+export type ReconciliationLine = {
+  method: string
+  expected: number
+  actual: number
+  diff: number
+  expectedCount: number
+  actualCount: number
+  matches: boolean
+}
+
+export type ReconciliationResponse = {
+  registerId: string
+  status: 'OPEN' | 'CLOSED'
+  paymentBreakdown: ReconciliationLine[]
+  hasDiscrepancy: boolean
+  salesCount: number
+  cancelledCount: number
+}
+
+export const getReconciliation = async (id: string): Promise<ReconciliationResponse> => {
+  const response = await api.get(`/cash-registers/${id}/reconciliation`)
+  return response.data
+}
+
 export const closeRegister = async (
   id: string,
-  actualCash: number,
-  notes?: string
+  payload: {
+    actualCash: number
+    notes?: string
+    forceClose?: boolean
+    discrepancyNote?: string
+  }
 ) => {
-  const response = await api.put(`/cash-registers/${id}/close`, {
-    actualCash,
-    notes
-  })
+  const response = await api.put(`/cash-registers/${id}/close`, payload)
+  return response.data
+}
+
+export const reopenRegister = async (id: string, reason: string) => {
+  const response = await api.put(`/cash-registers/${id}/reopen`, { reason })
   return response.data
 }
 

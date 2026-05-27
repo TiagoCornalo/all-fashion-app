@@ -17,8 +17,7 @@ import { formatCurrency, formatDateTime } from '../../../utils'
 import {
   RecentActivityChart,
   FinancialSummaryChart,
-  AccountStatusChart,
-  InstallmentsWidgets
+  AccountStatusChart
 } from './'
 
 /**
@@ -244,9 +243,6 @@ export const AccountsDashboard = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* Cuotas vencidas y próximas a vencer */}
-      <InstallmentsWidgets />
 
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">

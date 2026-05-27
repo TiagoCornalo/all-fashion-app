@@ -44,24 +44,35 @@ const SaleProducts = ({ items, itemPromotions }: SaleProductsProps) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items.map((item) => {
-                const hasItemPromotion = itemPromotions?.some(
-                  (p) => p.productId === item.product._id
-                )
+              {items.map((item, idx) => {
+                // El producto puede ser null si fue eliminado de la DB después
+                // de hacerse la venta (populate devuelve null).
+                const product = item.product
+                const productId = product?._id
+                const hasItemPromotion = productId
+                  ? itemPromotions?.some((p) => p.productId === productId)
+                  : false
                 const itemPromotion = hasItemPromotion
-                  ? itemPromotions?.find(
-                    (p) => p.productId === item.product._id
-                  )
+                  ? itemPromotions?.find((p) => p.productId === productId)
                   : null
+                const productMissing = !product
 
                 return (
-                  <TableRow key={item._id}>
+                  <TableRow key={item._id || `item-${idx}`}>
                     <TableCell className='font-medium text-xs sm:text-sm'>
-                      {item.product.code}
+                      {product?.code || (
+                        <span className='text-muted-foreground'>—</span>
+                      )}
                     </TableCell>
                     <TableCell className='text-xs sm:text-sm'>
                       <div className='min-w-0'>
-                        <div className='truncate'>{item.product.name}</div>
+                        <div className='truncate'>
+                          {product?.name || (
+                            <span className='italic text-muted-foreground'>
+                              Producto eliminado
+                            </span>
+                          )}
+                        </div>
                         {hasItemPromotion && (
                           <Badge
                             variant='outline'
@@ -69,6 +80,14 @@ const SaleProducts = ({ items, itemPromotions }: SaleProductsProps) => {
                           >
                             {itemPromotion?.code || 'Descuento'} (
                             {itemPromotion?.discountPercentage}%)
+                          </Badge>
+                        )}
+                        {productMissing && (
+                          <Badge
+                            variant='outline'
+                            className='mt-1 bg-amber-50 text-amber-700 border-amber-200 text-xs'
+                          >
+                            Sin referencia
                           </Badge>
                         )}
                       </div>
@@ -80,11 +99,11 @@ const SaleProducts = ({ items, itemPromotions }: SaleProductsProps) => {
                       {hasItemPromotion ? (
                         <span className='line-through text-gray-500'>
                           {formatCurrency(
-                            itemPromotion?.originalPrice || item.product.price
+                            itemPromotion?.originalPrice ?? product?.price ?? item.price
                           )}
                         </span>
                       ) : (
-                        formatCurrency(item.product.price)
+                        formatCurrency(product?.price ?? item.price)
                       )}
                     </TableCell>
                     <TableCell className='text-right text-xs sm:text-sm'>

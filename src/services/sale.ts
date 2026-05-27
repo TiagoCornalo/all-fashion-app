@@ -33,3 +33,12 @@ export const getSaleById = async (id: string): Promise<Sale> => {
   const response = await api.get(`/sales/${id}`)
   return response.data
 }
+
+/**
+ * Cancela una venta y revierte stock + caja (si está abierta).
+ * El backend devuelve 409 si la caja asociada está cerrada.
+ */
+export const cancelSale = async (id: string): Promise<Sale> => {
+  const response = await api.put(`/sales/${id}/cancel`)
+  return response.data
+}

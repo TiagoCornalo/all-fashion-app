@@ -63,9 +63,13 @@ interface CashRegisterStore {
   openRegister: (initialBalance: number) => Promise<void>
   closeRegister: (
     id: string,
-    actualCash: number,
-    notes?: string
-  ) => Promise<void>
+    payload: {
+      actualCash: number
+      notes?: string
+      forceClose?: boolean
+      discrepancyNote?: string
+    }
+  ) => Promise<any>
   deposit: (id: string, amount: number, notes?: string) => Promise<void>
   withdraw: (id: string, amount: number, notes?: string) => Promise<void>
 }
@@ -118,16 +122,17 @@ export const useCashRegisterStore = create<CashRegisterStore>((set, get) => ({
     }
   },
 
-  closeRegister: async (id: string, actualCash: number, notes?: string) => {
+  closeRegister: async (id, payload) => {
     set({ isLoading: true, error: null })
     try {
-      const data = await closeRegister(id, actualCash, notes)
+      const data = await closeRegister(id, payload)
       set({ currentRegister: null })
       await get().fetchCurrentRegister()
       return data
     } catch (error) {
       console.error(error)
       set({ error: 'Error al cerrar la caja' })
+      throw error
     } finally {
       set({ isLoading: false })
     }
