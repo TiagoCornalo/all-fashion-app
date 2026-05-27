@@ -180,7 +180,7 @@ export function DataTable<TData, TValue>({
                 placeholder={searchPlaceholder}
                 value={searchValue}
                 onChange={handleSearchChange}
-                className='h-8'
+                className='h-10 sm:h-8'
               />
             </div>
           )}

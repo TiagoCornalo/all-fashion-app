@@ -137,7 +137,7 @@ const SuppliersTable = ({
                       <Ellipsis className='h-4 w-4' />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
+                  <DropdownMenuContent align='end'>
                     {onEdit && (
                       <DropdownMenuItem onClick={() => onEdit(row.original)}>
                         <Pencil className='mr-2 h-4 w-4' />

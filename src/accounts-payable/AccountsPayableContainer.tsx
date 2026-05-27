@@ -56,11 +56,12 @@ const AccountsPayableContainer = () => {
 
   const tabCount =
     1 /* accounts */ + 1 /* overdue */ + (canSeeDashboard ? 1 : 0) + (canSeeReports ? 1 : 0)
+  // En mobile 2 columnas; en sm+ se expande según cuántos tabs hay
   const gridColsClass =
     tabCount === 4
-      ? 'grid-cols-2 lg:grid-cols-4'
+      ? 'grid-cols-2 sm:grid-cols-4'
       : tabCount === 3
-        ? 'grid-cols-3'
+        ? 'grid-cols-2 sm:grid-cols-3'
         : 'grid-cols-2'
 
   return (

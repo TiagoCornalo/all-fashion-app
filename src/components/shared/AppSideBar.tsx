@@ -38,7 +38,7 @@ const AppSideBar = ({ items, showGoBackButton = false }: AppSidebarProps) => {
         <Button
           variant='secondary'
           size='sm'
-          className='fixed top-10 left-20 rounded-full p-3 shadow-lg z-50 bg-white text-black hover:bg-gray-100'
+          className='fixed top-4 left-4 sm:top-10 sm:left-20 rounded-full p-2 sm:p-3 shadow-lg z-50 bg-white text-black hover:bg-gray-100'
           onClick={handleGoBack}
           aria-label='Volver atrás'
         >

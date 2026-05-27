@@ -13,11 +13,12 @@ const DataTablePagination = ({
   const displayPage = currentPage + 1
 
   return (
-    <div className='flex items-center justify-end space-x-2 py-4'>
+    <div className='flex flex-wrap items-center justify-end gap-2 py-3 sm:py-4'>
       <Button
         variant='outline'
         size='sm'
         type='button'
+        className='h-9 sm:h-8'
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
@@ -25,15 +26,18 @@ const DataTablePagination = ({
         }}
         disabled={currentPage <= 0}
       >
-        Anterior
+        <span className='sm:hidden'>‹</span>
+        <span className='hidden sm:inline'>Anterior</span>
       </Button>
-      <div className='text-sm'>
-        Página {displayPage} de {totalPages || 1}
+      <div className='text-xs sm:text-sm whitespace-nowrap'>
+        <span className='sm:hidden'>{displayPage}/{totalPages || 1}</span>
+        <span className='hidden sm:inline'>Página {displayPage} de {totalPages || 1}</span>
       </div>
       <Button
         variant='outline'
         size='sm'
         type='button'
+        className='h-9 sm:h-8'
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
@@ -41,7 +45,8 @@ const DataTablePagination = ({
         }}
         disabled={displayPage >= totalPages}
       >
-        Siguiente
+        <span className='sm:hidden'>›</span>
+        <span className='hidden sm:inline'>Siguiente</span>
       </Button>
     </div>
   )
