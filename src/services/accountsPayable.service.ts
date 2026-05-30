@@ -592,12 +592,16 @@ class AccountsPayableService {
    * Buscar cuenta por número de documento
    */
   async getAccountByDocument(documentNumber: string): Promise<AccountPayable> {
-    if (!documentNumber || typeof documentNumber !== 'string') {
+    const normalizedDocumentNumber = typeof documentNumber === 'string'
+      ? documentNumber.trim()
+      : ''
+
+    if (!normalizedDocumentNumber) {
       throw new Error('Número de documento inválido')
     }
 
     try {
-      const response = await api.get(`/accounts-payable/search/by-document/${documentNumber}`)
+      const response = await api.get(`/accounts-payable/search/by-document/${encodeURIComponent(normalizedDocumentNumber)}`)
       const responseData = validateResponse(response, 'buscar cuenta por documento')
 
       const accountData = (responseData as { data?: AccountPayable }).data

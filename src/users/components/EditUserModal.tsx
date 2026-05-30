@@ -36,7 +36,7 @@ const formSchema = z.object({
   email: z.string().email('Email inválido').min(1, 'El email es requerido'),
   password: z.string().optional(),
   confirmPassword: z.string().optional(),
-  role: z.enum(['ADMIN', 'SELLER', 'MANAGER']),
+  role: z.enum(['ADMIN', 'SELLER', 'MANAGER', 'TECHNICIAN']),
   active: z.boolean()
 }).refine((data) => {
   if (data.password && data.password.length > 0) {
@@ -209,6 +209,7 @@ const EditUserModal = ({ isOpen, onOpenChange, user }: EditUserModalProps) => {
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="SELLER">Vendedor</SelectItem>
+                      <SelectItem value="TECHNICIAN">Técnico</SelectItem>
                       <SelectItem value="MANAGER">Gerente</SelectItem>
                       <SelectItem value="ADMIN">Administrador</SelectItem>
                     </SelectContent>

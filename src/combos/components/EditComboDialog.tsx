@@ -85,19 +85,21 @@ const EditComboDialog = ({
 }: EditComboDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLimitless, setIsLimitless] = useState(combo?.usageLimit === null)
+  const [productSearch, setProductSearch] = useState('')
 
   // Cargar productos para seleccionarlos
-  const { data: productsData } = useQuery({
-    queryKey: ['products-basic'],
+  const { data: productsData, isFetching: isSearchingProducts } = useQuery({
+    queryKey: ['products-basic', productSearch],
     queryFn: () =>
       fetchProducts({
         page: 1,
-        pageSize: 100,
+        pageSize: 20,
         sortBy: 'name',
         sortOrder: 'asc',
-        search: '',
+        search: productSearch,
         filters: {}
-      })
+      }),
+    enabled: isOpen
   })
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -310,6 +312,8 @@ const EditComboDialog = ({
                                 products={productsData?.data || []}
                                 value={field.value}
                                 onChange={field.onChange}
+                                onSearch={setProductSearch}
+                                isSearching={isSearchingProducts}
                               />
                             </FormControl>
                             <FormMessage />

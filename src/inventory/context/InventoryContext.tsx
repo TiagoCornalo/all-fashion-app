@@ -1,14 +1,14 @@
 import { createContext, useContext, ReactNode } from 'react'
 
 interface InventoryContextType {
-  refreshTable: () => void
+  refreshTable: () => void | Promise<void>
 }
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined)
 
 interface InventoryProviderProps {
   children: ReactNode
-  onRefresh: () => void
+  onRefresh: () => void | Promise<void>
 }
 
 export function InventoryProvider({ children, onRefresh }: InventoryProviderProps) {

@@ -7,7 +7,7 @@ const LayoutMultiRole = ({
   showGoBackButton = false
 }: {
   children: React.ReactNode
-  allowedRoles: ('ADMIN' | 'SELLER' | 'MANAGER')[]
+  allowedRoles: ('ADMIN' | 'SELLER' | 'MANAGER' | 'TECHNICIAN')[]
   showGoBackButton?: boolean
 }) => {
   return (

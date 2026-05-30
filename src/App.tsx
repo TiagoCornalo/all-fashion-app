@@ -45,6 +45,9 @@ const QuotesContainer = lazy(() => import('./quotes/QuotesContainer'))
 const PaymentSettingsContainer = lazy(
   () => import('./payment-settings/PaymentSettingsContainer')
 )
+const TechnicalServicesContainer = lazy(
+  () => import('./technical-services/TechnicalServicesContainer')
+)
 
 const SuspenseFallback = () => (
   <div className='fixed inset-0 flex justify-center items-center bg-white z-50'>
@@ -89,6 +92,8 @@ function App() {
 
                 {/* Rutas para remitos y presupuestos */}
                 <Route path='/quotes' element={<QuotesContainer />} />
+                <Route path='/technical-services' element={<TechnicalServicesContainer />} />
+                <Route path='/technical-services/:id' element={<TechnicalServicesContainer />} />
 
                 {/* Configuración de pagos */}
                 <Route

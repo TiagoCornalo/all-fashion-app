@@ -95,19 +95,22 @@ const EditQuoteDialog = ({
 }: EditQuoteDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasDiscount, setHasDiscount] = useState(false)
+  const [productSearch, setProductSearch] = useState('')
+  const [selectedProducts, setSelectedProducts] = useState<Record<string, Product>>({})
 
   // Cargar productos para seleccionarlos
-  const { data: productsData } = useQuery({
-    queryKey: ['products-basic'],
+  const { data: productsData, isFetching: isSearchingProducts } = useQuery({
+    queryKey: ['products-basic', productSearch],
     queryFn: () =>
       fetchProducts({
         page: 1,
-        pageSize: 100,
+        pageSize: 20,
         sortBy: 'name',
         sortOrder: 'asc',
-        search: '',
+        search: productSearch,
         filters: {}
-      })
+      }),
+    enabled: isOpen
   })
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -148,6 +151,15 @@ const EditQuoteDialog = ({
         unitPrice: item.unitPrice,
         description: item.description || ''
       }))
+      const quoteProducts = quote.items.reduce<Record<string, Product>>((acc, item) => {
+        acc[item.productId] = {
+          _id: item.productId,
+          code: item.productCode,
+          name: item.productName,
+          price: item.unitPrice
+        }
+        return acc
+      }, {})
 
       form.reset({
         customer: quote.customer,
@@ -160,6 +172,7 @@ const EditQuoteDialog = ({
       })
 
       setHasDiscount(!!quote.discount)
+      setSelectedProducts(quoteProducts)
     }
   }, [quote, isOpen, form])
 
@@ -170,7 +183,7 @@ const EditQuoteDialog = ({
     try {
       // Calcular subtotales para cada item
       const items: QuoteItem[] = values.items.map((item) => {
-        const product = productsData?.data.find((p: Product) => p._id === item.productId)
+        const product = selectedProducts[item.productId] || productsData?.data.find((p: Product) => p._id === item.productId)
         return {
           productId: item.productId,
           productCode: product?.code || '',
@@ -194,6 +207,7 @@ const EditQuoteDialog = ({
 
       await updateQuote(quote._id!, updatedQuote)
       toast.success('Remito actualizado correctamente')
+      setProductSearch('')
       onOpenChange(false)
       await onQuoteUpdated()
     } catch (error) {
@@ -204,15 +218,17 @@ const EditQuoteDialog = ({
     }
   }
 
-  const handleProductChange = (index: number, productId: string) => {
-    const product = productsData?.data.find((p: Product) => p._id === productId)
+  const handleProductChange = (index: number, productId: string, selectedProduct?: Product) => {
+    const product = selectedProduct || productsData?.data.find((p: Product) => p._id === productId)
     if (product) {
+      setSelectedProducts((current) => ({ ...current, [productId]: product }))
       form.setValue(`items.${index}.productId`, productId)
       form.setValue(`items.${index}.unitPrice`, product.price || 0)
     }
   }
 
   const handleClose = () => {
+    setProductSearch('')
     onOpenChange(false)
   }
 
@@ -461,7 +477,9 @@ const EditQuoteDialog = ({
                                 <ComboboxProducts
                                   products={productsData?.data || []}
                                   value={field.value}
-                                  onChange={(value) => handleProductChange(index, value)}
+                                  onChange={(value, product) => handleProductChange(index, value, product)}
+                                  onSearch={setProductSearch}
+                                  isSearching={isSearchingProducts}
                                 />
                               </FormControl>
                               <FormMessage />

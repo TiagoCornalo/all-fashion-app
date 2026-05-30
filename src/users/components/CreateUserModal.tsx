@@ -34,7 +34,7 @@ const formSchema = z.object({
   email: z.string().email('Email inválido').min(1, 'El email es requerido'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
   confirmPassword: z.string().min(1, 'Confirmar contraseña es requerido'),
-  role: z.enum(['ADMIN', 'SELLER', 'MANAGER'])
+  role: z.enum(['ADMIN', 'SELLER', 'MANAGER', 'TECHNICIAN'])
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Las contraseñas no coinciden",
   path: ["confirmPassword"]
@@ -162,6 +162,7 @@ const CreateUserModal = ({ isOpen, onOpenChange }: CreateUserModalProps) => {
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="SELLER">Vendedor</SelectItem>
+                      <SelectItem value="TECHNICIAN">Técnico</SelectItem>
                       <SelectItem value="MANAGER">Gerente</SelectItem>
                       <SelectItem value="ADMIN">Administrador</SelectItem>
                     </SelectContent>

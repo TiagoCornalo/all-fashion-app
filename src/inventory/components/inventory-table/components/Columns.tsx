@@ -38,14 +38,14 @@ export const columns = (handlers: {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Código' />
     ),
-    cell: ({ row }) => <div className='font-medium'>{row.getValue('code')}</div>
+    cell: ({ row }) => <div className='font-medium'>{row.getValue('code') || '-'}</div>
   },
   {
     accessorKey: 'name',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Nombre' />
     ),
-    cell: ({ row }) => <div>{row.getValue('name')}</div>
+    cell: ({ row }) => <div>{row.getValue('name') || 'Sin nombre'}</div>
   },
   {
     accessorKey: 'stock',
@@ -53,8 +53,8 @@ export const columns = (handlers: {
       <DataTableColumnHeader column={column} title='Stock' />
     ),
     cell: ({ row }) => {
-      const stock = row.getValue('stock') as number
-      const stockMinimum = row.original.stockMinimum
+      const stock = Number(row.getValue('stock') || 0)
+      const stockMinimum = Number(row.original.stockMinimum || 0)
 
       let variant: 'destructive' | 'warning' | 'default' = 'default'
 
@@ -76,15 +76,15 @@ export const columns = (handlers: {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Precio' />
     ),
-    cell: ({ row }) => <div>{formatCurrency(row.getValue('price'))}</div>
+    cell: ({ row }) => <div>{formatCurrency(Number(row.getValue('price') || 0))}</div>
   },
   {
     id: 'proveedor',
-    accessorFn: (row) => row.supplier.name,
+    accessorFn: (row) => row.supplier?.name || 'Sin proveedor',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Proveedor' />
     ),
-    cell: ({ row }) => <div>{row.getValue('proveedor')}</div>,
+    cell: ({ row }) => <div>{row.getValue('proveedor') || 'Sin proveedor'}</div>,
     enableSorting: true,
     enableHiding: true
   },

@@ -132,19 +132,26 @@ export const EditAccountForm = ({ account, onSuccess, onCancel }: EditAccountFor
     // Construir objeto de dirección solo si hay datos
     const hasAddressData = data.street.trim() || data.city.trim() || data.state.trim() || data.postalCode.trim()
 
+    const customerData: UpdateAccountData['customer'] = {
+      name: data.customerName,
+      documentType: data.documentType,
+      documentNumber: data.documentNumber,
+      phone: data.phone || undefined,
+      email: data.email || undefined
+    }
+
+    if (hasAddressData) {
+      customerData.address = {
+        street: data.street || '',
+        city: data.city || '',
+        state: data.state || '',
+        postalCode: data.postalCode || ''
+      }
+    }
+
     const updateData: UpdateAccountData = {
       customer: {
-        name: data.customerName,
-        documentType: data.documentType,
-        documentNumber: data.documentNumber,
-        phone: data.phone || undefined,
-        email: data.email || undefined,
-        address: hasAddressData ? {
-          street: data.street || '',
-          city: data.city || '',
-          state: data.state || '',
-          postalCode: data.postalCode || ''
-        } : undefined
+        ...customerData
       },
       creditLimit: data.creditLimit,
       paymentTerms: {

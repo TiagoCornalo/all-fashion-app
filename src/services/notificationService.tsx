@@ -277,6 +277,12 @@ export class NotificationService {
         scheduled: '/orders/verification',
         verification: '/orders/verification',
         dashboard: '/dashboard'
+      },
+      'TECHNICIAN': {
+        orders: '/technical-services',
+        scheduled: '/technical-services',
+        verification: '/technical-services',
+        dashboard: '/technical-services'
       }
     }
 

@@ -88,10 +88,42 @@ export const AccountPayablePaymentForm = ({
   const { data: plansData } = useInstallmentPlans()
   const plans = plansData?.plans ?? []
   const defaultFrequency = plansData?.defaultFrequency ?? 'MONTHLY'
-  const accountFrequency = (selectedAccount?.paymentTerms?.frequency as InstallmentFrequency | undefined) || defaultFrequency
-  const effectiveFrequency = (frequencyOverride || accountFrequency) as InstallmentFrequency
 
   const saleSubtotal = useSaleStore((s) => s.total)
+
+  // Form para buscar cuenta
+  const searchForm = useForm<SearchForm>({
+    defaultValues: {
+      documentNumber: ''
+    }
+  })
+
+  // Form para crear nueva cuenta
+  const customerForm = useForm<CustomerForm>({
+    defaultValues: {
+      name: '',
+      documentType: 'DNI',
+      documentNumber: '',
+      phone: '',
+      email: ''
+    }
+  })
+
+  // Query para buscar cuenta por documento
+  const { data: foundAccount, isLoading: isSearching, refetch: searchAccount } = useQuery({
+    queryKey: ['account-by-document', searchForm.watch('documentNumber')],
+    queryFn: () => {
+      const docNumber = searchForm.getValues('documentNumber').trim()
+      if (!docNumber) return null
+      return accountsPayableService.getAccountByDocument(docNumber)
+    },
+    enabled: false,
+    retry: false
+  })
+
+  const accountForFrequency = selectedAccount || foundAccount || null
+  const accountFrequency = (accountForFrequency?.paymentTerms?.frequency as InstallmentFrequency | undefined) || defaultFrequency
+  const effectiveFrequency = (frequencyOverride || accountFrequency) as InstallmentFrequency
   const selectedPlan = planIndex !== null ? plans[planIndex] : null
 
   // Preview de cuotas con la info elegida
@@ -120,42 +152,13 @@ export const AccountPayablePaymentForm = ({
     }
   })()
 
-  // Form para buscar cuenta
-  const searchForm = useForm<SearchForm>({
-    defaultValues: {
-      documentNumber: ''
-    }
-  })
-
-  // Form para crear nueva cuenta
-  const customerForm = useForm<CustomerForm>({
-    defaultValues: {
-      name: '',
-      documentType: 'DNI',
-      documentNumber: '',
-      phone: '',
-      email: ''
-    }
-  })
-
-  // Query para buscar cuenta por documento
-  const { data: foundAccount, isLoading: isSearching, refetch: searchAccount } = useQuery({
-    queryKey: ['account-by-document', searchForm.watch('documentNumber')],
-    queryFn: () => {
-      const docNumber = searchForm.getValues('documentNumber')
-      if (!docNumber || docNumber.length < 7) return null
-      return accountsPayableService.getAccountByDocument(docNumber)
-    },
-    enabled: false,
-    retry: false
-  })
-
   const handleSearchAccount = async () => {
-    const docNumber = searchForm.getValues('documentNumber')
-    if (!docNumber || docNumber.length < 7) {
-      toast.error('Ingrese un número de documento válido')
+    const docNumber = searchForm.getValues('documentNumber').trim()
+    if (!docNumber) {
+      toast.error('Ingrese un número de documento')
       return
     }
+    searchForm.setValue('documentNumber', docNumber)
     await searchAccount()
   }
 

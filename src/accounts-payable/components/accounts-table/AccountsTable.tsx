@@ -43,6 +43,7 @@ interface RawAccountData {
   paymentTerms?: {
     days?: number | string
     interestRate?: number | string
+    frequency?: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY'
   }
   status?: string
   createdAt?: string
@@ -112,7 +113,8 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
           },
           paymentTerms: {
             days: Number(account.paymentTerms?.days) || 30,
-            interestRate: Number(account.paymentTerms?.interestRate) || 0
+            interestRate: Number(account.paymentTerms?.interestRate) || 0,
+            frequency: account.paymentTerms?.frequency || 'MONTHLY'
           },
           status: account.status || 'ACTIVE',
           createdAt: account.createdAt || new Date().toISOString()
@@ -336,12 +338,18 @@ export const AccountsTable = ({ defaultFilters = {} }: AccountsTableProps) => {
         const terms = row.original?.paymentTerms
         if (!terms) return <span className="text-gray-400 text-xs sm:text-sm">Sin datos</span>
 
-        const days = Number(terms.days) || 30
         const interestRate = Number(terms.interestRate) || 0
+        const frequencyLabels: Record<string, string> = {
+          WEEKLY: 'Cada 7 dias',
+          BIWEEKLY: 'Cada 15 dias',
+          MONTHLY: 'Mensual'
+        }
+        const conditionLabel = frequencyLabels[terms.frequency || ''] ||
+          `${Number(terms.days) || 30} dias`
 
         return (
           <div className="text-xs sm:text-sm">
-            <p className="font-medium">{days} días</p>
+            <p className="font-medium">{conditionLabel}</p>
             <p className="text-gray-500">{(interestRate * 100).toFixed(2)}% interés</p>
           </div>
         )

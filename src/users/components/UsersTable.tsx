@@ -46,6 +46,7 @@ const UsersTable = ({ users, onEdit, onDelete, isLoading = false }: UsersTablePr
       case 'ADMIN': return 'Administrador'
       case 'MANAGER': return 'Gerente'
       case 'SELLER': return 'Vendedor'
+      case 'TECHNICIAN': return 'Técnico'
       default: return role
     }
   }
@@ -55,6 +56,7 @@ const UsersTable = ({ users, onEdit, onDelete, isLoading = false }: UsersTablePr
       case 'ADMIN': return 'destructive'
       case 'MANAGER': return 'default'
       case 'SELLER': return 'secondary'
+      case 'TECHNICIAN': return 'outline'
       default: return 'outline'
     }
   }

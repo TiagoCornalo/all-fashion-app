@@ -141,7 +141,7 @@ export type NotificationData =
   | OrderStats
   | ScheduledOrdersUpdate
 
-export type UserRole = 'ADMIN' | 'MANAGER' | 'SELLER'
+export type UserRole = 'ADMIN' | 'MANAGER' | 'SELLER' | 'TECHNICIAN'
 
 export interface SocketUser {
   userId: string

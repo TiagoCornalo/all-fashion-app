@@ -127,7 +127,8 @@ export const ConnectionStatus: React.FC = () => {
     const roleNames: Record<string, string> = {
       'ADMIN': 'Administrador',
       'MANAGER': 'Gerente',
-      'SELLER': 'Vendedor'
+      'SELLER': 'Vendedor',
+      'TECHNICIAN': 'Técnico'
     }
 
     return role ? roleNames[role] || role : 'Usuario'

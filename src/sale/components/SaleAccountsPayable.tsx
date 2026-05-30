@@ -115,8 +115,8 @@ export const SaleAccountsPayable = ({
   const { data: foundAccount, isLoading: isSearching, refetch: searchAccount } = useQuery({
     queryKey: ['account-by-document', searchForm.watch('documentNumber')],
     queryFn: () => {
-      const docNumber = searchForm.getValues('documentNumber')
-      if (!docNumber || docNumber.length < 7) return null
+      const docNumber = searchForm.getValues('documentNumber').trim()
+      if (!docNumber) return null
       return accountsPayableService.getAccountByDocument(docNumber)
     },
     enabled: false,
@@ -205,11 +205,12 @@ export const SaleAccountsPayable = ({
   })
 
   const handleSearchAccount = async () => {
-    const docNumber = searchForm.getValues('documentNumber')
-    if (!docNumber || docNumber.length < 7) {
-      toast.error('Ingrese un número de documento válido')
+    const docNumber = searchForm.getValues('documentNumber').trim()
+    if (!docNumber) {
+      toast.error('Ingrese un número de documento')
       return
     }
+    searchForm.setValue('documentNumber', docNumber)
     await searchAccount()
   }
 

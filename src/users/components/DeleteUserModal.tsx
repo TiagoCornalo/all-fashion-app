@@ -79,6 +79,7 @@ const DeleteUserModal = ({ isOpen, onOpenChange, user }: DeleteUserModalProps) =
       case 'ADMIN': return 'Administrador'
       case 'MANAGER': return 'Gerente'
       case 'SELLER': return 'Vendedor'
+      case 'TECHNICIAN': return 'Técnico'
       default: return role
     }
   }

@@ -56,6 +56,14 @@ const AccountDetailContainer = () => {
   // ADMIN y MANAGER siempre. SELLER puede ver y registrar pagos pero no editar.
   const canAccessAccounts = isAdmin || isManager || isSeller
   const canEditAccount = isAdmin // crear/editar/eliminar solo admin
+  const paymentFrequencyLabel = (frequency?: string, days?: number) => {
+    const labels: Record<string, string> = {
+      WEEKLY: 'Cada 7 dias',
+      BIWEEKLY: 'Cada 15 dias',
+      MONTHLY: 'Mensual'
+    }
+    return labels[frequency || ''] || `${days || 30} dias`
+  }
 
   const handleSendBalanceWhatsApp = async (account: AccountPayable) => {
     try {
@@ -318,7 +326,7 @@ const AccountDetailContainer = () => {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold text-purple-600">
-                {account.paymentTerms.days} días
+                {paymentFrequencyLabel(account.paymentTerms.frequency, account.paymentTerms.days)}
               </div>
               <p className="text-xs text-gray-600">
                 {(account.paymentTerms.interestRate * 100).toFixed(2)}% interés

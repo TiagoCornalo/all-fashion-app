@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ChevronsUpDown, Check } from 'lucide-react'
 import { Button } from './button'
 import {
@@ -23,13 +23,17 @@ interface Product {
 interface ComboboxProductsProps {
   products: Product[]
   value: string
-  onChange: (value: string) => void
+  onChange: (value: string, product?: Product) => void
+  onSearch?: (value: string) => void
+  isSearching?: boolean
 }
 
 export function ComboboxProducts({
   products,
   value,
-  onChange
+  onChange,
+  onSearch,
+  isSearching = false
 }: ComboboxProductsProps) {
   const [open, setOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
@@ -44,8 +48,22 @@ export function ComboboxProducts({
     return safeProducts.find((product) => product?._id === value)
   }, [safeProducts, value])
 
+  useEffect(() => {
+    if (!open || !onSearch) return
+
+    const timeout = window.setTimeout(() => {
+      onSearch(inputValue.trim())
+    }, 300)
+
+    return () => window.clearTimeout(timeout)
+  }, [inputValue, onSearch, open])
+
   // Filtrar productos según el término de búsqueda
   const filteredProducts = useMemo(() => {
+    if (onSearch) {
+      return safeProducts
+    }
+
     if (!inputValue.trim()) {
       return safeProducts
     }
@@ -58,7 +76,7 @@ export function ComboboxProducts({
         (typeof product?.code === 'string' &&
           product.code.toLowerCase().includes(lowercaseSearchTerm))
     )
-  }, [safeProducts, inputValue])
+  }, [safeProducts, inputValue, onSearch])
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -85,7 +103,11 @@ export function ComboboxProducts({
             className='h-9'
           />
           <div className='max-h-[300px] overflow-auto space-y-1'>
-            {filteredProducts.length === 0 ? (
+            {isSearching ? (
+              <div className='text-sm text-muted-foreground text-center py-2'>
+                Buscando productos...
+              </div>
+            ) : filteredProducts.length === 0 ? (
               <div className='text-sm text-muted-foreground text-center py-2'>
                 No se encontraron productos.
               </div>
@@ -94,7 +116,7 @@ export function ComboboxProducts({
                 <DropdownMenuItem
                   key={product._id}
                   onSelect={() => {
-                    onChange(product._id)
+                    onChange(product._id, product)
                     setOpen(false)
                   }}
                   className={`flex items-start gap-2 ${

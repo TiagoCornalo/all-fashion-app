@@ -105,7 +105,7 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
       onOpenChange(false)
       form.reset()
       setUsdEnabled(false)
-      refreshTable()
+      await refreshTable()
       toast.success('Producto agregado correctamente')
     } catch (error: unknown) {
       if (error instanceof AxiosError) {

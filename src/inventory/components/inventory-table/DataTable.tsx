@@ -199,9 +199,9 @@ export function DataTable({
                     key={row.id}
                     data-state={row.getIsSelected() && 'selected'}
                     className={
-                      row.original.stock <= row.original.stockMinimum
+                      Number(row.original.stock || 0) <= Number(row.original.stockMinimum || 0)
                         ? 'bg-red-200 hover:bg-red-300'
-                        : row.original.stock <= row.original.stockMinimum * 1.2
+                        : Number(row.original.stock || 0) <= Number(row.original.stockMinimum || 0) * 1.2
                         ? 'bg-yellow-200 hover:bg-yellow-300'
                         : ''
                     }
@@ -219,7 +219,7 @@ export function DataTable({
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={columns.length}
+                    colSpan={tableColumns.length}
                     className='h-24 text-center'
                   >
                     No hay resultados.

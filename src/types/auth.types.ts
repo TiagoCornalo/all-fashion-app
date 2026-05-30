@@ -1,5 +1,5 @@
 // Roles disponibles en la aplicación
-export type UserRole = 'ADMIN' | 'USER' | 'GUEST'
+export type UserRole = 'ADMIN' | 'SELLER' | 'MANAGER' | 'TECHNICIAN' | 'USER' | 'GUEST'
 
 // Información del usuario
 export interface User {
@@ -49,6 +49,9 @@ export type Permission = 'create' | 'read' | 'update' | 'delete'
 // Mapa de permisos por rol
 export const RolePermissions: Record<UserRole, Permission[]> = {
   ADMIN: ['create', 'read', 'update', 'delete'],
+  MANAGER: ['create', 'read', 'update'],
+  SELLER: ['create', 'read'],
+  TECHNICIAN: ['read', 'update'],
   USER: ['read'],
   GUEST: ['read']
 }
