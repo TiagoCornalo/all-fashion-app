@@ -4,9 +4,6 @@ import { Routes, Route } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { Loader, SuspenseErrorBoundary } from './components'
 import './App.css'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-
-const queryClient = new QueryClient()
 
 const AuthContainer = lazy(() => import('./auth/AuthContainer'))
 const DashboardContainer = lazy(() => import('./dashboard/DashboardContainer'))
@@ -57,55 +54,53 @@ const SuspenseFallback = () => (
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <SuspenseErrorBoundary>
-        <AuthProvider>
-          <NotificationsProvider>
-            <Suspense fallback={<SuspenseFallback />}>
-              <Routes>
-                <Route path='/' element={<AuthContainer />} />
-                <Route path='/home' element={<HomeContainer />} />
-                <Route path='/dashboard' element={<DashboardContainer />} />
-                <Route path='/inventory' element={<InventoryContainer />} />
-                <Route path='/barcode' element={<BarcodeReaderWithCamera />} />
-                <Route path='/billing' element={<BillingContainer />} />
-                <Route path='/suppliers' element={<SuppliersContainer />} />
-                <Route
-                  path='/cash-registers/:id'
-                  element={<CashRegisterContainer />}
-                />
-                <Route path='/suppliers/:id' element={<SupplierDetailContainer />} />
-                <Route path='/orders/:id' element={<OrderDetailContainer />} />
-                <Route path='/sale/:id' element={<SaleContainer />} />
-                <Route path='/discounts' element={<DiscountsContainer />} />
-                <Route path='/combos' element={<CombosContainer />} />
-                <Route path='/users' element={<UserManagementContainer />} />
+    <SuspenseErrorBoundary>
+      <AuthProvider>
+        <NotificationsProvider>
+          <Suspense fallback={<SuspenseFallback />}>
+            <Routes>
+              <Route path='/' element={<AuthContainer />} />
+              <Route path='/home' element={<HomeContainer />} />
+              <Route path='/dashboard' element={<DashboardContainer />} />
+              <Route path='/inventory' element={<InventoryContainer />} />
+              <Route path='/barcode' element={<BarcodeReaderWithCamera />} />
+              <Route path='/billing' element={<BillingContainer />} />
+              <Route path='/suppliers' element={<SuppliersContainer />} />
+              <Route
+                path='/cash-registers/:id'
+                element={<CashRegisterContainer />}
+              />
+              <Route path='/suppliers/:id' element={<SupplierDetailContainer />} />
+              <Route path='/orders/:id' element={<OrderDetailContainer />} />
+              <Route path='/sale/:id' element={<SaleContainer />} />
+              <Route path='/discounts' element={<DiscountsContainer />} />
+              <Route path='/combos' element={<CombosContainer />} />
+              <Route path='/users' element={<UserManagementContainer />} />
 
-                {/* Rutas para verificación de pedidos */}
-                <Route path='/orders/verification' element={<OrderVerificationContainer />} />
-                <Route path='/orders/verify/:orderId' element={<OrderVerificationForm />} />
+              {/* Rutas para verificación de pedidos */}
+              <Route path='/orders/verification' element={<OrderVerificationContainer />} />
+              <Route path='/orders/verify/:orderId' element={<OrderVerificationForm />} />
 
-                {/* Rutas para cuentas corrientes */}
-                <Route path='/accounts-payable' element={<AccountsPayableContainer />} />
-                <Route path='/accounts-payable/:id' element={<AccountDetailContainer />} />
-                <Route path='/accounts-payable/:id/edit' element={<EditAccountContainer />} />
+              {/* Rutas para cuentas corrientes */}
+              <Route path='/accounts-payable' element={<AccountsPayableContainer />} />
+              <Route path='/accounts-payable/:id' element={<AccountDetailContainer />} />
+              <Route path='/accounts-payable/:id/edit' element={<EditAccountContainer />} />
 
-                {/* Rutas para remitos y presupuestos */}
-                <Route path='/quotes' element={<QuotesContainer />} />
-                <Route path='/technical-services' element={<TechnicalServicesContainer />} />
-                <Route path='/technical-services/:id' element={<TechnicalServicesContainer />} />
+              {/* Rutas para remitos y presupuestos */}
+              <Route path='/quotes' element={<QuotesContainer />} />
+              <Route path='/technical-services' element={<TechnicalServicesContainer />} />
+              <Route path='/technical-services/:id' element={<TechnicalServicesContainer />} />
 
-                {/* Configuración de pagos */}
-                <Route
-                  path='/payment-settings'
-                  element={<PaymentSettingsContainer />}
-                />
-              </Routes>
-            </Suspense>
-          </NotificationsProvider>
-        </AuthProvider>
-      </SuspenseErrorBoundary>
-    </QueryClientProvider>
+              {/* Configuración de pagos */}
+              <Route
+                path='/payment-settings'
+                element={<PaymentSettingsContainer />}
+              />
+            </Routes>
+          </Suspense>
+        </NotificationsProvider>
+      </AuthProvider>
+    </SuspenseErrorBoundary>
   )
 }
 

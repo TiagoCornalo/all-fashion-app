@@ -5,6 +5,13 @@ import { DataTableRowActions } from './DataTableRowActions'
 import { formatCurrency, formatDateTime } from '../../../../utils'
 import { Badge, Checkbox } from '../../../../components'
 
+const formatSafeDateTime = (value: unknown) => {
+  if (!value) return '-'
+  const date = new Date(String(value))
+  const formatted = formatDateTime(date)
+  return formatted || '-'
+}
+
 export const columns = (handlers: {
   onEdit: (product: Product) => void
   onDelete: (product: Product) => void
@@ -93,9 +100,7 @@ export const columns = (handlers: {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Última actualización' />
     ),
-    cell: ({ row }) => (
-      <div>{formatDateTime(new Date(row.getValue('updatedAt')))}</div>
-    )
+    cell: ({ row }) => <div>{formatSafeDateTime(row.getValue('updatedAt'))}</div>
   },
   {
     id: 'actions',

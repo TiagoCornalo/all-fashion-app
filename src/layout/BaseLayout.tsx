@@ -28,13 +28,19 @@ const BaseLayout = ({
   menuItems: MenuItem[]
   showGoBackButton?: boolean
 }) => {
+  const currentUser = authService.getCurrentUser()
+  const hasLocalAccess =
+    authService.hasValidToken() &&
+    (!requiredRoles || requiredRoles.includes(currentUser?.role))
   const [isOpen, setIsOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [userRole, setUserRole] = useState<string>('')
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(!hasLocalAccess)
+  const [userRole, setUserRole] = useState<string>(currentUser?.role || '')
+  const [isAuthenticated, setIsAuthenticated] = useState(hasLocalAccess)
   const navigate = useNavigate()
 
   useEffect(() => {
+    let cancelled = false
+
     const validateUser = async () => {
       try {
         if (!authService.hasValidToken()) {
@@ -55,19 +61,26 @@ const BaseLayout = ({
           return
         }
 
+        if (cancelled) return
         setUserRole(response.user.role)
         setIsAuthenticated(true)
       } catch (error) {
         console.error('Error de validación:', error)
-        authService.logout()
-        navigate(LOGIN_PATH)
+        if (!hasLocalAccess) {
+          authService.logout()
+          navigate(LOGIN_PATH)
+        }
       } finally {
-        setIsLoading(false)
+        if (!cancelled) setIsLoading(false)
       }
     }
 
     validateUser()
-  }, [navigate, requiredRoles])
+
+    return () => {
+      cancelled = true
+    }
+  }, [hasLocalAccess, navigate, requiredRoles])
 
   if (isLoading || !isAuthenticated) {
     return (

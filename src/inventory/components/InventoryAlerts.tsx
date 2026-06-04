@@ -19,7 +19,7 @@ const InventoryAlerts = () => {
     const fetchAlerts = async () => {
       try {
         const response = await getAlerts('PENDING')
-        setAlerts(response.data)
+        setAlerts(Array.isArray(response.data) ? response.data : [])
       } catch (error) {
         console.error('Error fetching alerts:', error)
       } finally {
@@ -47,12 +47,13 @@ const InventoryAlerts = () => {
       })
 
       socket.on('newAlerts', (newAlerts: Alert[]) => {
+        const safeNewAlerts = Array.isArray(newAlerts) ? newAlerts : []
         setAlerts((prevAlerts) => {
-          const newAlertsIds = new Set(newAlerts.map((alert) => alert._id))
+          const newAlertsIds = new Set(safeNewAlerts.map((alert) => alert._id))
           const filteredPrevAlerts = prevAlerts.filter(
             (alert) => !newAlertsIds.has(alert._id)
           )
-          return [...newAlerts, ...filteredPrevAlerts]
+          return [...safeNewAlerts, ...filteredPrevAlerts]
         })
       })
 
@@ -95,7 +96,7 @@ const InventoryAlerts = () => {
         prevAlerts.filter((alert) => alert._id !== alertId)
       )
 
-      if (stockType.includes('NO_STOCK')) {
+      if (supplierId && stockType.includes('NO_STOCK')) {
         navigate(`/suppliers/${supplierId}?tab=orders`)
       }
     } catch (error) {

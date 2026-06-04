@@ -70,10 +70,11 @@ class AuthService {
   logout() {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+    localStorage.removeItem('activeCashRegister')
   }
 
   isAuthenticated(): boolean {
-    return localStorage.getItem('token') !== null
+    return this.hasValidToken()
   }
 }
 

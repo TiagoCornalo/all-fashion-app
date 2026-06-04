@@ -20,13 +20,13 @@ interface AlertCardProps {
     stockType: string
   ) => void
   createdAt: string
-  product: {
+  product?: {
     _id: string
     name: string
     code: string
-    supplier: string
-    type: string
-  }
+    supplier?: string
+    type?: string
+  } | null
 }
 
 const AlertCard = ({
@@ -78,11 +78,13 @@ const AlertCard = ({
 
   const handleResolve = (
     alertId: string,
-    supplierId: string,
+    supplierId: string | undefined,
     stockType: string
   ) => {
-    onResolve(alertId, '', supplierId, stockType)
+    onResolve(alertId, '', supplierId || '', stockType)
   }
+
+  const createdAtLabel = formatDateTime(createdAt) || 'Fecha no disponible'
 
   return (
     <Card className={`w-full ${getColor()} text-white`}>
@@ -94,7 +96,7 @@ const AlertCard = ({
             {/* <p className='text-sm'>
               Producto: {product?.name} ({product?.code})
             </p> */}
-            <p className='text-sm'>{formatDateTime(new Date(createdAt))}hs</p>
+            <p className='text-sm'>{createdAtLabel}hs</p>
           </div>
         </div>
         <Button

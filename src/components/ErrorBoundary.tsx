@@ -110,9 +110,21 @@ export const SuspenseErrorBoundary: React.FC<{ children: ReactNode }> = ({ child
   return (
     <ErrorBoundary
       fallback={
-        <div className='fixed inset-0 flex justify-center items-center bg-white z-50'>
-          <Loader className='h-8 w-8' />
-          <span className='ml-2 text-gray-600'>Cargando...</span>
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-white p-4'>
+          <div className='w-full max-w-md rounded-lg border bg-white p-6 text-center shadow-lg'>
+            <h1 className='mb-2 text-xl font-semibold text-gray-900'>
+              No se pudo cargar esta pantalla
+            </h1>
+            <p className='mb-4 text-sm text-gray-600'>
+              Actualizá la página. Si vuelve a pasar, cerrá sesión e ingresá nuevamente.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className='rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700'
+            >
+              Recargar
+            </button>
+          </div>
         </div>
       }
     >
