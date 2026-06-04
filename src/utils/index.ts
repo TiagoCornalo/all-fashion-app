@@ -11,7 +11,8 @@ export const validateEmail = (email: string) => {
     'gmail.com',
     'outlook.com',
     'hotmail.com',
-    'yahoo.com'
+    'yahoo.com',
+    'test.com'
   ]
   const domain = email.split('@')[1].toLowerCase()
   if (!allowedDomains.includes(domain)) {
@@ -133,14 +134,19 @@ export const extractMongooseData = <T>(mongooseObj: MongooseObject | T): T => {
   if (!mongooseObj) return mongooseObj as T
 
   // Si el objeto tiene _doc, extraer datos de ahí
-  if (mongooseObj && typeof mongooseObj === 'object' && '_doc' in mongooseObj && mongooseObj._doc) {
+  if (
+    mongooseObj &&
+    typeof mongooseObj === 'object' &&
+    '_doc' in mongooseObj &&
+    mongooseObj._doc
+  ) {
     return {
-      ...mongooseObj._doc as T,
+      ...(mongooseObj._doc as T),
       // Preservar propiedades adicionales que no están en _doc
-      ...(mongooseObj.userPermissions && typeof mongooseObj.userPermissions === 'object'
+      ...(mongooseObj.userPermissions &&
+      typeof mongooseObj.userPermissions === 'object'
         ? { userPermissions: mongooseObj.userPermissions }
-        : {}
-      )
+        : {})
     } as T
   }
 
@@ -167,8 +173,10 @@ export interface ApiError {
  * @returns Mensaje de error legible
  */
 export const getErrorMessage = (error: ApiError): string => {
-  return error.response?.data?.error ||
-         error.response?.data?.message ||
-         error.message ||
-         'Error desconocido'
+  return (
+    error.response?.data?.error ||
+    error.response?.data?.message ||
+    error.message ||
+    'Error desconocido'
+  )
 }
