@@ -15,6 +15,7 @@ import {
 import { validateEmail } from '../../utils'
 import { useAuth } from '../../context/auth/useAuth'
 import useUserStore from '../../stores/userStore'
+import { Eye, EyeOff } from 'lucide-react'
 
 const AuthSignIn = () => {
   const { login } = useAuth()
@@ -29,6 +30,7 @@ const AuthSignIn = () => {
   const [emailError, setEmailError] = useState('')
   const [loginError, setLoginError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -111,14 +113,29 @@ const AuthSignIn = () => {
             </div>
 
             <div className='space-y-2'>
-              <Input
-                type='password'
-                name='password'
-                placeholder='Contraseña'
-                className={`w-full ${loginError ? 'border-red-500' : ''}`}
-                value={password}
-                onChange={handlePasswordChange}
-              />
+              <div className='relative'>
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  name='password'
+                  placeholder='Contraseña'
+                  autoComplete='current-password'
+                  className={`w-full pr-10 ${loginError ? 'border-red-500' : ''}`}
+                  value={password}
+                  onChange={handlePasswordChange}
+                />
+                <button
+                  type='button'
+                  className='absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring'
+                  onClick={() => setShowPassword((value) => !value)}
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showPassword ? (
+                    <EyeOff className='h-4 w-4' />
+                  ) : (
+                    <Eye className='h-4 w-4' />
+                  )}
+                </button>
+              </div>
               {loginError && (
                 <p className='text-red-500 text-sm'>{loginError}</p>
               )}
