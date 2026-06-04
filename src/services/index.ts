@@ -56,6 +56,8 @@ export type BulkImportReport = {
   productsUpdated: number
   productsWithUSD: number
   productsARSOnly: number
+  productsUSDBlue?: number
+  productsUSDOfficial?: number
   suppliersInExcel: number
   suppliersCreated: number
   suppliersMatched: number

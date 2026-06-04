@@ -55,6 +55,7 @@ export interface Product {
   stockMinimum: number
   price: number
   priceUSD?: number | null
+  usdRateType?: 'blue' | 'oficial' | 'mep' | 'tarjeta' | null
   supplier: Supplier
   createdAt: string
   updatedAt: string
@@ -71,6 +72,8 @@ export interface ExchangeRate {
   stale: boolean
   cached: boolean
 }
+
+export type USDRateType = NonNullable<Product['usdRateType']>
 
 export interface PaginatedResponse<T> {
   data: T[]

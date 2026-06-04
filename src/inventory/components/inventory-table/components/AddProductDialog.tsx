@@ -17,9 +17,17 @@ import {
   FormMessage
 } from '../../../../components'
 import { Switch } from '../../../../components/ui/switch'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '../../../../components/ui/select'
 import { ComboboxSuppliers } from '../../../../components/ui/combobox-suppliers'
 import { addProduct } from '../../../../services'
 import { useExchangeRate } from '../../../../hooks/useExchangeRate'
+import { USDRateType } from '../../../../types/inventory.types'
 import { toast } from 'react-toastify'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -41,6 +49,7 @@ const formSchema = z.object({
     )
     .nullable()
     .optional(),
+  usdRateType: z.enum(['blue', 'oficial']).default('blue'),
   supplierId: z.string().min(1, 'El proveedor es requerido')
 })
 
@@ -62,7 +71,6 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
   const { refreshTable } = useInventory()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [usdEnabled, setUsdEnabled] = useState(false)
-  const { data: rate } = useExchangeRate()
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -73,11 +81,14 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
       stockMinimum: 0,
       price: 0,
       priceUSD: null,
+      usdRateType: 'blue',
       supplierId: ''
     }
   })
 
   const priceUSDValue = form.watch('priceUSD')
+  const usdRateType = form.watch('usdRateType') as USDRateType
+  const { data: rate } = useExchangeRate(usdRateType)
   const previewPrice =
     usdEnabled && rate && typeof priceUSDValue === 'number' && priceUSDValue > 0
       ? priceUSDValue * rate.value + (rate.surchargeArs || 0)
@@ -95,6 +106,7 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
       await addProduct({
         ...values,
         priceUSD: usdEnabled ? values.priceUSD ?? null : null,
+        usdRateType: usdEnabled ? values.usdRateType : null,
         description: '',
         supplier: {
           _id: values.supplierId,
@@ -220,6 +232,31 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
 
                 {usdEnabled && (
                   <>
+                    <FormField
+                      control={form.control}
+                      name='usdRateType'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-sm'>Tipo de dólar</FormLabel>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <FormControl>
+                              <SelectTrigger className='h-9 sm:h-10'>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value='blue'>Dólar blue (+$100)</SelectItem>
+                              <SelectItem value='oficial'>Dólar oficial (+$50)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <FormField
                       control={form.control}
                       name='priceUSD'

@@ -5,6 +5,7 @@ import {
   useExchangeRate,
   useRefreshExchangeRate
 } from '../../hooks/useExchangeRate'
+import { USDRateType } from '../../types/inventory.types'
 
 const LABELS_BY_TYPE: Record<string, string> = {
   oficial: 'Dólar oficial',
@@ -22,16 +23,25 @@ const formatRate = (value?: number) =>
       })
     : '—'
 
-const ExchangeRateBadge = () => {
-  const { data, isLoading, isError } = useExchangeRate()
-  const refresh = useRefreshExchangeRate()
+type Props = {
+  type?: USDRateType
+}
+
+const ExchangeRateBadge = ({ type = 'blue' }: Props) => {
+  const { data, isLoading, isError } = useExchangeRate(type)
+  const refresh = useRefreshExchangeRate(type)
 
   const handleRefresh = async () => {
     try {
       const result = await refresh.mutateAsync()
       if (result.recalc?.recalculated > 0) {
+        const details = result.recalc.byType
+          ? Object.entries(result.recalc.byType)
+              .map(([rateType, info]) => `${LABELS_BY_TYPE[rateType] || rateType}: ${info.recalculated}`)
+              .join(' · ')
+          : `${result.recalc.recalculated} productos recalculados`
         toast.success(
-          `Cotización actualizada. ${result.recalc.recalculated} productos recalculados.`
+          `Cotización actualizada. ${details}.`
         )
       } else {
         toast.success('Cotización actualizada.')
@@ -44,23 +54,26 @@ const ExchangeRateBadge = () => {
 
   if (isLoading) {
     return (
-      <div className='inline-flex items-center gap-2 rounded-md border bg-card px-3 py-1.5 text-xs text-muted-foreground'>
-        Cargando cotización...
+      <div className='flex min-h-14 w-full items-center rounded-md border bg-card px-3 py-2 text-xs text-muted-foreground sm:w-[220px]'>
+        Cargando {LABELS_BY_TYPE[type] || type}...
       </div>
     )
   }
 
   if (isError || !data) {
     return (
-      <div className='inline-flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-1.5 text-xs text-destructive'>
-        <AlertTriangle className='h-3.5 w-3.5' />
-        Cotización no disponible
+      <div className='flex min-h-14 w-full items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive sm:w-[220px]'>
+        <AlertTriangle className='h-4 w-4 shrink-0' />
+        <span className='min-w-0 flex-1 truncate'>
+          {LABELS_BY_TYPE[type] || type} no disponible
+        </span>
         <Button
           size='sm'
           variant='ghost'
           onClick={handleRefresh}
           disabled={refresh.isPending}
-          className='h-6 px-1'
+          className='h-8 w-8 shrink-0 p-0'
+          title='Refrescar cotización y recalcular precios'
         >
           <RefreshCw
             className={`h-3.5 w-3.5 ${refresh.isPending ? 'animate-spin' : ''}`}
@@ -82,27 +95,31 @@ const ExchangeRateBadge = () => {
     : '—'
 
   return (
-    <div className='inline-flex flex-wrap items-center gap-2 rounded-md border bg-card px-3 py-1.5 text-xs'>
-      <DollarSign className='h-3.5 w-3.5 text-green-700' />
-      <span className='font-medium'>{typeLabel}:</span>
-      <span className='font-semibold'>{formatRate(data.value)}</span>
-      {data.surchargeArs > 0 && (
-        <span className='text-muted-foreground'>
-          + {formatRate(data.surchargeArs)} de recargo
-        </span>
-      )}
-      <span className='text-muted-foreground'>· Actualizado {fetchedLabel}</span>
-      {!data.enabled && (
-        <span className='inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700'>
-          USD apagado
-        </span>
-      )}
+    <div className='flex min-h-14 w-full items-center gap-2 rounded-md border bg-card px-3 py-2 text-xs shadow-sm sm:w-[220px]'>
+      <DollarSign className='h-4 w-4 shrink-0 text-green-700' />
+      <div className='min-w-0 flex-1'>
+        <div className='flex min-w-0 items-baseline gap-1.5'>
+          <span className='truncate font-medium'>{typeLabel}</span>
+          <span className='shrink-0 font-semibold'>{formatRate(data.value)}</span>
+        </div>
+        <div className='mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] leading-4 text-muted-foreground'>
+          {data.surchargeArs > 0 && (
+            <span className='whitespace-nowrap'>+ {formatRate(data.surchargeArs)}</span>
+          )}
+          <span className='whitespace-nowrap'>Actualizado {fetchedLabel}</span>
+          {!data.enabled && (
+            <span className='rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700'>
+              USD apagado
+            </span>
+          )}
+        </div>
+      </div>
       <Button
         size='sm'
         variant='ghost'
         onClick={handleRefresh}
         disabled={refresh.isPending}
-        className='h-6 px-1'
+        className='h-8 w-8 shrink-0 p-0'
         title='Refrescar cotización y recalcular precios'
       >
         <RefreshCw

@@ -16,8 +16,15 @@ import {
   FormMessage
 } from '../../../../components'
 import { Switch } from '../../../../components/ui/switch'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '../../../../components/ui/select'
 import { ComboboxSuppliers } from '../../../../components/ui/combobox-suppliers'
-import { Product } from '../../../../types/inventory.types'
+import { Product, USDRateType } from '../../../../types/inventory.types'
 import { editProduct } from '../../../../services'
 import { useExchangeRate } from '../../../../hooks/useExchangeRate'
 import { toast } from 'react-toastify'
@@ -40,6 +47,7 @@ const formSchema = z.object({
     )
     .nullable()
     .optional(),
+  usdRateType: z.enum(['blue', 'oficial']).default('blue'),
   supplierId: z.string().min(1, 'El proveedor es requerido'),
   description: z.string().optional()
 })
@@ -67,7 +75,6 @@ const EditProductDialog = ({
   const { refreshTable } = useInventory()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [usdEnabled, setUsdEnabled] = useState(false)
-  const { data: rate } = useExchangeRate()
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -78,6 +85,7 @@ const EditProductDialog = ({
       stockMinimum: 0,
       price: 0,
       priceUSD: null,
+      usdRateType: 'blue',
       supplierId: '',
       description: ''
     }
@@ -95,6 +103,7 @@ const EditProductDialog = ({
         stockMinimum: product.stockMinimum,
         price: product.price,
         priceUSD: hasUSD ? product.priceUSD! : null,
+        usdRateType: hasUSD ? (product.usdRateType || 'blue') : 'blue',
         supplierId: product.supplier._id,
         description: product.description || ''
       })
@@ -102,6 +111,8 @@ const EditProductDialog = ({
   }, [product, form])
 
   const priceUSDValue = form.watch('priceUSD')
+  const usdRateType = form.watch('usdRateType') as USDRateType
+  const { data: rate } = useExchangeRate(usdRateType)
   const previewPrice =
     usdEnabled && rate && typeof priceUSDValue === 'number' && priceUSDValue > 0
       ? priceUSDValue * rate.value + (rate.surchargeArs || 0)
@@ -122,6 +133,7 @@ const EditProductDialog = ({
         _id: product._id,
         ...values,
         priceUSD: usdEnabled ? values.priceUSD ?? null : null,
+        usdRateType: usdEnabled ? values.usdRateType : null,
         description: values.description || '',
         supplier: {
           _id: values.supplierId,
@@ -241,6 +253,31 @@ const EditProductDialog = ({
 
                 {usdEnabled && (
                   <>
+                    <FormField
+                      control={form.control}
+                      name='usdRateType'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-sm'>Tipo de dólar</FormLabel>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <FormControl>
+                              <SelectTrigger className='h-9 sm:h-10'>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value='blue'>Dólar blue (+$100)</SelectItem>
+                              <SelectItem value='oficial'>Dólar oficial (+$50)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <FormField
                       control={form.control}
                       name='priceUSD'

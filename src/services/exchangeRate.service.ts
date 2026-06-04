@@ -1,8 +1,12 @@
 import api from './config/axios'
-import { ExchangeRate } from '../types/inventory.types'
+import { ExchangeRate, USDRateType } from '../types/inventory.types'
 
-export const getExchangeRate = async (): Promise<ExchangeRate> => {
-  const response = await api.get<ExchangeRate>('/config/exchange-rate')
+export const getExchangeRate = async (
+  type: USDRateType = 'blue'
+): Promise<ExchangeRate> => {
+  const response = await api.get<ExchangeRate>('/config/exchange-rate', {
+    params: { type }
+  })
   return response.data
 }
 
@@ -14,14 +18,26 @@ export type RefreshExchangeRateResponse = {
     rate?: number
     surcharge?: number
     type?: string
+    byType?: Record<
+      string,
+      {
+        recalculated: number
+        rate: number
+        surcharge: number
+        fetchedAt: string
+      }
+    >
     fetchedAt?: string
     reason?: string
   }
 }
 
-export const refreshExchangeRate = async (): Promise<RefreshExchangeRateResponse> => {
+export const refreshExchangeRate = async (
+  type: USDRateType = 'blue'
+): Promise<RefreshExchangeRateResponse> => {
   const response = await api.post<RefreshExchangeRateResponse>(
-    '/config/exchange-rate/refresh'
+    '/config/exchange-rate/refresh',
+    { type }
   )
   return response.data
 }

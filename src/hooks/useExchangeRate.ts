@@ -3,24 +3,26 @@ import {
   getExchangeRate,
   refreshExchangeRate
 } from '../services/exchangeRate.service'
+import { USDRateType } from '../types/inventory.types'
 
-const QUERY_KEY = ['exchange-rate']
+const queryKey = (type: USDRateType) => ['exchange-rate', type]
 
-export const useExchangeRate = () => {
+export const useExchangeRate = (type: USDRateType = 'blue') => {
   return useQuery({
-    queryKey: QUERY_KEY,
-    queryFn: getExchangeRate,
+    queryKey: queryKey(type),
+    queryFn: () => getExchangeRate(type),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false
   })
 }
 
-export const useRefreshExchangeRate = () => {
+export const useRefreshExchangeRate = (type: USDRateType = 'blue') => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: refreshExchangeRate,
+    mutationFn: () => refreshExchangeRate(type),
     onSuccess: (data) => {
-      queryClient.setQueryData(QUERY_KEY, data.rate)
+      queryClient.setQueryData(queryKey(type), data.rate)
+      queryClient.invalidateQueries({ queryKey: ['exchange-rate'] })
     }
   })
 }

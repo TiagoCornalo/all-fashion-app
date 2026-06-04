@@ -63,7 +63,9 @@ const BulkImportExcelDialog = ({ onCompleted }: Props) => {
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogTrigger asChild>
-        <Button variant='outline'>Importar Excel</Button>
+        <Button variant='outline' className='w-full lg:w-auto'>
+          Importar Excel
+        </Button>
       </DialogTrigger>
       <DialogContent className='max-w-2xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
@@ -71,9 +73,10 @@ const BulkImportExcelDialog = ({ onCompleted }: Props) => {
           <DialogDescription>
             Subí un archivo Excel con las columnas <code>Producto</code>,{' '}
             <code>Codigo</code>, <code>Precio Base</code>,{' '}
-            <code>Precio Final</code> y <code>Proveedor</code>. Los proveedores
-            que todavía no estén cargados se agregarán automáticamente (después
-            podés completar sus datos manualmente).
+            <code>Precio Final</code>, <code>Proveedor</code>, <code>Stock</code>,{' '}
+            <code>Moneda</code> y <code>Tipo Dolar</code>. Los proveedores que
+            todavía no estén cargados se agregarán automáticamente (después podés
+            completar sus datos manualmente).
           </DialogDescription>
         </DialogHeader>
 
@@ -129,6 +132,14 @@ const BulkImportExcelDialog = ({ onCompleted }: Props) => {
                 <Stat
                   label='Con precio en dólares'
                   value={report.productsWithUSD}
+                />
+                <Stat
+                  label='Dólar blue'
+                  value={report.productsUSDBlue ?? 0}
+                />
+                <Stat
+                  label='Dólar oficial'
+                  value={report.productsUSDOfficial ?? 0}
                 />
                 <Stat
                   label='Sólo con precio en pesos'

@@ -71,15 +71,20 @@ const InventoryContainer = () => {
         <div className='space-y-4 p-2 sm:p-4'>
           <section className='w-full'>
             <InventoryAlerts />
-            <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4'>
-              {/* @ts-ignore */}
-              <Package className='h-6 w-6 sm:h-8 sm:w-8 mx-auto sm:mx-0' />
-              <h1 className='text-2xl sm:text-3xl font-bold text-center sm:text-left'>
-                Inventario
-              </h1>
-              <div className='flex flex-wrap items-center gap-2 sm:ml-auto'>
-                <ExchangeRateBadge />
-                <BulkImportExcelDialog onCompleted={handleRefresh} />
+            <div className='flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between'>
+              <div className='flex items-center justify-center gap-2 sm:justify-start'>
+                {/* @ts-ignore */}
+                <Package className='h-6 w-6 sm:h-8 sm:w-8' />
+                <h1 className='text-2xl font-bold sm:text-3xl'>
+                  Inventario
+                </h1>
+              </div>
+              <div className='grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:ml-auto lg:w-auto lg:grid-cols-[220px_220px_auto] lg:items-center'>
+                <ExchangeRateBadge type='blue' />
+                <ExchangeRateBadge type='oficial' />
+                <div className='sm:col-span-2 lg:col-span-1'>
+                  <BulkImportExcelDialog onCompleted={handleRefresh} />
+                </div>
               </div>
             </div>
           </section>
