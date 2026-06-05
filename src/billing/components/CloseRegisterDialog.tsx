@@ -30,6 +30,7 @@ import {
 } from '../../services/cash-register'
 import PendingTransfersPanel from '../../components/transfers/PendingTransfersPanel'
 import { AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { useAuth } from '../../context/auth/useAuth'
 
 const formSchema = z.object({
   actualCash: z.number().min(0, 'El monto debe ser mayor o igual a 0'),
@@ -66,8 +67,10 @@ const CloseRegisterDialog = ({
   onOpenChange
 }: CloseRegisterDialogProps) => {
   const { currentRegister, closeRegister } = useCashRegisterStore()
+  const { user } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPendingTransfers, setShowPendingTransfers] = useState(false)
+  const canSeeTransfers = ['ADMIN', 'MANAGER', 'SELLER'].includes(user?.role || '')
 
   // Reconciliación contra historial real
   const {
@@ -84,7 +87,7 @@ const CloseRegisterDialog = ({
   const { data: pendingTransfers } = useQuery({
     queryKey: ['pending-transfers-close'],
     queryFn: () => getPendingTransfers({ pageSize: 10 }),
-    enabled: isOpen
+    enabled: isOpen && canSeeTransfers
   })
 
   const form = useForm<FormValues>({
@@ -227,7 +230,7 @@ const CloseRegisterDialog = ({
         </div>
 
         {/* Alerta de transferencias pendientes */}
-        {pendingTransfers?.data && pendingTransfers.data.length > 0 && (
+        {canSeeTransfers && pendingTransfers?.data && pendingTransfers.data.length > 0 && (
           <div className='border border-yellow-200 bg-yellow-50 p-3 rounded-md'>
             <div className='flex items-start gap-2'>
               <AlertTriangle className='h-4 w-4 text-yellow-600 mt-0.5' />

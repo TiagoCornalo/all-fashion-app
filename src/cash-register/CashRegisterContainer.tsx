@@ -36,7 +36,7 @@ export default function CashRegisterContainer() {
 
   return (
     <LayoutMultiRole
-      allowedRoles={['ADMIN', 'SELLER', 'MANAGER']}
+      allowedRoles={['ADMIN', 'MANAGER']}
       showGoBackButton={true}
     >
       {cashRegister && (

@@ -7,7 +7,8 @@ import { useAuth } from '../../context/auth/useAuth'
 
 const BillingRegisters = () => {
   const { user } = useAuth()
-  const isAdmin = user?.role === 'ADMIN'
+  const canSeeSalesHistory = ['ADMIN', 'MANAGER', 'SELLER'].includes(user?.role || '')
+  const canAuditCash = user?.role === 'ADMIN' || user?.role === 'MANAGER'
   const [isOpenCashRegisters, setIsOpenCashRegisters] = useState(false)
   const [isOpenLastSales, setIsOpenLastSales] = useState(false)
 
@@ -21,7 +22,7 @@ const BillingRegisters = () => {
 
   return (
     <div className='p-2 sm:p-4'>
-      {isAdmin && (
+      {canSeeSalesHistory && (
         <>
           <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4'>
             {/* @ts-ignore */}
@@ -31,13 +32,15 @@ const BillingRegisters = () => {
             </h1>
           </div>
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4'>
-            <Button
-              variant='outline'
-              onClick={handleOpenCashRegisters}
-              className='w-full h-10 sm:h-auto'
-            >
-              Últimas cajas
-            </Button>
+            {canAuditCash && (
+              <Button
+                variant='outline'
+                onClick={handleOpenCashRegisters}
+                className='w-full h-10 sm:h-auto'
+              >
+                Últimas cajas
+              </Button>
+            )}
             <Button
               variant='outline'
               onClick={handleOpenLastSales}

@@ -16,6 +16,7 @@ import { Search, Plus, Minus, Trash } from 'lucide-react'
 import { useDebounce } from '../../../hooks/useDebounce'
 import api from '../../../services/config/axios'
 import { PromotionItemModal } from '.'
+import { toast } from 'react-toastify'
 
 const ProductSelector = () => {
   const [search, setSearch] = useState('')
@@ -47,10 +48,16 @@ const ProductSelector = () => {
 
       try {
         setLoading(true)
-        const response = await api.get(
-          `/products?search=${debouncedSearch}&pageSize=5`
-        )
-        setProducts(response.data.data)
+        const response = await api.get('/products', {
+          params: {
+            search: debouncedSearch,
+            page: 1,
+            pageSize: 100,
+            sortBy: 'name',
+            sortOrder: 'asc'
+          }
+        })
+        setProducts(Array.isArray(response.data.data) ? response.data.data : [])
       } catch (error) {
         console.error('Error buscando productos:', error)
         setProducts([])
@@ -63,6 +70,11 @@ const ProductSelector = () => {
   }, [debouncedSearch])
 
   const handleAddProduct = (product: Product) => {
+    if ((product.stock ?? 0) <= 0) {
+      toast.error(`"${product.name}" no tiene stock disponible`)
+      return
+    }
+
     const existingItem = items.find((item) => item.product === product._id)
 
     if (existingItem) {
@@ -131,24 +143,41 @@ const ProductSelector = () => {
           <div>Buscando productos...</div>
         ) : (
           search && (
-            <div className='border rounded-md max-h-48 overflow-y-auto'>
-              {products.map((product) => (
-                <div
-                  key={product._id}
-                  className={`p-2 hover:bg-accent cursor-pointer flex justify-between items-center ${
-                    product.stock === 0 ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                  onClick={() => handleAddProduct(product)}
-                >
-                  <div>
-                    <div>{product.name}</div>
-                    <div className='text-sm text-muted-foreground'>
-                      Stock: {product.stock} {product.stock === 0 && 'Agotado'}
-                    </div>
-                  </div>
-                  <div className='font-medium'>${product.price}</div>
+            <div className='border rounded-md max-h-72 overflow-y-auto'>
+              {products.length === 0 ? (
+                <div className='p-3 text-sm text-muted-foreground'>
+                  No encontramos productos con esa búsqueda. Probá por código,
+                  marca o una parte del nombre.
                 </div>
-              ))}
+              ) : (
+                products.map((product) => {
+                  const hasStock = (product.stock ?? 0) > 0
+
+                  return (
+                    <button
+                      key={product._id}
+                      type='button'
+                      className={`w-full p-2 text-left hover:bg-accent flex justify-between items-center gap-3 ${
+                        hasStock ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'
+                      }`}
+                      onClick={() => handleAddProduct(product)}
+                      disabled={!hasStock}
+                    >
+                      <div className='min-w-0'>
+                        <div className='font-medium truncate'>{product.name}</div>
+                        <div className='text-sm text-muted-foreground'>
+                          {product.code ? `${product.code} · ` : ''}
+                          Stock: {product.stock ?? 0}
+                          {!hasStock && ' · Agotado'}
+                        </div>
+                      </div>
+                      <div className='font-medium shrink-0'>
+                        ${(product.price ?? 0).toLocaleString('es-AR')}
+                      </div>
+                    </button>
+                  )
+                })
+              )}
             </div>
           )
         )}

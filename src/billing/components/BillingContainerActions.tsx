@@ -32,12 +32,13 @@ const BillingContainerActions = ({
   currentRegister: CashRegister
 }) => {
   const { user } = useAuth()
-  const isAdmin = user?.role === 'ADMIN'
+  const canSeeTransfers = ['ADMIN', 'MANAGER', 'SELLER'].includes(user?.role || '')
+  const canAuditCash = user?.role === 'ADMIN' || user?.role === 'MANAGER'
 
   return (
     <div className='flex flex-col sm:flex-row gap-2 sm:gap-4'>
-      {/* Botón de transferencias pendientes - solo admin */}
-      {isAdmin && (
+      {/* Botón de transferencias pendientes - roles administrativos */}
+      {canSeeTransfers && (
         <div className='w-full sm:w-auto'>
           <PendingTransfersPanel showAsDialog={true} />
         </div>
@@ -71,19 +72,19 @@ const BillingContainerActions = ({
           >
             <DollarSign className='mr-2 h-4 w-4 sm:h-5 sm:w-5' /> Retiro
           </DropdownMenuItem>
-          {isAdmin && <>
+          {canAuditCash && (
             <DropdownMenuItem asChild className='cursor-pointer text-sm sm:text-md'>
               <Link to={`/cash-registers/${currentRegister._id}`}>
                 <Info className='mr-2 h-4 w-4 sm:h-5 sm:w-5' /> Detalles
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={() => setIsCloseRegisterOpen(true)}
-              className='cursor-pointer text-sm sm:text-md'
-            >
-              <XCircle className='mr-2 h-4 w-4 sm:h-5 sm:w-5' /> Cerrar Caja
-            </DropdownMenuItem>
-          </>}
+          )}
+          <DropdownMenuItem
+            onSelect={() => setIsCloseRegisterOpen(true)}
+            className='cursor-pointer text-sm sm:text-md'
+          >
+            <XCircle className='mr-2 h-4 w-4 sm:h-5 sm:w-5' /> Cerrar Caja
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
