@@ -53,8 +53,6 @@ const OpenRegisterDialog = ({ isOpen, onClose }: OpenRegisterDialogProps) => {
   const [inputValue, setInputValue] = useState('')
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false)
 
-  if (!isAuthenticated) return null
-
   const fetchLastRegister = useCallback(async () => {
     try {
       await fetchLastClosedRegister()
@@ -77,9 +75,14 @@ const OpenRegisterDialog = ({ isOpen, onClose }: OpenRegisterDialogProps) => {
   }, [fetchLastRegister, lastClosedRegister, isLoading, hasAttemptedFetch])
 
   useEffect(() => {
-    if (lastClosedRegister?.currentBalance) {
-      setLocalInitialBalance(lastClosedRegister.currentBalance)
-      setInputValue(lastClosedRegister.currentBalance.toString())
+    const suggestedBalance =
+      lastClosedRegister?.closingSummary?.actualCash ??
+      lastClosedRegister?.currentBalance ??
+      0
+
+    if (suggestedBalance > 0) {
+      setLocalInitialBalance(suggestedBalance)
+      setInputValue(suggestedBalance.toString())
     }
   }, [lastClosedRegister])
 
@@ -93,6 +96,8 @@ const OpenRegisterDialog = ({ isOpen, onClose }: OpenRegisterDialogProps) => {
   useEffect(() => {
     form.setValue('initialBalance', localInitialBalance)
   }, [localInitialBalance, form])
+
+  if (!isAuthenticated) return null
 
   if (currentRegister) return null
 
@@ -111,7 +116,11 @@ const OpenRegisterDialog = ({ isOpen, onClose }: OpenRegisterDialogProps) => {
       }
     } catch (error) {
       console.error(error)
-      toast.error('Error al abrir la caja')
+      const message =
+        (error as any)?.response?.data?.details ||
+        (error as any)?.response?.data?.error ||
+        'Error al abrir la caja'
+      toast.error(message)
     } finally {
       setIsSubmitting(false)
     }
