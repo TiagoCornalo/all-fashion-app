@@ -56,7 +56,7 @@ export interface Product {
   price: number
   priceUSD?: number | null
   usdRateType?: 'blue' | 'oficial' | 'mep' | 'tarjeta' | null
-  supplier: Supplier
+  supplier?: Supplier | null
   createdAt: string
   updatedAt: string
 }

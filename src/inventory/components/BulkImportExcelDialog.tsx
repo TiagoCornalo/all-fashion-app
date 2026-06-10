@@ -9,6 +9,7 @@ import {
   DialogDescription
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Loader } from '@/components'
 import {
   bulkImportProductsFromExcel,
@@ -25,6 +26,7 @@ const BulkImportExcelDialog = ({ onCompleted }: Props) => {
   const [loading, setLoading] = useState(false)
   const [report, setReport] = useState<BulkImportReport | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [updateStock, setUpdateStock] = useState(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
 
   const reset = () => {
@@ -45,7 +47,10 @@ const BulkImportExcelDialog = ({ onCompleted }: Props) => {
     setLoading(true)
     setError(null)
     try {
-      const result = await bulkImportProductsFromExcel(file, { dryRun })
+      const result = await bulkImportProductsFromExcel(file, {
+        dryRun,
+        updateStock
+      })
       setReport(result)
       if (!dryRun) onCompleted?.()
     } catch (err: any) {
@@ -94,6 +99,21 @@ const BulkImportExcelDialog = ({ onCompleted }: Props) => {
             className='block w-full text-sm file:mr-4 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-2 file:text-primary-foreground hover:file:bg-primary/90'
           />
 
+          <label className='flex items-start gap-2 rounded-md border p-3 text-sm'>
+            <Checkbox
+              checked={updateStock}
+              onCheckedChange={(checked) => setUpdateStock(checked === true)}
+              disabled={loading}
+              className='mt-0.5'
+            />
+            <span>
+              <span className='block font-medium'>Actualizar stock desde el Excel</span>
+              <span className='block text-xs text-muted-foreground'>
+                Dejalo apagado para corregir proveedores, moneda y precios sin pisar las cantidades actuales del sistema.
+              </span>
+            </span>
+          </label>
+
           {error && (
             <div className='rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive'>
               {error}
@@ -108,6 +128,9 @@ const BulkImportExcelDialog = ({ onCompleted }: Props) => {
                 </span>
                 <span className='text-sm text-muted-foreground'>
                   Hoja usada: {report.sheetUsed}
+                </span>
+                <span className='text-sm text-muted-foreground'>
+                  Stock: {report.updateStock ? 'se actualizará' : 'no se tocará'}
                 </span>
               </div>
 
@@ -148,6 +171,10 @@ const BulkImportExcelDialog = ({ onCompleted }: Props) => {
                 <Stat
                   label='Proveedores en el archivo'
                   value={report.suppliersInExcel}
+                />
+                <Stat
+                  label='Productos sin proveedor en el archivo'
+                  value={report.productsWithoutSupplier ?? 0}
                 />
                 <Stat
                   label={

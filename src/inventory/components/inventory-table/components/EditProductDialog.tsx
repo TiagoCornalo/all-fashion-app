@@ -104,7 +104,7 @@ const EditProductDialog = ({
         price: product.price,
         priceUSD: hasUSD ? product.priceUSD! : null,
         usdRateType: hasUSD ? (product.usdRateType || 'blue') : 'blue',
-        supplierId: product.supplier._id,
+        supplierId: product.supplier?._id || '',
         description: product.description || ''
       })
     }
