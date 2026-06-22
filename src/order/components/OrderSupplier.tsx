@@ -8,10 +8,23 @@ import { Building, Mail, Phone } from 'lucide-react'
 import { Supplier } from './types'
 
 interface OrderSupplierProps {
-  supplier: Supplier
+  supplier: Supplier | null
 }
 
 const OrderSupplier = ({ supplier }: OrderSupplierProps) => {
+  if (!supplier) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className='flex items-center'>
+            <Building className='mr-2 h-5 w-5' />
+            Proveedor no disponible
+          </CardTitle>
+        </CardHeader>
+      </Card>
+    )
+  }
+
   return (
     <Card>
       <CardHeader>

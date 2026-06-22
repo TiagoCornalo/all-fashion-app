@@ -4,14 +4,18 @@ export interface ProductInfo {
   code: string
   name: string
   price: number
+  basePrice?: number
+  baseCurrency?: 'ARS' | 'USD'
 }
 
 export interface OrderItem {
   _id: string
-  product: ProductInfo
+  product: ProductInfo | null
   quantity: number
   currentStock: number
   minimumStock: number
+  unitCost?: number
+  costCurrency?: 'ARS' | 'USD'
 }
 
 export interface ContactInfo {
@@ -22,7 +26,7 @@ export interface ContactInfo {
 export interface Supplier {
   _id: string
   name: string
-  contact: ContactInfo
+  contact?: ContactInfo
 }
 
 export interface OrderAlert {
@@ -34,7 +38,7 @@ export interface OrderAlert {
 
 export interface Order {
   _id: string
-  supplier: Supplier
+  supplier: Supplier | null
   items: OrderItem[]
   status: string
   notes: string

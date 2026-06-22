@@ -41,6 +41,7 @@ const formSchema = z.object({
   stockMinimum: z
     .union([z.string(), z.number()])
     .transform((val) => Number(val || 0)),
+  basePrice: z.union([z.string(), z.number()]).transform((val) => Number(val || 0)),
   price: z.union([z.string(), z.number()]).transform((val) => Number(val || 0)),
   priceUSD: z
     .union([z.string(), z.number(), z.literal('')])
@@ -79,6 +80,7 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
       name: '',
       stock: 0,
       stockMinimum: 0,
+      basePrice: 0,
       price: 0,
       priceUSD: null,
       usdRateType: 'blue',
@@ -105,6 +107,7 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
       setIsSubmitting(true)
       await addProduct({
         ...values,
+        baseCurrency: usdEnabled ? 'USD' : 'ARS',
         priceUSD: usdEnabled ? values.priceUSD ?? null : null,
         usdRateType: usdEnabled ? values.usdRateType : null,
         description: '',
@@ -217,6 +220,30 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name='basePrice'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='text-sm sm:text-base'>
+                      Precio base / costo ({usdEnabled ? 'USD' : 'ARS'})
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type='number'
+                        step='0.01'
+                        {...field}
+                        className='h-9 sm:h-10'
+                        onChange={(e) =>
+                          field.onChange(e.target.value === '' ? '' : Number(e.target.value))
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className='rounded-md border p-3 space-y-3'>
                 <label className='flex items-center justify-between gap-2 text-sm'>

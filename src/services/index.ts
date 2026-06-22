@@ -26,12 +26,18 @@ export const fetchProducts = async (filters: TableFilters) => {
 }
 
 export const addProduct = async (product: CreateProduct) => {
-  const response = await api.post('/products', product)
+  const response = await api.post('/products', {
+    ...product,
+    supplier: product.supplier?._id
+  })
   return response.data
 }
 
 export const editProduct = async (product: Product) => {
-  const response = await api.put(`/products/${product._id}`, product)
+  const response = await api.put(`/products/${product._id}`, {
+    ...product,
+    supplier: product.supplier?._id
+  })
   return response.data
 }
 

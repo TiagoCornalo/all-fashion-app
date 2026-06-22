@@ -38,12 +38,12 @@ const OrderProducts = ({ items }: OrderProductsProps) => {
                 <TableHead className='text-right'>Cantidad</TableHead>
                 <TableHead className='text-right'>Stock Actual</TableHead>
                 <TableHead className='text-right'>Stock Mínimo</TableHead>
-                <TableHead className='text-right'>Precio Unitario</TableHead>
+                <TableHead className='text-right'>Costo unitario</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {items.map((item, idx) => {
-                const product = item.product as any
+                const product = item.product
                 return (
                   <TableRow key={item._id || `item-${idx}`}>
                     <TableCell className='font-medium'>
@@ -64,7 +64,9 @@ const OrderProducts = ({ items }: OrderProductsProps) => {
                       {item.minimumStock}
                     </TableCell>
                     <TableCell className='text-right'>
-                      {product?.price !== undefined ? `$${product.price}` : '—'}
+                      {item.unitCost !== undefined
+                        ? `${item.costCurrency || 'ARS'} ${item.unitCost.toLocaleString('es-AR')}`
+                        : '—'}
                     </TableCell>
                   </TableRow>
                 )

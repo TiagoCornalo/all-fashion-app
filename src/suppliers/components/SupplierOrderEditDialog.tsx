@@ -44,10 +44,14 @@ interface OrderProduct {
     name: string
     code: string
     price: number
+    basePrice?: number
+    baseCurrency?: 'ARS' | 'USD'
   } | null
   quantity: number
   currentStock: number
   minimumStock: number
+  unitCost?: number
+  costCurrency?: 'ARS' | 'USD'
 }
 
 interface Order {
@@ -70,7 +74,7 @@ interface Order {
 }
 
 const orderEditSchema = z.object({
-  status: z.enum(['PENDING', 'SENT', 'APPROVED', 'REJECTED', 'COMPLETED', 'IN_TRANSIT']),
+  status: z.enum(['PENDING', 'SENT', 'APPROVED', 'REJECTED', 'IN_TRANSIT']),
   notes: z.string().optional(),
   items: z.array(
     z.object({
@@ -138,7 +142,9 @@ const SupplierOrderEditDialog = ({
             _id: item.product?._id || '',
             name: item.product?.name || '',
             code: item.product?.code || '',
-            price: item.product?.price || 0,
+            price: item.unitCost ?? item.product?.basePrice ?? 0,
+            basePrice: item.unitCost ?? item.product?.basePrice ?? 0,
+            baseCurrency: item.costCurrency || item.product?.baseCurrency || 'ARS',
             stock: item.currentStock,
             stockMinimum: item.minimumStock,
             supplier: order.supplier
@@ -153,7 +159,6 @@ const SupplierOrderEditDialog = ({
           | 'SENT'
           | 'APPROVED'
           | 'REJECTED'
-          | 'COMPLETED'
           | 'IN_TRANSIT',
         notes: order.notes || '',
         items: orderItems
@@ -357,9 +362,6 @@ const SupplierOrderEditDialog = ({
                               <SelectItem value='SENT'>Enviado</SelectItem>
                               <SelectItem value='APPROVED'>Aprobado</SelectItem>
                               <SelectItem value='REJECTED'>Rechazado</SelectItem>
-                              <SelectItem value='COMPLETED'>
-                                Completado
-                              </SelectItem>
                               <SelectItem value='IN_TRANSIT'>En tránsito</SelectItem>
                             </SelectContent>
                           </Select>

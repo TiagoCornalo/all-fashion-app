@@ -99,17 +99,26 @@ const SupplierProductsTable = ({
         enableSorting: true
       },
       {
-        accessorKey: 'price',
+        accessorKey: 'basePrice',
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title='Precio'
+            title='Costo base'
             showHideButton={false}
           />
         ),
-        cell: ({ row }) => (
-          <div className='text-right'>{formatCurrency(row.original.price)}</div>
-        ),
+        cell: ({ row }) => {
+          if (row.original.basePrice === undefined || row.original.basePrice === null) {
+            return <div className='text-right text-muted-foreground'>No disponible</div>
+          }
+          return (
+            <div className='text-right'>
+              {row.original.baseCurrency === 'USD'
+                ? `USD ${row.original.basePrice.toLocaleString('es-AR')}`
+                : formatCurrency(row.original.basePrice)}
+            </div>
+          )
+        },
         enableSorting: true
       },
       {

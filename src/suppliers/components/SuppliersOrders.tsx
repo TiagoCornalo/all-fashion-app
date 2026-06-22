@@ -54,6 +54,8 @@ interface OrderProduct {
   quantity: number
   currentStock: number
   minimumStock: number
+  unitCost?: number
+  costCurrency?: 'ARS' | 'USD'
 }
 
 interface Order {

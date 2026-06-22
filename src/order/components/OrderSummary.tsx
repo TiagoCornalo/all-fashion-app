@@ -13,11 +13,13 @@ interface OrderSummaryProps {
 }
 
 const OrderSummary = ({ items }: OrderSummaryProps) => {
-  // Calcular el total estimado basado en los precios y cantidades.
-  // El producto puede ser null si fue eliminado de la DB después del pedido.
-  const totalAmount = items.reduce(
-    (sum, item) => sum + ((item.product as any)?.price ?? 0) * item.quantity,
-    0
+  const totals = items.reduce(
+    (acc, item) => {
+      const currency = item.costCurrency || 'ARS'
+      acc[currency] += (item.unitCost || 0) * item.quantity
+      return acc
+    },
+    { ARS: 0, USD: 0 }
   )
 
   // Calcular el total de productos
@@ -38,17 +40,24 @@ const OrderSummary = ({ items }: OrderSummaryProps) => {
             <span>{totalQuantity} unidades</span>
           </div>
 
-          <div className='flex justify-between'>
-            <span className='text-gray-600'>Valor Estimado:</span>
-            <span>${totalAmount.toFixed(2)}</span>
-          </div>
+          {totals.ARS > 0 && (
+            <div className='flex justify-between'>
+              <span className='text-gray-600'>Costo estimado ARS:</span>
+              <span>${totals.ARS.toLocaleString('es-AR')}</span>
+            </div>
+          )}
+          {totals.USD > 0 && (
+            <div className='flex justify-between'>
+              <span className='text-gray-600'>Costo estimado USD:</span>
+              <span>USD {totals.USD.toLocaleString('es-AR')}</span>
+            </div>
+          )}
 
           <Separator />
 
-          <div className='flex justify-between font-bold text-lg'>
-            <span>Total Estimado:</span>
-            <span>${totalAmount.toFixed(2)}</span>
-          </div>
+          <p className='text-xs text-muted-foreground'>
+            Los costos en pesos y dólares se muestran separados.
+          </p>
         </div>
       </CardContent>
     </Card>

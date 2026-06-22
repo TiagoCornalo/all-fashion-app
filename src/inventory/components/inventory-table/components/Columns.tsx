@@ -79,9 +79,29 @@ export const columns = (handlers: {
     }
   },
   {
+    id: 'basePrice',
+    accessorFn: (row) => row.basePrice || 0,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Costo base' />
+    ),
+    cell: ({ row }) => {
+      const product = row.original
+      if (product.basePrice === undefined || product.basePrice === null) {
+        return <div className='text-muted-foreground'>No disponible</div>
+      }
+      return (
+        <div>
+          {product.baseCurrency === 'USD'
+            ? `USD ${product.basePrice.toLocaleString('es-AR')}`
+            : formatCurrency(product.basePrice)}
+        </div>
+      )
+    }
+  },
+  {
     accessorKey: 'price',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Precio' />
+      <DataTableColumnHeader column={column} title='Precio de venta' />
     ),
     cell: ({ row }) => <div>{formatCurrency(Number(row.getValue('price') || 0))}</div>
   },

@@ -35,10 +35,12 @@ interface OrderItem {
     name: string
     code: string
     price: number
-  }
+  } | null
   quantity: number
   currentStock: number
   minimumStock: number
+  unitCost?: number
+  costCurrency?: 'ARS' | 'USD'
 }
 
 interface PendingOrder {
@@ -50,7 +52,7 @@ interface PendingOrder {
       email: string
       phone: string
     }
-  }
+  } | null
   items: OrderItem[]
   status: string
   receptionStatus: string
@@ -67,7 +69,7 @@ interface PendingOrder {
       receivedQuantity: number
       notes: string
     }>
-  }
+  } | null
   confirmedArrivalBy: {
     _id: string
     name: string
@@ -124,7 +126,7 @@ const PendingApprovalTable = () => {
     try {
       await refetch()
       toast.success('Lista actualizada')
-    } catch (error) {
+    } catch {
       toast.error('Error al actualizar la lista')
     }
   }
@@ -216,7 +218,9 @@ const PendingApprovalTable = () => {
                     <TableRow key={order._id}>
                       <TableCell>
                         <div>
-                          <div className='font-medium'>{order.supplier.name}</div>
+                          <div className='font-medium'>
+                            {order.supplier?.name || 'Proveedor no disponible'}
+                          </div>
                           <div className='text-sm text-gray-500'>
                             ID: {order._id.slice(-8)}
                           </div>
@@ -227,7 +231,9 @@ const PendingApprovalTable = () => {
                         <div className='flex items-center gap-2'>
                           <User className='h-4 w-4 text-gray-500' />
                           <div>
-                            <div className='font-medium'>{order.employeeVerification.verifiedBy.name}</div>
+                            <div className='font-medium'>
+                              {order.employeeVerification?.verifiedBy?.name || 'Usuario no disponible'}
+                            </div>
                             <div className='text-sm text-gray-500'>
                               Confirmó: {order.confirmedArrivalBy?.name}
                             </div>

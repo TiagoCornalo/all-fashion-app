@@ -53,6 +53,8 @@ export interface Product {
   description: string
   stock: number
   stockMinimum: number
+  basePrice?: number | null
+  baseCurrency?: 'ARS' | 'USD'
   price: number
   priceUSD?: number | null
   usdRateType?: 'blue' | 'oficial' | 'mep' | 'tarjeta' | null

@@ -20,7 +20,7 @@ import {
 } from '../../components'
 import { adminApproveOrder } from '../../services/order'
 import { toast } from 'react-toastify'
-import { CheckCircle, XCircle, User, Calendar, Package } from 'lucide-react'
+import { CheckCircle, XCircle, User, Package } from 'lucide-react'
 import { formatDateTime } from '../../utils'
 import { RECEPTION_STATUS } from '../../orders/components/verification/constants'
 
@@ -31,10 +31,12 @@ interface OrderItem {
     name: string
     code: string
     price: number
-  }
+  } | null
   quantity: number
   currentStock: number
   minimumStock: number
+  unitCost?: number
+  costCurrency?: 'ARS' | 'USD'
 }
 
 interface PendingOrder {
@@ -174,7 +176,7 @@ const AdminApprovalDialog = ({
             <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm'>
               <div>
                 <span className='font-medium'>Proveedor:</span>
-                <div>{order.supplier.name}</div>
+                <div>{order.supplier?.name || 'Proveedor no disponible'}</div>
               </div>
               <div>
                 <span className='font-medium'>Total productos:</span>
@@ -202,7 +204,7 @@ const AdminApprovalDialog = ({
             <div className='space-y-2 text-xs sm:text-sm'>
               <div>
                 <span className='font-medium'>Verificado por:</span>
-                <div>{order.employeeVerification.verifiedBy.name}</div>
+                <div>{order.employeeVerification?.verifiedBy?.name || 'Usuario no disponible'}</div>
               </div>
               <div>
                 <span className='font-medium'>Fecha de verificación:</span>
@@ -245,12 +247,14 @@ const AdminApprovalDialog = ({
               {order.items.map((item) => (
                 <div key={item._id} className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 p-2 bg-gray-50 rounded text-xs sm:text-sm'>
                   <div>
-                    <div className='font-medium'>{item.product.name}</div>
-                    <div className='text-gray-600'>Código: {item.product.code}</div>
+                    <div className='font-medium'>{item.product?.name || 'Producto eliminado'}</div>
+                    <div className='text-gray-600'>Código: {item.product?.code || 'Sin código'}</div>
                   </div>
                   <div className='text-left sm:text-right'>
                     <div className='font-medium'>Cantidad: {item.quantity}</div>
-                    <div className='text-gray-600'>${item.product.price.toLocaleString()}</div>
+                    <div className='text-gray-600'>
+                      {item.costCurrency || 'ARS'} {(item.unitCost || 0).toLocaleString('es-AR')}
+                    </div>
                   </div>
                 </div>
               ))}
