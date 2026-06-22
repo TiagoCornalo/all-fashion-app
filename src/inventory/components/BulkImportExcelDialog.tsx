@@ -81,7 +81,9 @@ const BulkImportExcelDialog = ({ onCompleted }: Props) => {
             <code>Precio Final</code>, <code>Proveedor</code>, <code>Stock</code>,{' '}
             <code>Moneda</code> y <code>Tipo Dolar</code>. Los proveedores que
             todavía no estén cargados se agregarán automáticamente (después podés
-            completar sus datos manualmente).
+            completar sus datos manualmente). El precio de venta siempre se toma
+            de <code>Precio Final</code>; si la moneda es USD, ese valor se
+            convierte a pesos con la cotización configurada.
           </DialogDescription>
         </DialogHeader>
 

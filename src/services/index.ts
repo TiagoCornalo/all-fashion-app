@@ -81,7 +81,10 @@ export const bulkImportProductsFromExcel = async (
   const response = await api.post<BulkImportReport>(
     `/products/bulk-import-excel${params.toString() ? `?${params}` : ''}`,
     formData,
-    { headers: { 'Content-Type': 'multipart/form-data' } }
+    {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000
+    }
   )
   return response.data
 }
