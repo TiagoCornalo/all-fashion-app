@@ -17,6 +17,25 @@ import {
   Loader
 } from '../../../components'
 
+const formatArs = (value?: number | null) =>
+  Number(value || 0).toLocaleString('es-AR', {
+    style: 'currency',
+    currency: 'ARS',
+    maximumFractionDigits: 2
+  })
+
+const USD_RATE_LABELS: Record<string, string> = {
+  blue: 'dólar blue',
+  oficial: 'dólar oficial',
+  mep: 'dólar MEP',
+  tarjeta: 'dólar tarjeta'
+}
+
+const getPricingLabel = (item: { priceUSD?: number | null; usdRateType?: string | null }) => {
+  if (!item.priceUSD || item.priceUSD <= 0) return null
+  return `Final con ${USD_RATE_LABELS[item.usdRateType || 'blue'] || 'dólar'}`
+}
+
 const SaleSummary = () => {
   const { items, invoice, total } = useSaleForm()
 
@@ -80,8 +99,15 @@ const SaleSummary = () => {
                           <TableRow key={item.product}>
                             <TableCell>{item.name}</TableCell>
                             <TableCell>{item.quantity}</TableCell>
-                            <TableCell>${item.price}</TableCell>
-                            <TableCell>${item.price * item.quantity}</TableCell>
+                            <TableCell>
+                              <div>{formatArs(item.price)}</div>
+                              {getPricingLabel(item) && (
+                                <div className='text-[11px] text-muted-foreground'>
+                                  {getPricingLabel(item)}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell>{formatArs(item.price * item.quantity)}</TableCell>
                             {itemPromotions.length > 0 && (
                               <TableCell>
                                 {hasPromo && (

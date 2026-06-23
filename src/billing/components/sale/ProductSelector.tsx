@@ -18,6 +18,29 @@ import api from '../../../services/config/axios'
 import { PromotionItemModal } from '.'
 import { toast } from 'react-toastify'
 
+const formatArs = (value?: number | null) =>
+  Number(value || 0).toLocaleString('es-AR', {
+    style: 'currency',
+    currency: 'ARS',
+    maximumFractionDigits: 2
+  })
+
+const USD_RATE_LABELS: Record<string, string> = {
+  blue: 'dólar blue',
+  oficial: 'dólar oficial',
+  mep: 'dólar MEP',
+  tarjeta: 'dólar tarjeta'
+}
+
+const getPricingLabel = (product: Product | SaleItem) => {
+  const priceUSD = 'priceUSD' in product ? product.priceUSD : undefined
+  const usdRateType = 'usdRateType' in product ? product.usdRateType : undefined
+
+  if (!priceUSD || priceUSD <= 0) return 'Precio final'
+
+  return `Precio final con ${USD_RATE_LABELS[usdRateType || 'blue'] || 'dólar'}`
+}
+
 const ProductSelector = () => {
   const [search, setSearch] = useState('')
   const [products, setProducts] = useState<Product[]>([])
@@ -86,7 +109,9 @@ const ProductSelector = () => {
         price: product.price,
         name: product.name,
         subtotal: product.price,
-        stock: product.stock
+        stock: product.stock,
+        priceUSD: product.priceUSD,
+        usdRateType: product.usdRateType
       }
       addItem(newItem)
     }
@@ -172,7 +197,10 @@ const ProductSelector = () => {
                         </div>
                       </div>
                       <div className='font-medium shrink-0'>
-                        ${(product.price ?? 0).toLocaleString('es-AR')}
+                        <div className='text-right'>{formatArs(product.price)}</div>
+                        <div className='text-[11px] font-normal text-muted-foreground'>
+                          {getPricingLabel(product)}
+                        </div>
                       </div>
                     </button>
                   )
@@ -223,8 +251,13 @@ const ProductSelector = () => {
                       </Button>
                     </div>
                   </TableCell>
-                  <TableCell>${item.price}</TableCell>
-                  <TableCell>${item.price * item.quantity}</TableCell>
+                  <TableCell>
+                    <div>{formatArs(item.price)}</div>
+                    <div className='text-[11px] text-muted-foreground'>
+                      {getPricingLabel(item)}
+                    </div>
+                  </TableCell>
+                  <TableCell>{formatArs(item.price * item.quantity)}</TableCell>
                   <TableCell>
                     {hasPromotion(index) ? (
                       <Button

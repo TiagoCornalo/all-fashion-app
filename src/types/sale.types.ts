@@ -153,6 +153,8 @@ export interface SaleItem {
   discountPercentage?: number
   discounted?: boolean
   stock?: number
+  priceUSD?: number | null
+  usdRateType?: 'blue' | 'oficial' | 'mep' | 'tarjeta' | null
 }
 
 export type PaymentType = 'CASH' | 'DEBIT' | 'CREDIT' | 'TRANSFER' | 'ACCOUNT_PAYABLE'
