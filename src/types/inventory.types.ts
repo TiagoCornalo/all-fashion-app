@@ -71,8 +71,12 @@ export interface ExchangeRate {
   enabled: boolean
   fetchedAt: string
   sourceUpdatedAt?: string | null
+  source?: string
+  provider?: string
   stale: boolean
   cached: boolean
+  fallback?: boolean
+  refreshError?: string
 }
 
 export type USDRateType = NonNullable<Product['usdRateType']>

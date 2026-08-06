@@ -84,9 +84,10 @@ const ExchangeRateBadge = ({ type = 'blue' }: Props) => {
   }
 
   const typeLabel = LABELS_BY_TYPE[data.type] || data.type
-  const fetched = data.fetchedAt ? new Date(data.fetchedAt) : null
-  const fetchedLabel = fetched
-    ? fetched.toLocaleString('es-AR', {
+  const sourceUpdatedAt = data.sourceUpdatedAt || data.fetchedAt
+  const sourceUpdated = sourceUpdatedAt ? new Date(sourceUpdatedAt) : null
+  const sourceUpdatedLabel = sourceUpdated
+    ? sourceUpdated.toLocaleString('es-AR', {
         day: '2-digit',
         month: '2-digit',
         hour: '2-digit',
@@ -106,7 +107,20 @@ const ExchangeRateBadge = ({ type = 'blue' }: Props) => {
           {data.surchargeArs > 0 && (
             <span className='whitespace-nowrap'>+ {formatRate(data.surchargeArs)}</span>
           )}
-          <span className='whitespace-nowrap'>Actualizado {fetchedLabel}</span>
+          <span className='whitespace-nowrap'>Cotiza al {sourceUpdatedLabel}</span>
+          {data.source && (
+            <span className='max-w-full truncate' title={`Fuente: ${data.source}`}>
+              Fuente: {data.source}
+            </span>
+          )}
+          {data.stale && (
+            <span
+              className='rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700'
+              title={data.refreshError || 'No se pudo consultar una cotización nueva'}
+            >
+              Último valor disponible
+            </span>
+          )}
           {!data.enabled && (
             <span className='rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700'>
               USD apagado

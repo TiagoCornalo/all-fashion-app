@@ -16,6 +16,26 @@ import {
 import { Badge } from '../../components/ui/badge'
 import { formatCurrency } from '../../utils'
 
+const USD_RATE_LABELS: Record<string, string> = {
+  blue: 'Blue',
+  oficial: 'Oficial',
+  mep: 'MEP',
+  tarjeta: 'Tarjeta'
+}
+
+const formatDateTime = (value?: string | null) => {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  return date.toLocaleString('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
 interface SaleProductsProps {
   items: any[]
   itemPromotions?: any[]
@@ -56,6 +76,14 @@ const SaleProducts = ({ items, itemPromotions }: SaleProductsProps) => {
                   ? itemPromotions?.find((p) => p.productId === productId)
                   : null
                 const productMissing = !product
+                const pricing = item.pricingSnapshot
+                const originalPrice = itemPromotion?.originalPrice ??
+                  item.originalPrice ??
+                  pricing?.calculatedPriceArs ??
+                  item.price
+                const rateTimestamp = formatDateTime(
+                  pricing?.sourceUpdatedAt || pricing?.fetchedAt
+                )
 
                 return (
                   <TableRow key={item._id || `item-${idx}`}>
@@ -64,7 +92,7 @@ const SaleProducts = ({ items, itemPromotions }: SaleProductsProps) => {
                         <span className='text-muted-foreground'>—</span>
                       )}
                     </TableCell>
-                    <TableCell className='text-xs sm:text-sm'>
+                    <TableCell className='min-w-[260px] text-xs sm:text-sm'>
                       <div className='min-w-0'>
                         <div className='truncate'>
                           {product?.name || (
@@ -90,6 +118,29 @@ const SaleProducts = ({ items, itemPromotions }: SaleProductsProps) => {
                             Sin referencia
                           </Badge>
                         )}
+                        {pricing && (
+                          <div className='mt-2 space-y-0.5 text-[11px] leading-4 text-muted-foreground'>
+                            <div className='font-medium text-foreground/80'>
+                              USD {pricing.priceUSD.toLocaleString('es-AR')} × dólar{' '}
+                              {USD_RATE_LABELS[pricing.rateType] || pricing.rateType}{' '}
+                              {formatCurrency(pricing.rateValue)}
+                              {pricing.surchargeArs > 0 && (
+                                <> + {formatCurrency(pricing.surchargeArs)}</>
+                              )}
+                            </div>
+                            <div>
+                              Cotización usada: {formatCurrency(pricing.rateValue)}
+                              {rateTimestamp ? ` · ${rateTimestamp}` : ''}
+                            </div>
+                            {(pricing.source || pricing.stale) && (
+                              <div>
+                                {pricing.source ? `Fuente: ${pricing.source}` : ''}
+                                {pricing.source && pricing.stale ? ' · ' : ''}
+                                {pricing.stale ? 'Último valor disponible' : ''}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className='text-right text-xs sm:text-sm'>
@@ -98,12 +149,10 @@ const SaleProducts = ({ items, itemPromotions }: SaleProductsProps) => {
                     <TableCell className='text-right text-xs sm:text-sm'>
                       {hasItemPromotion ? (
                         <span className='line-through text-gray-500'>
-                          {formatCurrency(
-                            itemPromotion?.originalPrice ?? product?.price ?? item.price
-                          )}
+                          {formatCurrency(originalPrice)}
                         </span>
                       ) : (
-                        formatCurrency(product?.price ?? item.price)
+                        formatCurrency(originalPrice)
                       )}
                     </TableCell>
                     <TableCell className='text-right text-xs sm:text-sm'>

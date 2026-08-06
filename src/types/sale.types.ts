@@ -155,6 +155,20 @@ export interface SaleItem {
   stock?: number
   priceUSD?: number | null
   usdRateType?: 'blue' | 'oficial' | 'mep' | 'tarjeta' | null
+  pricingSnapshot?: {
+    currency: 'USD'
+    priceUSD: number
+    rateType: 'blue' | 'oficial' | 'mep' | 'tarjeta'
+    rateValue: number
+    valueKind: 'compra' | 'venta' | 'avg'
+    surchargeArs: number
+    calculatedPriceArs: number
+    provider?: string
+    source?: string
+    fetchedAt?: string
+    sourceUpdatedAt?: string | null
+    stale?: boolean
+  }
 }
 
 export type PaymentType = 'CASH' | 'DEBIT' | 'CREDIT' | 'TRANSFER' | 'ACCOUNT_PAYABLE'
