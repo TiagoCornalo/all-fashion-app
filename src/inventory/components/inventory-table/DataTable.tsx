@@ -30,11 +30,17 @@ import EditProductDialog from './components/EditProductDialog'
 import { Product } from '../../../types/inventory.types'
 import BulkDeleteDialog from './components/BulkDeleteDialog'
 import AddProductDialog from './components/AddProductDialog'
+import { LabelPrintDialog } from '../LabelPrintDialog'
+import { StockReceiptDialog } from '../StockReceiptDialog'
+import { BarcodeManagerDialog } from '../BarcodeManagerDialog'
+import { useBarcodeScanner } from '../../../hooks/useBarcodeScanner'
 
 interface DataTableProps {
   columns: (handlers: {
     onEdit: (product: Product) => void
     onDelete: (product: Product) => void
+    onBarcodes: (product: Product) => void
+    onPrintLabel: (product: Product) => void
   }) => ColumnDef<Product, unknown>[]
   data: Product[]
   pageCount: number
@@ -68,6 +74,9 @@ export function DataTable({
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false)
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false)
+  const [isLabelPrintOpen, setIsLabelPrintOpen] = useState(false)
+  const [isBarcodeManagerOpen, setIsBarcodeManagerOpen] = useState(false)
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([])
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -81,6 +90,14 @@ export function DataTable({
         onDelete: (product) => {
           setSelectedProduct(product)
           setIsDeleteOpen(true)
+        },
+        onBarcodes: (product) => {
+          setSelectedProduct(product)
+          setIsBarcodeManagerOpen(true)
+        },
+        onPrintLabel: (product) => {
+          setSelectedProducts([product])
+          setIsLabelPrintOpen(true)
         }
       }),
     [columns]
@@ -140,6 +157,13 @@ export function DataTable({
     }
   })
 
+  useBarcodeScanner({
+    enabled: !isReceiptOpen && !isLabelPrintOpen && !isBarcodeManagerOpen && !isAddOpen && !isEditOpen && !isDeleteOpen && !isBulkDeleteOpen,
+    onScan: (value) => {
+      table.getColumn('name')?.setFilterValue(value)
+    }
+  })
+
   // Manejar cambios en la búsqueda
   const handleSearch = useCallback(
     (value: string) => {
@@ -173,6 +197,11 @@ export function DataTable({
           onAdd={() => setIsAddOpen(true)}
           onRefresh={handleRefresh}
           isRefreshing={isRefreshing}
+          onReceiveStock={() => setIsReceiptOpen(true)}
+          onPrintLabels={(products) => {
+            setSelectedProducts(products)
+            setIsLabelPrintOpen(true)
+          }}
         />
         <div className='rounded-md border'>
           <Table>
@@ -252,6 +281,25 @@ export function DataTable({
       />
 
       <AddProductDialog isOpen={isAddOpen} onOpenChange={setIsAddOpen} />
+
+      <StockReceiptDialog
+        open={isReceiptOpen}
+        onOpenChange={setIsReceiptOpen}
+        onCompleted={onRefresh}
+      />
+
+      <LabelPrintDialog
+        open={isLabelPrintOpen}
+        onOpenChange={setIsLabelPrintOpen}
+        products={selectedProducts}
+      />
+
+      <BarcodeManagerDialog
+        open={isBarcodeManagerOpen}
+        onOpenChange={setIsBarcodeManagerOpen}
+        product={selectedProduct}
+        onUpdated={onRefresh}
+      />
     </>
   )
 }

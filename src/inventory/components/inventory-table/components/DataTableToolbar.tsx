@@ -1,5 +1,5 @@
 import { Table } from '@tanstack/react-table'
-import { X, Plus, RotateCcw } from 'lucide-react'
+import { X, Plus, RotateCcw, PackagePlus, Printer } from 'lucide-react'
 import { Product } from '../../../../types/inventory.types'
 
 import { Button } from '../../../../components/ui/button'
@@ -13,6 +13,8 @@ interface DataTableToolbarProps {
   onBulkDelete: (products: Product[]) => void
   onRefresh: () => void
   isRefreshing: boolean
+  onReceiveStock: () => void
+  onPrintLabels: (products: Product[]) => void
 }
 
 export function DataTableToolbar({
@@ -20,7 +22,9 @@ export function DataTableToolbar({
   onAdd,
   onBulkDelete,
   onRefresh,
-  isRefreshing = false
+  isRefreshing = false,
+  onReceiveStock,
+  onPrintLabels
 }: DataTableToolbarProps) {
   const isFiltered = table.getState().columnFilters.length > 0
   const selectedRows = table.getSelectedRowModel().rows
@@ -53,6 +57,26 @@ export function DataTableToolbar({
 
         {/* Botones de acción */}
         <div className='flex flex-col sm:flex-row gap-2 sm:items-center sm:space-x-2'>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={onReceiveStock}
+            className='h-8 w-full sm:w-auto'
+          >
+            <PackagePlus className='mr-2 h-4 w-4' />
+            Ingresar stock
+          </Button>
+          <Button
+            variant='outline'
+            size='sm'
+            disabled={selectedRows.length === 0}
+            onClick={() => onPrintLabels(selectedRows.map((row) => row.original))}
+            className='h-8 w-full sm:w-auto'
+            title={selectedRows.length === 0 ? 'Seleccioná productos para imprimir' : 'Imprimir etiquetas'}
+          >
+            <Printer className='mr-2 h-4 w-4' />
+            Etiquetas{selectedRows.length > 0 ? ` (${selectedRows.length})` : ''}
+          </Button>
           <Button
             variant='outline'
             size='sm'

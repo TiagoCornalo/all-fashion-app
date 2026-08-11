@@ -1,0 +1,38 @@
+import { Product } from './inventory.types'
+
+export type BarcodeFormat =
+  | 'CODE128'
+  | 'EAN13'
+  | 'EAN8'
+  | 'UPCA'
+  | 'QR'
+  | 'UNKNOWN'
+
+export interface ProductBarcode {
+  _id?: string
+  product?: string
+  value: string
+  normalizedValue: string
+  format: BarcodeFormat
+  origin: 'MANUFACTURER' | 'INTERNAL' | 'LEGACY'
+  isPrimary: boolean
+  active?: boolean
+  unitsPerScan: number
+}
+
+export interface BarcodeLookupResponse {
+  product: Product
+  match: 'BARCODE' | 'PRODUCT_CODE'
+  barcode: ProductBarcode
+}
+
+export interface PreparedProductLabel {
+  product: Product
+  barcode: ProductBarcode
+}
+
+export interface InventoryReceiptItemInput {
+  productId: string
+  barcodeValue?: string
+  quantity: number
+}

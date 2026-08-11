@@ -15,6 +15,8 @@ const formatSafeDateTime = (value: unknown) => {
 export const columns = (handlers: {
   onEdit: (product: Product) => void
   onDelete: (product: Product) => void
+  onBarcodes: (product: Product) => void
+  onPrintLabel: (product: Product) => void
 }): ColumnDef<Product>[] => [
   {
     id: 'select',
@@ -129,6 +131,8 @@ export const columns = (handlers: {
         row={row}
         onEdit={handlers.onEdit}
         onDelete={handlers.onDelete}
+        onBarcodes={handlers.onBarcodes}
+        onPrintLabel={handlers.onPrintLabel}
       />
     )
   }

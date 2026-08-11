@@ -61,6 +61,24 @@ export interface Product {
   supplier?: Supplier | null
   createdAt: string
   updatedAt: string
+  barcodes?: Array<{
+    _id?: string
+    value: string
+    normalizedValue: string
+    format: string
+    origin: string
+    isPrimary: boolean
+    unitsPerScan: number
+  }>
+  primaryBarcode?: {
+    _id?: string
+    value: string
+    normalizedValue: string
+    format: string
+    origin: string
+    isPrimary: boolean
+    unitsPerScan: number
+  } | null
 }
 
 export interface ExchangeRate {
@@ -102,6 +120,8 @@ export interface TableFilters {
 
 export type CreateProduct = Omit<Product, '_id' | 'createdAt' | 'updatedAt'> & {
   description?: string
+  barcode?: string
+  barcodeUnitsPerScan?: number
 }
 
 export interface GetSuppliersParams {

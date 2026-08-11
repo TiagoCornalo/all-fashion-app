@@ -1,5 +1,5 @@
 import { Row } from '@tanstack/react-table'
-import { MoreHorizontal, Pencil, Trash } from 'lucide-react'
+import { Barcode, MoreHorizontal, Pencil, Printer, Trash } from 'lucide-react'
 import { Product } from '../../../../types/inventory.types'
 
 import {
@@ -14,12 +14,16 @@ interface DataTableRowActionsProps {
   row: Row<Product>
   onEdit: (product: Product) => void
   onDelete: (product: Product) => void
+  onBarcodes: (product: Product) => void
+  onPrintLabel: (product: Product) => void
 }
 
 export function DataTableRowActions({
   row,
   onEdit,
-  onDelete
+  onDelete,
+  onBarcodes,
+  onPrintLabel
 }: DataTableRowActionsProps) {
   const product = row.original
 
@@ -38,6 +42,14 @@ export function DataTableRowActions({
         <DropdownMenuItem onClick={() => onEdit(product)}>
           <Pencil className='mr-2 h-4 w-4' />
           Editar
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onBarcodes(product)}>
+          <Barcode className='mr-2 h-4 w-4' />
+          Códigos
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onPrintLabel(product)}>
+          <Printer className='mr-2 h-4 w-4' />
+          Imprimir etiqueta
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => onDelete(product)}

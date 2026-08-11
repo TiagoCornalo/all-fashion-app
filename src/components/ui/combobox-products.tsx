@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronsUpDown, Check } from 'lucide-react'
+import { ChevronsUpDown, Check, ScanBarcode } from 'lucide-react'
 import { Button } from './button'
 import {
   DropdownMenu,
@@ -8,6 +8,10 @@ import {
   DropdownMenuTrigger
 } from './dropdown-menu'
 import { Input } from './input'
+import { useBarcodeScanner } from '../../hooks/useBarcodeScanner'
+import { findProductByBarcode } from '../../services/barcode.service'
+import { toast } from 'react-toastify'
+import { AxiosError } from 'axios'
 
 interface Product {
   _id: string
@@ -15,9 +19,9 @@ interface Product {
   code: string
   stock?: number
   price?: number
-  supplier?: any
+  supplier?: unknown
   description?: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 interface ComboboxProductsProps {
@@ -58,6 +62,27 @@ export function ComboboxProducts({
     return () => window.clearTimeout(timeout)
   }, [inputValue, onSearch, open])
 
+  useBarcodeScanner({
+    enabled: open,
+    onScan: async (value) => {
+      try {
+        const result = await findProductByBarcode(value)
+        if ((result.product.stock ?? 0) <= 0) {
+          toast.error(`"${result.product.name}" no tiene stock disponible`)
+          return
+        }
+        onChange(result.product._id, result.product)
+        setInputValue('')
+        setOpen(false)
+      } catch (error) {
+        const message = error instanceof AxiosError
+          ? error.response?.data?.error || error.response?.data?.details
+          : 'No pudimos identificar el código escaneado'
+        toast.error(message)
+      }
+    }
+  })
+
   // Filtrar productos según el término de búsqueda
   const filteredProducts = useMemo(() => {
     if (onSearch) {
@@ -95,13 +120,16 @@ export function ComboboxProducts({
       </DropdownMenuTrigger>
       <DropdownMenuContent className='w-[--radix-dropdown-menu-trigger-width] p-0'>
         <div className='flex flex-col gap-1 p-2'>
-          <Input
-            type='text'
-            placeholder='Buscar producto...'
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            className='h-9'
-          />
+          <div className='relative'>
+            <Input
+              type='text'
+              placeholder='Buscar o escanear producto...'
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              className='h-9 pr-9'
+            />
+            <ScanBarcode className='pointer-events-none absolute right-3 top-2.5 h-4 w-4 text-muted-foreground' />
+          </div>
           <div className='max-h-[300px] overflow-auto space-y-1'>
             {isSearching ? (
               <div className='text-sm text-muted-foreground text-center py-2'>

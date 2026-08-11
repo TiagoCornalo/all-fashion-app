@@ -33,6 +33,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { AxiosError } from 'axios'
+import { ScanBarcode } from 'lucide-react'
+import { useBarcodeScanner } from '../../../../hooks/useBarcodeScanner'
 
 const formSchema = z.object({
   code: z.string().min(1, 'El código es requerido'),
@@ -51,6 +53,10 @@ const formSchema = z.object({
     .nullable()
     .optional(),
   usdRateType: z.enum(['blue', 'oficial']).default('blue'),
+  barcode: z.string().trim().max(128, 'El código es demasiado largo').optional(),
+  barcodeUnitsPerScan: z
+    .union([z.string(), z.number()])
+    .transform((val) => Math.max(1, Number(val || 1))),
   supplierId: z.string().min(1, 'El proveedor es requerido')
 })
 
@@ -84,6 +90,8 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
       price: 0,
       priceUSD: null,
       usdRateType: 'blue',
+      barcode: '',
+      barcodeUnitsPerScan: 1,
       supplierId: ''
     }
   })
@@ -101,6 +109,14 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
       form.setValue('price', Math.round(previewPrice * 100) / 100)
     }
   }, [previewPrice, form])
+
+  useBarcodeScanner({
+    enabled: isOpen && !isSubmitting,
+    onScan: (value) => {
+      form.setValue('barcode', value, { shouldDirty: true, shouldValidate: true })
+      toast.success('Código de barras capturado')
+    }
+  })
 
   const onSubmit = async (values: FormValues) => {
     try {
@@ -124,9 +140,9 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
       toast.success('Producto agregado correctamente')
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
-        toast.error(
-          `Error al agregar el producto: ${error.response?.data?.details}`
-        )
+        toast.error(`Error al agregar el producto: ${
+          error.response?.data?.details || error.response?.data?.error || error.message
+        }`)
       }
     } finally {
       setIsSubmitting(false)
@@ -172,6 +188,49 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
                   </FormItem>
                 )}
               />
+
+              <div className='grid grid-cols-1 gap-3 sm:grid-cols-[1fr_150px]'>
+                <FormField
+                  control={form.control}
+                  name='barcode'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className='flex items-center gap-2 text-sm sm:text-base'>
+                        <ScanBarcode className='h-4 w-4' />
+                        Código de barras
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder='Opcional: escanealo ahora'
+                          className='h-9 sm:h-10'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='barcodeUnitsPerScan'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className='text-sm sm:text-base'>Unidades</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type='number'
+                          min={1}
+                          className='h-9 sm:h-10'
+                          onChange={(event) => field.onChange(Number(event.target.value) || 1)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4'>
                 <FormField

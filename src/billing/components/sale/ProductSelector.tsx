@@ -8,15 +8,19 @@ import {
   TableHead,
   TableCell,
   Input,
-  Button
+  Button,
+  Badge
 } from '../../../components'
 import { Product } from '../../../types/inventory.types'
 import { SaleItem } from '../../../types/sale.types'
-import { Search, Plus, Minus, Trash } from 'lucide-react'
+import { Search, Plus, Minus, Trash, ScanBarcode } from 'lucide-react'
 import { useDebounce } from '../../../hooks/useDebounce'
 import api from '../../../services/config/axios'
 import { PromotionItemModal } from '.'
 import { toast } from 'react-toastify'
+import { useBarcodeScanner } from '../../../hooks/useBarcodeScanner'
+import { findProductByBarcode } from '../../../services/barcode.service'
+import { AxiosError } from 'axios'
 
 const formatArs = (value?: number | null) =>
   Number(value || 0).toLocaleString('es-AR', {
@@ -92,23 +96,31 @@ const ProductSelector = () => {
     fetchProducts()
   }, [debouncedSearch])
 
-  const handleAddProduct = (product: Product) => {
+  const handleAddProduct = (product: Product, requestedQuantity = 1) => {
     if ((product.stock ?? 0) <= 0) {
       toast.error(`"${product.name}" no tiene stock disponible`)
       return
     }
 
     const existingItem = items.find((item) => item.product === product._id)
+    const nextQuantity = (existingItem?.quantity || 0) + requestedQuantity
+
+    if (nextQuantity > (product.stock || 0)) {
+      toast.error(
+        `Stock insuficiente para "${product.name}". Disponible: ${product.stock || 0}`
+      )
+      return
+    }
 
     if (existingItem) {
-      updateItemQuantity(product._id, existingItem.quantity + 1)
+      updateItemQuantity(product._id, nextQuantity)
     } else {
       const newItem: SaleItem = {
         product: product._id,
-        quantity: 1,
+        quantity: requestedQuantity,
         price: product.price,
         name: product.name,
-        subtotal: product.price,
+        subtotal: product.price * requestedQuantity,
         stock: product.stock,
         priceUSD: product.priceUSD,
         usdRateType: product.usdRateType
@@ -119,6 +131,21 @@ const ProductSelector = () => {
     setSearch('')
     setProducts([])
   }
+
+  const handleScannedCode = async (value: string) => {
+    try {
+      const result = await findProductByBarcode(value)
+      const units = Math.max(1, Number(result.barcode.unitsPerScan || 1))
+      handleAddProduct(result.product, units)
+    } catch (error) {
+      const message = error instanceof AxiosError
+        ? error.response?.data?.error || error.response?.data?.details
+        : 'No pudimos identificar el código escaneado'
+      toast.error(message)
+    }
+  }
+
+  useBarcodeScanner({ onScan: handleScannedCode })
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -153,14 +180,26 @@ const ProductSelector = () => {
     <div className='max-h-[60vh] overflow-y-auto'>
       <div className='space-y-4 p-1'>
         {/* Buscador de productos */}
-        <div className='relative'>
-          <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
-          <Input
-            placeholder='Buscar productos...'
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className='pl-8'
-          />
+        <div className='flex flex-col gap-2 sm:flex-row sm:items-center'>
+          <div className='relative flex-1'>
+            <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+            <Input
+              placeholder='Buscar o escanear producto...'
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && search.trim()) {
+                  event.preventDefault()
+                  void handleScannedCode(search)
+                }
+              }}
+              className='pl-8'
+            />
+          </div>
+          <Badge variant='outline' className='h-9 justify-center gap-2 rounded-md px-3 font-normal'>
+            <ScanBarcode className='h-4 w-4' />
+            Lector activo
+          </Badge>
         </div>
 
         {/* Lista de productos encontrados */}
