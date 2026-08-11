@@ -65,6 +65,7 @@ export interface Product {
 
 export interface ExchangeRate {
   value: number
+  effectiveRateValue?: number | null
   type: string
   valueKind: string
   surchargeArs: number

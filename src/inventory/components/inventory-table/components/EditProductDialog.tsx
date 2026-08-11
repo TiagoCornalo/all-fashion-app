@@ -27,6 +27,7 @@ import { ComboboxSuppliers } from '../../../../components/ui/combobox-suppliers'
 import { Product, USDRateType } from '../../../../types/inventory.types'
 import { editProduct } from '../../../../services'
 import { useExchangeRate } from '../../../../hooks/useExchangeRate'
+import { convertUsdToArs, getEffectiveUsdRate } from '../../../../utils/usdPricing'
 import { toast } from 'react-toastify'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -118,8 +119,11 @@ const EditProductDialog = ({
   const { data: rate } = useExchangeRate(usdRateType)
   const previewPrice =
     usdEnabled && rate && typeof priceUSDValue === 'number' && priceUSDValue > 0
-      ? priceUSDValue * rate.value + (rate.surchargeArs || 0)
+      ? convertUsdToArs(priceUSDValue, rate.value, rate.surchargeArs)
       : null
+  const effectiveRate = rate
+    ? getEffectiveUsdRate(rate.value, rate.surchargeArs)
+    : null
 
   useEffect(() => {
     if (previewPrice !== null) {
@@ -334,8 +338,9 @@ const EditProductDialog = ({
 
                     {rate ? (
                       <p className='text-xs text-muted-foreground'>
-                        Cotización vigente: {formatArs(rate.value)} (
-                        {rate.type}) + recargo {formatArs(rate.surchargeArs)}
+                        Cotización publicada: {formatArs(rate.value)} ({rate.type})
+                        {' + '}ajuste {formatArs(rate.surchargeArs)}. Cotización
+                        aplicada: {effectiveRate === null ? '—' : formatArs(effectiveRate)}
                       </p>
                     ) : (
                       <p className='text-xs text-amber-700'>

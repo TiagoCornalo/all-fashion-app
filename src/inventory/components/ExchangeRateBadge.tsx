@@ -6,6 +6,7 @@ import {
   useRefreshExchangeRate
 } from '../../hooks/useExchangeRate'
 import { USDRateType } from '../../types/inventory.types'
+import { getEffectiveUsdRate } from '../../utils/usdPricing'
 
 const LABELS_BY_TYPE: Record<string, string> = {
   oficial: 'Dólar oficial',
@@ -84,6 +85,8 @@ const ExchangeRateBadge = ({ type = 'blue' }: Props) => {
   }
 
   const typeLabel = LABELS_BY_TYPE[data.type] || data.type
+  const effectiveRate = data.effectiveRateValue ??
+    getEffectiveUsdRate(data.value, data.surchargeArs)
   const sourceUpdatedAt = data.sourceUpdatedAt || data.fetchedAt
   const sourceUpdated = sourceUpdatedAt ? new Date(sourceUpdatedAt) : null
   const sourceUpdatedLabel = sourceUpdated
@@ -99,14 +102,13 @@ const ExchangeRateBadge = ({ type = 'blue' }: Props) => {
     <div className='flex min-h-14 w-full items-center gap-2 rounded-md border bg-card px-3 py-2 text-xs shadow-sm sm:w-[220px]'>
       <DollarSign className='h-4 w-4 shrink-0 text-green-700' />
       <div className='min-w-0 flex-1'>
-        <div className='flex min-w-0 items-baseline gap-1.5'>
+        <div className='flex min-w-0 flex-wrap items-baseline gap-x-1.5'>
           <span className='truncate font-medium'>{typeLabel}</span>
-          <span className='shrink-0 font-semibold'>{formatRate(data.value)}</span>
+          <span className='shrink-0 font-semibold'>{formatRate(effectiveRate ?? undefined)}</span>
         </div>
         <div className='mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] leading-4 text-muted-foreground'>
-          {data.surchargeArs > 0 && (
-            <span className='whitespace-nowrap'>+ {formatRate(data.surchargeArs)}</span>
-          )}
+          <span className='whitespace-nowrap'>Base {formatRate(data.value)}</span>
+          {data.surchargeArs > 0 && <span className='whitespace-nowrap'>+ ajuste {formatRate(data.surchargeArs)}</span>}
           <span className='whitespace-nowrap'>Cotiza al {sourceUpdatedLabel}</span>
           {data.source && (
             <span className='max-w-full truncate' title={`Fuente: ${data.source}`}>
