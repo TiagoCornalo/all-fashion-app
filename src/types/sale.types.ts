@@ -160,6 +160,7 @@ export interface SaleItem {
     priceUSD: number
     rateType: 'blue' | 'oficial' | 'mep' | 'tarjeta'
     rateValue: number
+    effectiveRateValue?: number
     valueKind: 'compra' | 'venta' | 'avg'
     surchargeArs: number
     calculatedPriceArs: number

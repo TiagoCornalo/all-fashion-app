@@ -15,6 +15,8 @@ import {
 } from '../../components/ui/table'
 import { Badge } from '../../components/ui/badge'
 import { formatCurrency } from '../../utils'
+import { getEffectiveUsdRate } from '../../utils/usdPricing'
+import { SaleItem } from '../../types/sale.types'
 
 const USD_RATE_LABELS: Record<string, string> = {
   blue: 'Blue',
@@ -36,9 +38,25 @@ const formatDateTime = (value?: string | null) => {
   })
 }
 
+type PopulatedSaleItem = Omit<SaleItem, 'product'> & {
+  _id?: string
+  product: {
+    _id: string
+    code?: string
+    name?: string
+  } | null
+}
+
+type ItemPromotion = {
+  productId: string
+  originalPrice?: number
+  code?: string
+  discountPercentage?: number
+}
+
 interface SaleProductsProps {
-  items: any[]
-  itemPromotions?: any[]
+  items: PopulatedSaleItem[]
+  itemPromotions?: ItemPromotion[]
 }
 
 const SaleProducts = ({ items, itemPromotions }: SaleProductsProps) => {
@@ -77,6 +95,10 @@ const SaleProducts = ({ items, itemPromotions }: SaleProductsProps) => {
                   : null
                 const productMissing = !product
                 const pricing = item.pricingSnapshot
+                const effectiveRate = pricing
+                  ? pricing.effectiveRateValue ??
+                    getEffectiveUsdRate(pricing.rateValue, pricing.surchargeArs)
+                  : null
                 const originalPrice = itemPromotion?.originalPrice ??
                   item.originalPrice ??
                   pricing?.calculatedPriceArs ??
@@ -121,15 +143,18 @@ const SaleProducts = ({ items, itemPromotions }: SaleProductsProps) => {
                         {pricing && (
                           <div className='mt-2 space-y-0.5 text-[11px] leading-4 text-muted-foreground'>
                             <div className='font-medium text-foreground/80'>
-                              USD {pricing.priceUSD.toLocaleString('es-AR')} × dólar{' '}
-                              {USD_RATE_LABELS[pricing.rateType] || pricing.rateType}{' '}
-                              {formatCurrency(pricing.rateValue)}
-                              {pricing.surchargeArs > 0 && (
-                                <> + {formatCurrency(pricing.surchargeArs)}</>
-                              )}
+                              USD {pricing.priceUSD.toLocaleString('es-AR')} ×{' '}
+                              {formatCurrency(effectiveRate ?? pricing.rateValue)} ={' '}
+                              {formatCurrency(pricing.calculatedPriceArs)}
                             </div>
                             <div>
-                              Cotización usada: {formatCurrency(pricing.rateValue)}
+                              Dólar {USD_RATE_LABELS[pricing.rateType] || pricing.rateType}:{' '}
+                              base {formatCurrency(pricing.rateValue)}
+                              {pricing.surchargeArs > 0
+                                ? ` + ajuste ${formatCurrency(pricing.surchargeArs)}`
+                                : ''}
+                              {' · '}Cotización aplicada:{' '}
+                              {formatCurrency(effectiveRate ?? pricing.rateValue)}
                               {rateTimestamp ? ` · ${rateTimestamp}` : ''}
                             </div>
                             {(pricing.source || pricing.stale) && (
