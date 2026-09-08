@@ -84,6 +84,7 @@ export interface Product {
 export interface ExchangeRate {
   value: number
   effectiveRateValue?: number | null
+  pricingFormula?: 'USD_X_EFFECTIVE_RATE_V2'
   type: string
   valueKind: string
   surchargeArs: number
