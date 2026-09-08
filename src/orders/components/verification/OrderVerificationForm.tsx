@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
@@ -14,10 +14,12 @@ import {
   Textarea,
   Checkbox
 } from '../../../components'
-import { Package, AlertTriangle, ArrowLeft, Save } from 'lucide-react'
+import { Package, AlertTriangle, ArrowLeft, Save, ScanBarcode } from 'lucide-react'
 import { orderVerificationService, VerificationIssue, VerificationData } from '../../../services/orderVerification.service'
 import { formatDateTime, extractMongooseData, getErrorMessage, ApiError } from '../../../utils'
 import { RECEPTION_STATUS } from './constants'
+import { useBarcodeScanner } from '../../../hooks/useBarcodeScanner'
+import { findProductByBarcode } from '../../../services/barcode.service'
 
 /**
  * Formulario para verificar cantidades de un pedido específico
@@ -31,6 +33,9 @@ const OrderVerificationForm = () => {
   const [issues, setIssues] = useState<VerificationIssue[]>([])
   const [notes, setNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [manualCode, setManualCode] = useState('')
+  const [isLookingUp, setIsLookingUp] = useState(false)
+  const [lastScannedProduct, setLastScannedProduct] = useState('')
 
   // Query para obtener detalles del pedido
   const { data: orderResponse, isLoading, error } = useQuery({
@@ -67,12 +72,55 @@ const OrderVerificationForm = () => {
       const newIssues: VerificationIssue[] = order.items.map(item => ({
         productId: item.product._id || '',
         expectedQuantity: item.quantity,
-        receivedQuantity: item.quantity, // Inicializar con cantidad esperada
+        receivedQuantity: 0,
         notes: ''
       }))
       setIssues(newIssues)
     }
   }, [allCorrect, order, issues.length])
+
+  const handleScannedCode = useCallback(async (rawValue: string) => {
+    const value = rawValue.trim()
+    if (!value || !order) return
+    setIsLookingUp(true)
+    try {
+      const result = await findProductByBarcode(value)
+      const orderItem = order.items.find((item) => item.product._id === result.product._id)
+      if (!orderItem) {
+        toast.error(`“${result.product.name}” no pertenece a este pedido`)
+        return
+      }
+
+      const units = Math.max(1, Number(result.barcode.unitsPerScan || 1))
+      setAllCorrect(false)
+      setIssues((current) => {
+        const base = current.length > 0
+          ? current
+          : order.items.map((item) => ({
+              productId: item.product._id || '',
+              expectedQuantity: item.quantity,
+              receivedQuantity: 0,
+              notes: ''
+            }))
+        return base.map((issue) => issue.productId === result.product._id
+          ? { ...issue, receivedQuantity: issue.receivedQuantity + units }
+          : issue)
+      })
+      setManualCode('')
+      setLastScannedProduct(`${result.product.code} - ${result.product.name}`)
+    } catch (error) {
+      toast.error(getErrorMessage(error as ApiError))
+    } finally {
+      setIsLookingUp(false)
+    }
+  }, [order])
+
+  const canVerify = Boolean(order?.userPermissions?.canVerify)
+
+  useBarcodeScanner({
+    enabled: canVerify && !isSubmitting && !isLookingUp,
+    onScan: handleScannedCode
+  })
 
   const handleIssueChange = (index: number, field: keyof VerificationIssue, value: string | number) => {
     const newIssues = [...issues]
@@ -127,10 +175,6 @@ const OrderVerificationForm = () => {
   }
 
   const hasExistingVerification = !!order.employeeVerification
-  const canVerify = order.userPermissions?.canVerify
-
-  console.log('Order data:', order)
-
   return (
     <div className="max-w-4xl mx-auto p-2 sm:p-4 lg:p-6">
       {/* Header */}
@@ -222,6 +266,38 @@ const OrderVerificationForm = () => {
             <CardTitle className="text-base sm:text-lg">Verificación de Cantidades</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 sm:space-y-6">
+            <div className='space-y-2 rounded-lg border border-blue-200 bg-blue-50 p-3 sm:p-4'>
+              <div className='flex flex-col gap-2 sm:flex-row'>
+                <div className='relative flex-1'>
+                  <ScanBarcode className='absolute left-3 top-2.5 h-4 w-4 text-blue-700' />
+                  <Input
+                    autoFocus
+                    value={manualCode}
+                    onChange={(event) => setManualCode(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault()
+                        void handleScannedCode(manualCode)
+                      }
+                    }}
+                    placeholder='Escanear producto recibido'
+                    className='bg-white pl-9'
+                  />
+                </div>
+                <Button
+                  type='button'
+                  variant='outline'
+                  disabled={!manualCode.trim() || isLookingUp}
+                  onClick={() => void handleScannedCode(manualCode)}
+                >
+                  Agregar lectura
+                </Button>
+              </div>
+              <p className='text-xs text-blue-900'>
+                {lastScannedProduct || 'Lector listo. Cada lectura suma las unidades configuradas para ese código.'}
+              </p>
+            </div>
+
             {/* Toggle principal */}
             <div className="flex items-start space-x-3 p-3 sm:p-4 bg-gray-50 rounded-lg">
               <Checkbox
@@ -238,6 +314,22 @@ const OrderVerificationForm = () => {
                 </p>
               </div>
             </div>
+
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => {
+                setAllCorrect(false)
+                setIssues(order.items.map((item) => ({
+                  productId: item.product._id || '',
+                  expectedQuantity: item.quantity,
+                  receivedQuantity: item.quantity,
+                  notes: ''
+                })))
+              }}
+            >
+              Cargar cantidades esperadas
+            </Button>
 
             {/* Lista de productos para verificar */}
             <div className="space-y-3 sm:space-y-4">

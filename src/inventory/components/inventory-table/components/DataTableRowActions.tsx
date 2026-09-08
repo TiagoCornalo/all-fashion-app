@@ -16,6 +16,7 @@ interface DataTableRowActionsProps {
   onDelete: (product: Product) => void
   onBarcodes: (product: Product) => void
   onPrintLabel: (product: Product) => void
+  canManageProducts?: boolean
 }
 
 export function DataTableRowActions({
@@ -23,7 +24,8 @@ export function DataTableRowActions({
   onEdit,
   onDelete,
   onBarcodes,
-  onPrintLabel
+  onPrintLabel,
+  canManageProducts = true
 }: DataTableRowActionsProps) {
   const product = row.original
 
@@ -39,10 +41,12 @@ export function DataTableRowActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-[160px]'>
-        <DropdownMenuItem onClick={() => onEdit(product)}>
-          <Pencil className='mr-2 h-4 w-4' />
-          Editar
-        </DropdownMenuItem>
+        {canManageProducts && (
+          <DropdownMenuItem onClick={() => onEdit(product)}>
+            <Pencil className='mr-2 h-4 w-4' />
+            Editar
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={() => onBarcodes(product)}>
           <Barcode className='mr-2 h-4 w-4' />
           Códigos
@@ -51,13 +55,15 @@ export function DataTableRowActions({
           <Printer className='mr-2 h-4 w-4' />
           Imprimir etiqueta
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => onDelete(product)}
-          className='text-red-600'
-        >
-          <Trash className='mr-2 h-4 w-4' />
-          Eliminar
-        </DropdownMenuItem>
+        {canManageProducts && (
+          <DropdownMenuItem
+            onClick={() => onDelete(product)}
+            className='text-red-600'
+          >
+            <Trash className='mr-2 h-4 w-4' />
+            Eliminar
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )

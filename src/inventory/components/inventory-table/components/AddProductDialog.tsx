@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   Button,
+  Checkbox,
   Input,
   Form,
   FormField,
@@ -27,7 +28,7 @@ import {
 import { ComboboxSuppliers } from '../../../../components/ui/combobox-suppliers'
 import { addProduct } from '../../../../services'
 import { useExchangeRate } from '../../../../hooks/useExchangeRate'
-import { USDRateType } from '../../../../types/inventory.types'
+import { Product, USDRateType } from '../../../../types/inventory.types'
 import { convertUsdToArs, getEffectiveUsdRate } from '../../../../utils/usdPricing'
 import { toast } from 'react-toastify'
 import { useForm } from 'react-hook-form'
@@ -54,7 +55,9 @@ const formSchema = z.object({
     .nullable()
     .optional(),
   usdRateType: z.enum(['blue', 'oficial']).default('blue'),
-  barcode: z.string().trim().max(128, 'El código es demasiado largo').optional(),
+  barcode: z.string().trim().max(128, 'El código es demasiado largo')
+    .refine((value) => !value || value.length >= 3, 'El código debe tener al menos 3 caracteres')
+    .optional(),
   barcodeUnitsPerScan: z
     .union([z.string(), z.number()])
     .transform((val) => Math.max(1, Number(val || 1))),
@@ -66,6 +69,7 @@ type FormValues = z.infer<typeof formSchema>
 interface AddProductDialogProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
+  onCreated?: (product: Product) => void
 }
 
 const formatArs = (value: number) =>
@@ -75,10 +79,11 @@ const formatArs = (value: number) =>
     maximumFractionDigits: 2
   })
 
-const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
+const AddProductDialog = ({ isOpen, onOpenChange, onCreated }: AddProductDialogProps) => {
   const { refreshTable } = useInventory()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [usdEnabled, setUsdEnabled] = useState(false)
+  const [printLabelAfterCreate, setPrintLabelAfterCreate] = useState(false)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -125,7 +130,7 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
   const onSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true)
-      await addProduct({
+      const createdProduct = await addProduct({
         ...values,
         baseCurrency: usdEnabled ? 'USD' : 'ARS',
         priceUSD: usdEnabled ? values.priceUSD ?? null : null,
@@ -142,6 +147,10 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
       setUsdEnabled(false)
       await refreshTable()
       toast.success('Producto agregado correctamente')
+      if (printLabelAfterCreate) {
+        setPrintLabelAfterCreate(false)
+        onCreated?.(createdProduct)
+      }
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
         toast.error(`Error al agregar el producto: ${
@@ -235,6 +244,14 @@ const AddProductDialog = ({ isOpen, onOpenChange }: AddProductDialogProps) => {
                   )}
                 />
               </div>
+
+              <label className='flex items-center gap-2 rounded-md border p-3 text-sm'>
+                <Checkbox
+                  checked={printLabelAfterCreate}
+                  onCheckedChange={(checked) => setPrintLabelAfterCreate(checked === true)}
+                />
+                Abrir el centro de etiquetas después de guardar
+              </label>
 
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4'>
                 <FormField

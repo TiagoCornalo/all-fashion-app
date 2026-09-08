@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -25,6 +25,8 @@ import {
   Button
 } from '..'
 import DataTablePagination from './DataTablePagination'
+import { useDebounce } from '../../hooks/useDebounce'
+import { BARCODE_SCAN_EVENT } from '../../hooks/useBarcodeScanner'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -47,14 +49,6 @@ interface DataTableProps<TData, TValue> {
   errorMessage?: string
   isLoading?: boolean
   error?: string | null
-}
-
-const debounce = (fn: (value: string) => void, ms = 300) => {
-  let timeoutId: ReturnType<typeof setTimeout>
-  return function (value: string) {
-    clearTimeout(timeoutId)
-    timeoutId = setTimeout(() => fn(value), ms)
-  }
 }
 
 export function DataTable<TData, TValue>({
@@ -85,20 +79,33 @@ export function DataTable<TData, TValue>({
   const [rowSelection, setRowSelection] = useState({})
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [searchValue, setSearchValue] = useState('')
+  const debouncedSearchValue = useDebounce(searchValue, 450)
+  const onSearchChangeRef = useRef(onSearchChange)
+  const searchMountedRef = useRef(false)
 
-  const debouncedSearchHandler = useCallback(
-    debounce((value: string) => {
-      if (onSearchChange) {
-        onSearchChange(value)
-      }
-    }, 300),
-    [onSearchChange]
-  )
+  useEffect(() => {
+    onSearchChangeRef.current = onSearchChange
+  }, [onSearchChange])
+
+  useEffect(() => {
+    const clearPartialScannerInput = () => {
+      setSearchValue('')
+      onSearchChangeRef.current?.('')
+    }
+    window.addEventListener(BARCODE_SCAN_EVENT, clearPartialScannerInput)
+    return () => window.removeEventListener(BARCODE_SCAN_EVENT, clearPartialScannerInput)
+  }, [])
+
+  useEffect(() => {
+    if (!searchMountedRef.current) {
+      searchMountedRef.current = true
+      return
+    }
+    onSearchChangeRef.current?.(debouncedSearchValue)
+  }, [debouncedSearchValue])
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSearchValue(value)
-    debouncedSearchHandler(value)
+    setSearchValue(e.target.value)
   }
 
   const tableColumns = columns

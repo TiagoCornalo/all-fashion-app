@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
@@ -35,6 +35,8 @@ import { Trash, Plus } from 'lucide-react'
 import { findProductsBySupplier } from '../../services/index'
 import { Product } from '../../types/inventory.types'
 import SupplierProductsTable from './SupplierProductsTable'
+import { useBarcodeScanner } from '../../hooks/useBarcodeScanner'
+import { findProductByBarcode } from '../../services/barcode.service'
 
 // Definir los tipos para las órdenes
 interface OrderProduct {
@@ -239,19 +241,26 @@ const SupplierOrderEditDialog = ({
     }
   }
 
-  const handleAddProduct = (product: Product) => {
-    // Verificar si el producto ya está en la lista
+  const handleAddProduct = useCallback((product: Product, quantity = 1) => {
+    const currentItems = form.getValues('items') || []
+    const existingIndex = currentItems.findIndex((item) => item.productId === product._id)
+    if (existingIndex >= 0) {
+      form.setValue('items', currentItems.map((item, index) => index === existingIndex
+        ? { ...item, quantity: item.quantity + quantity }
+        : item))
+      return
+    }
+
     if (!products.find((p) => p._id === product._id)) {
       // Agregar el producto a la lista
       setProducts([...products, product])
 
       // Actualizar el formulario
-      const currentItems = form.getValues('items') || []
       form.setValue('items', [
         ...currentItems,
         {
           productId: product._id,
-          quantity: 1
+          quantity
         }
       ])
 
@@ -260,7 +269,30 @@ const SupplierOrderEditDialog = ({
         availableProducts.filter((p) => p._id !== product._id)
       )
     }
-  }
+  }, [availableProducts, form, products])
+
+  const handleScannedProduct = useCallback(async (value: string) => {
+    if (!order?.supplier._id) return
+    try {
+      const result = await findProductByBarcode(value)
+      if (result.product.supplier?._id !== order.supplier._id) {
+        toast.error(`“${result.product.name}” no pertenece al proveedor del pedido`)
+        return
+      }
+      handleAddProduct(result.product, Math.max(1, Number(result.barcode.unitsPerScan || 1)))
+      toast.success(`${result.product.code} agregado al pedido`)
+    } catch (error) {
+      const message = error instanceof AxiosError
+        ? error.response?.data?.details || error.response?.data?.error
+        : 'No se pudo identificar el producto'
+      toast.error(message)
+    }
+  }, [handleAddProduct, order])
+
+  useBarcodeScanner({
+    enabled: isOpen && activeTab === 'products' && Boolean(order?.supplier._id),
+    onScan: handleScannedProduct
+  })
 
   const handleQuantityChange = (index: number, quantity: number) => {
     const items = form.getValues('items')
@@ -430,6 +462,9 @@ const SupplierOrderEditDialog = ({
                   {/* Tabla de productos disponibles con overflow controlado */}
                   {showProductSearch && (
                     <div className="overflow-x-auto">
+                      <p className='mb-2 rounded-md border border-blue-200 bg-blue-50 p-2 text-xs text-blue-900'>
+                        Lector activo: escaneá para agregar el producto; lecturas repetidas aumentan la cantidad.
+                      </p>
                       <SupplierProductsTable
                         products={availableProducts}
                         isLoading={isLoadingProducts}

@@ -7,6 +7,8 @@ interface BarcodeScannerOptions {
   onScan: (value: string) => void | Promise<void>
 }
 
+export const BARCODE_SCAN_EVENT = 'allfashion:barcode-scan'
+
 export const useBarcodeScanner = ({
   enabled = true,
   minLength = 3,
@@ -51,6 +53,9 @@ export const useBarcodeScanner = ({
           event.preventDefault()
           event.stopPropagation()
           event.stopImmediatePropagation()
+          window.dispatchEvent(new CustomEvent(BARCODE_SCAN_EVENT, {
+            detail: { value }
+          }))
           void callbackRef.current(value)
         }
         return

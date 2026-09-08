@@ -15,6 +15,7 @@ interface DataTableToolbarProps {
   isRefreshing: boolean
   onReceiveStock: () => void
   onPrintLabels: (products: Product[]) => void
+  canManageProducts?: boolean
 }
 
 export function DataTableToolbar({
@@ -24,7 +25,8 @@ export function DataTableToolbar({
   onRefresh,
   isRefreshing = false,
   onReceiveStock,
-  onPrintLabels
+  onPrintLabels,
+  canManageProducts = true
 }: DataTableToolbarProps) {
   const isFiltered = table.getState().columnFilters.length > 0
   const selectedRows = table.getSelectedRowModel().rows
@@ -64,15 +66,14 @@ export function DataTableToolbar({
             className='h-8 w-full sm:w-auto'
           >
             <PackagePlus className='mr-2 h-4 w-4' />
-            Ingresar stock
+            Ingreso sin pedido
           </Button>
           <Button
             variant='outline'
             size='sm'
-            disabled={selectedRows.length === 0}
             onClick={() => onPrintLabels(selectedRows.map((row) => row.original))}
             className='h-8 w-full sm:w-auto'
-            title={selectedRows.length === 0 ? 'Seleccioná productos para imprimir' : 'Imprimir etiquetas'}
+            title={selectedRows.length === 0 ? 'Abrir centro de etiquetas' : 'Imprimir etiquetas seleccionadas'}
           >
             <Printer className='mr-2 h-4 w-4' />
             Etiquetas{selectedRows.length > 0 ? ` (${selectedRows.length})` : ''}
@@ -89,16 +90,18 @@ export function DataTableToolbar({
             />
             <span className='sm:hidden'>Actualizar</span>
           </Button>
-          <Button
-            variant='outline'
-            size='sm'
-            className='h-8 w-full sm:w-auto'
-            onClick={onAdd}
-          >
-            <Plus className='h-4 w-4 sm:mr-0 mr-2' />
-            <span className='sm:hidden'>Agregar Producto</span>
-            <span className='hidden sm:inline'>Agregar</span>
-          </Button>
+          {canManageProducts && (
+            <Button
+              variant='outline'
+              size='sm'
+              className='h-8 w-full sm:w-auto'
+              onClick={onAdd}
+            >
+              <Plus className='h-4 w-4 sm:mr-0 mr-2' />
+              <span className='sm:hidden'>Agregar Producto</span>
+              <span className='hidden sm:inline'>Agregar</span>
+            </Button>
+          )}
           <div className='hidden sm:block'>
             <DataTableViewOptions table={table} />
           </div>
@@ -107,7 +110,7 @@ export function DataTableToolbar({
 
       {/* Segunda fila: Eliminar seleccionados y opciones de vista para mobile */}
       <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
-        {selectedRows.length > 0 && (
+        {canManageProducts && selectedRows.length > 0 && (
           <Button
             variant='destructive'
             size='sm'

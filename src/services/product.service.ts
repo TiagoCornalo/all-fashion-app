@@ -1,5 +1,6 @@
 import api from './config/axios'
 import { Product } from '../types/inventory.types'
+import { applyCurrentUsdPrices } from './exchangeRate.service'
 
 export const searchProducts = async (query: string): Promise<Product[]> => {
   const response = await api.get('/products', {
@@ -11,5 +12,6 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
       sortOrder: 'asc'
     }
   })
-  return Array.isArray(response.data.data) ? response.data.data : []
+  const products = Array.isArray(response.data.data) ? response.data.data : []
+  return applyCurrentUsdPrices(products)
 }

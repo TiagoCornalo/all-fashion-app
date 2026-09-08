@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -51,6 +51,7 @@ interface DataTableProps {
   onRefresh: () => Promise<void>
   initialPage: number
   initialPageSize: number
+  canManageProducts?: boolean
 }
 
 export function DataTable({
@@ -63,7 +64,8 @@ export function DataTable({
   onSearchChange,
   onRefresh,
   initialPage,
-  initialPageSize
+  initialPageSize,
+  canManageProducts = true
 }: DataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -79,6 +81,12 @@ export function DataTable({
   const [isBarcodeManagerOpen, setIsBarcodeManagerOpen] = useState(false)
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([])
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const onFilterChangeRef = useRef(onFilterChange)
+  const filtersMountedRef = useRef(false)
+
+  useEffect(() => {
+    onFilterChangeRef.current = onFilterChange
+  }, [onFilterChange])
 
   const tableColumns = useMemo(
     () =>
@@ -106,6 +114,7 @@ export function DataTable({
   const table = useReactTable({
     data,
     columns: tableColumns,
+    getRowId: (row) => row._id,
     pageCount: pageCount,
     state: {
       pagination: {
@@ -132,14 +141,6 @@ export function DataTable({
       const newFilters =
         typeof updater === 'function' ? updater(columnFilters) : updater
       setColumnFilters(newFilters)
-      const filterObject = newFilters.reduce(
-        (acc, filter) => ({
-          ...acc,
-          [filter.id]: filter.value as string
-        }),
-        {} as Record<string, string>
-      )
-      onFilterChange(filterObject)
     },
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
@@ -156,6 +157,28 @@ export function DataTable({
       onPaginationChange(newState.pageIndex + 1, newState.pageSize)
     }
   })
+
+  // El lector escribe carácter por carácter antes de enviar Enter. Esperar a
+  // que termine evita consultar y repintar la tabla por cada prefijo leído.
+  useEffect(() => {
+    if (!filtersMountedRef.current) {
+      filtersMountedRef.current = true
+      return
+    }
+
+    const timeout = window.setTimeout(() => {
+      const filterObject = columnFilters.reduce(
+        (acc, filter) => ({
+          ...acc,
+          [filter.id]: filter.value as string
+        }),
+        {} as Record<string, string>
+      )
+      onFilterChangeRef.current(filterObject)
+    }, 450)
+
+    return () => window.clearTimeout(timeout)
+  }, [columnFilters])
 
   useBarcodeScanner({
     enabled: !isReceiptOpen && !isLabelPrintOpen && !isBarcodeManagerOpen && !isAddOpen && !isEditOpen && !isDeleteOpen && !isBulkDeleteOpen,
@@ -202,6 +225,7 @@ export function DataTable({
             setSelectedProducts(products)
             setIsLabelPrintOpen(true)
           }}
+          canManageProducts={canManageProducts}
         />
         <div className='rounded-md border'>
           <Table>
@@ -280,7 +304,16 @@ export function DataTable({
         onSuccess={handleBulkDeleteSuccess}
       />
 
-      <AddProductDialog isOpen={isAddOpen} onOpenChange={setIsAddOpen} />
+      {canManageProducts && (
+        <AddProductDialog
+          isOpen={isAddOpen}
+          onOpenChange={setIsAddOpen}
+          onCreated={(product) => {
+            setSelectedProducts([product])
+            setIsLabelPrintOpen(true)
+          }}
+        />
+      )}
 
       <StockReceiptDialog
         open={isReceiptOpen}

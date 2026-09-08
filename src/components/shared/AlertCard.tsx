@@ -8,17 +8,13 @@ import {
 import { Card, CardContent } from '..'
 import { Button } from '../ui/button'
 import { formatDateTime } from '../../utils'
+import { useState } from 'react'
 
 interface AlertCardProps {
   alertId: string
   type: 'NO_STOCK' | 'BELOW_MINIMUM' | 'NEAR_MINIMUM'
   message: string
-  onResolve: (
-    id: string,
-    note: string,
-    supplierId: string,
-    stockType: string
-  ) => void
+  onResolve: (id: string, note: string) => void | Promise<void>
   createdAt: string
   product?: {
     _id: string
@@ -34,9 +30,10 @@ const AlertCard = ({
   type,
   message,
   onResolve,
-  createdAt,
-  product
+  createdAt
 }: AlertCardProps) => {
+  const [isClosing, setIsClosing] = useState(false)
+
   const getColor = () => {
     switch (type) {
       case 'NO_STOCK':
@@ -76,14 +73,6 @@ const AlertCard = ({
     }
   }
 
-  const handleResolve = (
-    alertId: string,
-    supplierId: string | undefined,
-    stockType: string
-  ) => {
-    onResolve(alertId, '', supplierId || '', stockType)
-  }
-
   const createdAtLabel = formatDateTime(createdAt) || 'Fecha no disponible'
 
   return (
@@ -101,10 +90,18 @@ const AlertCard = ({
         </div>
         <Button
           variant='ghost'
-          onClick={() => handleResolve(alertId, product?.supplier, type)}
+          disabled={isClosing}
+          onClick={async () => {
+            setIsClosing(true)
+            try {
+              await onResolve(alertId, 'Cerrada manualmente.')
+            } finally {
+              setIsClosing(false)
+            }
+          }}
           className='hover:bg-white/20'
         >
-          Resolver
+          {isClosing ? 'Cerrando...' : 'Cerrar'}
         </Button>
       </CardContent>
     </Card>

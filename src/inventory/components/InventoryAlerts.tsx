@@ -1,17 +1,33 @@
 import { useEffect, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { AlertCard } from '../../components'
-import { getAlerts, resolveAlert } from '../../services/alerts'
+import {
+  getAlerts,
+  resolveAlert,
+  resolveAllAlerts
+} from '../../services/alerts'
 import { Loader } from '../../components'
 import { Alert } from '../../types/alert.types'
 import { TriangularFlag } from '../../assets'
-import { useNavigate } from 'react-router-dom'
 import { authService } from '../../services/auth.service'
+import { Button } from '../../components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '../../components/ui/alert-dialog'
+import { toast } from 'react-toastify'
 
 const InventoryAlerts = () => {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()
+  const [closingAll, setClosingAll] = useState(false)
 
   useEffect(() => {
     let socket: Socket | undefined
@@ -85,9 +101,7 @@ const InventoryAlerts = () => {
 
   const handleResolveAlert = async (
     alertId: string,
-    note: string,
-    supplierId: string,
-    stockType: string
+    note: string
   ) => {
     try {
       await resolveAlert(alertId, note)
@@ -95,12 +109,42 @@ const InventoryAlerts = () => {
       setAlerts((prevAlerts) =>
         prevAlerts.filter((alert) => alert._id !== alertId)
       )
-
-      if (supplierId && stockType.includes('NO_STOCK')) {
-        navigate(`/suppliers/${supplierId}?tab=orders`)
-      }
+      toast.success('Alerta cerrada')
     } catch (error) {
       console.error('Error resolving alert:', error)
+      toast.error('No se pudo cerrar la alerta')
+    }
+  }
+
+  const handleResolveAll = async () => {
+    setClosingAll(true)
+    try {
+      const result = await resolveAllAlerts()
+      const resolvedIds = new Set(
+        (Array.isArray(result.alertIds) ? result.alertIds : []).map(String)
+      )
+      setAlerts((current) =>
+        current.filter((alert) => !resolvedIds.has(String(alert._id)))
+      )
+
+      // Reconcilia con el servidor por si entró una alerta nueva mientras se
+      // estaba procesando el cierre masivo.
+      try {
+        const response = await getAlerts('PENDING')
+        setAlerts(Array.isArray(response.data) ? response.data : [])
+      } catch (refreshError) {
+        console.error('Error refreshing alerts after closing all:', refreshError)
+      }
+      toast.success(
+        result.resolvedCount === 1
+          ? 'Se cerró 1 alerta'
+          : `Se cerraron ${result.resolvedCount} alertas`
+      )
+    } catch (error) {
+      console.error('Error resolving all alerts:', error)
+      toast.error('No se pudieron cerrar las alertas')
+    } finally {
+      setClosingAll(false)
     }
   }
 
@@ -114,12 +158,38 @@ const InventoryAlerts = () => {
 
   return (
     <div className='space-y-4 mb-4 sm:mb-6'>
-      <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4'>
-        {/* @ts-ignore */}
-        <TriangularFlag className='h-5 w-5 sm:h-6 sm:w-6 mx-auto sm:mx-0' />
-        <h2 className='text-xl sm:text-2xl font-bold text-center sm:text-left'>
-          Alertas de Inventario
-        </h2>
+      <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+        <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4'>
+          {/* @ts-ignore */}
+          <TriangularFlag className='h-5 w-5 sm:h-6 sm:w-6 mx-auto sm:mx-0' />
+          <h2 className='text-xl sm:text-2xl font-bold text-center sm:text-left'>
+            Alertas de Inventario
+          </h2>
+        </div>
+        {alerts.length > 0 && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant='outline' size='sm' disabled={closingAll}>
+                Cerrar todas ({alerts.length})
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Cerrar todas las alertas?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Se quitarán todas las alertas pendientes de la lista. Si el
+                  stock vuelve a cambiar y sigue bajo, se generará una nueva.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleResolveAll}>
+                  Cerrar todas
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
       {alerts.length === 0 ? (
         <p className='text-center sm:text-left text-muted-foreground'>

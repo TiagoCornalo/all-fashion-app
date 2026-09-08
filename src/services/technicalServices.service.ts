@@ -1,4 +1,5 @@
 import api from './config/axios'
+import { applyCurrentUsdPrices } from './exchangeRate.service'
 
 export type TechnicalServiceStatus =
   | 'RECEIVED'
@@ -141,6 +142,8 @@ export interface ProductSearchResult {
   code: string
   stock: number
   price: number
+  priceUSD?: number | null
+  usdRateType?: 'blue' | 'oficial' | 'mep' | 'tarjeta' | null
 }
 
 export const getTechnicalServices = async (params: Record<string, unknown> = {}) => {
@@ -196,5 +199,5 @@ export const registerTechnicalServicePayment = async (
 
 export const searchServiceProducts = async (search: string): Promise<ProductSearchResult[]> => {
   const response = await api.get('/products', { params: { search, pageSize: 12 } })
-  return response.data.data || []
+  return applyCurrentUsdPrices(response.data.data || [])
 }

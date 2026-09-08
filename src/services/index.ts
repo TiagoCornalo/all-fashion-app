@@ -1,5 +1,6 @@
 import { TableFilters, Product, CreateProduct } from '../types/inventory.types'
 import api from './config/axios'
+import { applyCurrentUsdPrices } from './exchangeRate.service'
 
 /**
  * Obtiene los productos con paginación y filtros
@@ -22,7 +23,10 @@ export const fetchProducts = async (filters: TableFilters) => {
   })
 
   const response = await api.get(`/products?${queryParams}`)
-  return response.data
+  return {
+    ...response.data,
+    data: await applyCurrentUsdPrices(response.data.data || [])
+  }
 }
 
 export const addProduct = async (product: CreateProduct) => {
@@ -66,6 +70,8 @@ export type BulkImportReport = {
   productsUSDBlue?: number
   productsUSDOfficial?: number
   productsWithoutSupplier?: number
+  barcodesImported?: number
+  barcodeConflicts?: number
   suppliersInExcel: number
   suppliersCreated: number
   suppliersMatched: number
@@ -136,5 +142,8 @@ export const findProductsBySupplier = async (
   const response = await api.get(
     `/products/supplier/${supplierId}?${queryParams}`
   )
-  return response.data
+  return {
+    ...response.data,
+    data: await applyCurrentUsdPrices(response.data.data || [])
+  }
 }

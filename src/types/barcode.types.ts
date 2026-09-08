@@ -29,6 +29,7 @@ export interface BarcodeLookupResponse {
 export interface PreparedProductLabel {
   product: Product
   barcode: ProductBarcode
+  finalPriceArs?: number
 }
 
 export interface InventoryReceiptItemInput {

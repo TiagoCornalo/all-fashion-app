@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSaleStore } from '../../../stores/saleStore'
 import {
   Table,
@@ -15,12 +15,12 @@ import { Product } from '../../../types/inventory.types'
 import { SaleItem } from '../../../types/sale.types'
 import { Search, Plus, Minus, Trash, ScanBarcode } from 'lucide-react'
 import { useDebounce } from '../../../hooks/useDebounce'
-import api from '../../../services/config/axios'
 import { PromotionItemModal } from '.'
 import { toast } from 'react-toastify'
 import { useBarcodeScanner } from '../../../hooks/useBarcodeScanner'
 import { findProductByBarcode } from '../../../services/barcode.service'
 import { AxiosError } from 'axios'
+import { searchProducts } from '../../../services/product.service'
 
 const formatArs = (value?: number | null) =>
   Number(value || 0).toLocaleString('es-AR', {
@@ -49,7 +49,8 @@ const ProductSelector = () => {
   const [search, setSearch] = useState('')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
-  const debouncedSearch = useDebounce(search, 300)
+  const debouncedSearch = useDebounce(search, 450)
+  const latestSearchRequest = useRef(0)
 
   const {
     items,
@@ -67,33 +68,36 @@ const ProductSelector = () => {
   )
 
   useEffect(() => {
+    let active = true
+    const requestId = ++latestSearchRequest.current
+
     const fetchProducts = async () => {
       if (!debouncedSearch) {
-        setProducts([])
+        if (active) {
+          setProducts([])
+          setLoading(false)
+        }
         return
       }
 
       try {
         setLoading(true)
-        const response = await api.get('/products', {
-          params: {
-            search: debouncedSearch,
-            page: 1,
-            pageSize: 100,
-            sortBy: 'name',
-            sortOrder: 'asc'
-          }
-        })
-        setProducts(Array.isArray(response.data.data) ? response.data.data : [])
+        const foundProducts = await searchProducts(debouncedSearch)
+        if (active && requestId === latestSearchRequest.current) {
+          setProducts(foundProducts)
+        }
       } catch (error) {
         console.error('Error buscando productos:', error)
-        setProducts([])
+        if (active && requestId === latestSearchRequest.current) setProducts([])
       } finally {
-        setLoading(false)
+        if (active && requestId === latestSearchRequest.current) setLoading(false)
       }
     }
 
-    fetchProducts()
+    void fetchProducts()
+    return () => {
+      active = false
+    }
   }, [debouncedSearch])
 
   const handleAddProduct = (product: Product, requestedQuantity = 1) => {
@@ -128,13 +132,24 @@ const ProductSelector = () => {
       addItem(newItem)
     }
 
+    latestSearchRequest.current += 1
     setSearch('')
     setProducts([])
+    setLoading(false)
   }
 
   const handleScannedCode = async (value: string) => {
+    const scannedValue = value.trim()
+    if (!scannedValue) return
+
+    // La lectura exacta tiene prioridad sobre cualquier búsqueda parcial que
+    // haya empezado mientras el lector estaba escribiendo el código.
+    latestSearchRequest.current += 1
+    setSearch('')
+    setProducts([])
+    setLoading(false)
     try {
-      const result = await findProductByBarcode(value)
+      const result = await findProductByBarcode(scannedValue)
       const units = Math.max(1, Number(result.barcode.unitsPerScan || 1))
       handleAddProduct(result.product, units)
     } catch (error) {

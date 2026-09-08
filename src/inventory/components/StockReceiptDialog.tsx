@@ -164,7 +164,8 @@ export function StockReceiptDialog({
             Ingreso de mercadería
           </DialogTitle>
           <DialogDescription>
-            El stock cambia recién cuando confirmás el ingreso completo.
+            Para ingresos sin pedido. Si la mercadería corresponde a un pedido,
+            verificá ese pedido: al aprobarlo el stock se actualiza automáticamente.
           </DialogDescription>
         </DialogHeader>
 

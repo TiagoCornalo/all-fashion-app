@@ -138,7 +138,7 @@ export const NotificationsProvider = ({
         toast(
           <div onClick={() => startTransition(() => navigate('/inventory'))} className='cursor-pointer'>
             <div className='flex items-center gap-2 mb-2'>{config.icon}</div>
-            <p className='font-bold'>{alert.product.name}</p>
+            <p className='font-bold'>{alert.product?.name || 'Producto de inventario'}</p>
             <p>{alert.message}</p>
           </div>,
           {

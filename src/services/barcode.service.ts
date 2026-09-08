@@ -5,6 +5,7 @@ import {
   PreparedProductLabel,
   ProductBarcode
 } from '../types/barcode.types'
+import { applyCurrentUsdPrices } from './exchangeRate.service'
 
 export const findProductByBarcode = async (
   value: string
@@ -12,17 +13,26 @@ export const findProductByBarcode = async (
   const response = await api.get<BarcodeLookupResponse>(
     `/products/scan/${encodeURIComponent(value.trim())}`
   )
-  return response.data
+  const [product] = await applyCurrentUsdPrices([response.data.product])
+  return { ...response.data, product }
 }
 
 export const prepareProductLabels = async (
-  productIds: string[]
+  productIds: string[],
+  preference: 'PRIMARY_OR_INTERNAL' | 'INTERNAL' = 'PRIMARY_OR_INTERNAL'
 ): Promise<PreparedProductLabel[]> => {
   const response = await api.post<{ data: PreparedProductLabel[] }>(
     '/products/barcodes/prepare',
-    { productIds }
+    { productIds, preference }
   )
-  return response.data.data
+  const labels = response.data.data
+  const products = await applyCurrentUsdPrices(
+    labels.map((label) => label.product)
+  )
+  return labels.map((label, index) => ({
+    ...label,
+    product: products[index]
+  }))
 }
 
 export const getProductBarcodes = async (

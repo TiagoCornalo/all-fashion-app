@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
@@ -31,6 +31,8 @@ import { createOrder } from '../../services/order'
 import { Product } from '../../types/inventory.types'
 import { Trash } from 'lucide-react'
 import SupplierProductsTable from './SupplierProductsTable'
+import { useBarcodeScanner } from '../../hooks/useBarcodeScanner'
+import { findProductByBarcode } from '../../services/barcode.service'
 
 // Esquema de validación para el formulario
 const orderFormSchema = z.object({
@@ -122,19 +124,41 @@ const SuppliersCreateOrder = ({
     form.setValue('items', [])
   }
 
-  const handleAddProduct = (product: Product) => {
-    if (!selectedProducts.find((p) => p._id === product._id)) {
-      setSelectedProducts([...selectedProducts, product])
-      const currentItems = form.getValues('items') || []
-      form.setValue('items', [
-        ...currentItems,
-        {
-          productId: product._id,
-          quantity: 1
-        }
-      ])
+  const handleAddProduct = useCallback((product: Product, quantity = 1) => {
+    setSelectedProducts((current) => current.some((item) => item._id === product._id)
+      ? current
+      : [...current, product])
+    const currentItems = form.getValues('items') || []
+    const existing = currentItems.find((item) => item.productId === product._id)
+    form.setValue('items', existing
+      ? currentItems.map((item) => item.productId === product._id
+          ? { ...item, quantity: item.quantity + quantity }
+          : item)
+      : [...currentItems, { productId: product._id, quantity }])
+  }, [form])
+
+  const handleScannedProduct = useCallback(async (value: string) => {
+    if (!selectedSupplierId) return
+    try {
+      const result = await findProductByBarcode(value)
+      if (result.product.supplier?._id !== selectedSupplierId) {
+        toast.error(`“${result.product.name}” no pertenece al proveedor seleccionado`)
+        return
+      }
+      handleAddProduct(result.product, Math.max(1, Number(result.barcode.unitsPerScan || 1)))
+      toast.success(`${result.product.code} agregado al pedido`)
+    } catch (error) {
+      const message = error instanceof AxiosError
+        ? error.response?.data?.details || error.response?.data?.error
+        : 'No se pudo identificar el producto'
+      toast.error(message)
     }
-  }
+  }, [handleAddProduct, selectedSupplierId])
+
+  useBarcodeScanner({
+    enabled: isOpen && activeTab === 'products' && Boolean(selectedSupplierId),
+    onScan: handleScannedProduct
+  })
 
   const handleQuantityChange = (productId: string, quantity: number) => {
     const items = form.getValues('items')
@@ -244,6 +268,9 @@ const SuppliersCreateOrder = ({
                   </TabsList>
 
                   <TabsContent value='products' className='mt-4 space-y-3 sm:space-y-4'>
+                    <p className='rounded-md border border-blue-200 bg-blue-50 p-2 text-xs text-blue-900'>
+                      Lector activo: escaneá un producto para agregarlo; lecturas repetidas aumentan la cantidad.
+                    </p>
                     <div className="overflow-x-auto">
                       <SupplierProductsTable
                         products={products}

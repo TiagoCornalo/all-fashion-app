@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronsUpDown, Check, ScanBarcode } from 'lucide-react'
 import { Button } from './button'
 import {
@@ -8,7 +8,10 @@ import {
   DropdownMenuTrigger
 } from './dropdown-menu'
 import { Input } from './input'
-import { useBarcodeScanner } from '../../hooks/useBarcodeScanner'
+import {
+  BARCODE_SCAN_EVENT,
+  useBarcodeScanner
+} from '../../hooks/useBarcodeScanner'
 import { findProductByBarcode } from '../../services/barcode.service'
 import { toast } from 'react-toastify'
 import { AxiosError } from 'axios'
@@ -21,7 +24,6 @@ interface Product {
   price?: number
   supplier?: unknown
   description?: string
-  [key: string]: unknown
 }
 
 interface ComboboxProductsProps {
@@ -41,6 +43,21 @@ export function ComboboxProducts({
 }: ComboboxProductsProps) {
   const [open, setOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
+  const onSearchRef = useRef(onSearch)
+
+  useEffect(() => {
+    onSearchRef.current = onSearch
+  }, [onSearch])
+
+  useEffect(() => {
+    if (!open) return
+    const clearPartialScannerInput = () => {
+      setInputValue('')
+      onSearchRef.current?.('')
+    }
+    window.addEventListener(BARCODE_SCAN_EVENT, clearPartialScannerInput)
+    return () => window.removeEventListener(BARCODE_SCAN_EVENT, clearPartialScannerInput)
+  }, [open])
 
   // Asegurar que tenemos un array seguro de productos
   const safeProducts = useMemo(() => {
@@ -53,14 +70,14 @@ export function ComboboxProducts({
   }, [safeProducts, value])
 
   useEffect(() => {
-    if (!open || !onSearch) return
+    if (!open || !onSearchRef.current) return
 
     const timeout = window.setTimeout(() => {
-      onSearch(inputValue.trim())
-    }, 300)
+      onSearchRef.current?.(inputValue.trim())
+    }, 450)
 
     return () => window.clearTimeout(timeout)
-  }, [inputValue, onSearch, open])
+  }, [inputValue, open])
 
   useBarcodeScanner({
     enabled: open,

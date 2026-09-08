@@ -17,6 +17,7 @@ export const columns = (handlers: {
   onDelete: (product: Product) => void
   onBarcodes: (product: Product) => void
   onPrintLabel: (product: Product) => void
+  canManageProducts?: boolean
 }): ColumnDef<Product>[] => [
   {
     id: 'select',
@@ -133,6 +134,7 @@ export const columns = (handlers: {
         onDelete={handlers.onDelete}
         onBarcodes={handlers.onBarcodes}
         onPrintLabel={handlers.onPrintLabel}
+        canManageProducts={handlers.canManageProducts}
       />
     )
   }

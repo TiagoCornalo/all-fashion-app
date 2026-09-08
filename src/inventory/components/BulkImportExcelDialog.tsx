@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { AxiosError } from 'axios'
 import {
   Dialog,
   DialogContent,
@@ -53,11 +54,12 @@ const BulkImportExcelDialog = ({ onCompleted }: Props) => {
       })
       setReport(result)
       if (!dryRun) onCompleted?.()
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiError = err instanceof AxiosError ? err.response?.data : undefined
       setError(
-        err?.response?.data?.details ||
-          err?.response?.data?.error ||
-          err?.message ||
+        apiError?.details ||
+          apiError?.error ||
+          (err instanceof Error ? err.message : '') ||
           'Error al importar'
       )
     } finally {
@@ -169,6 +171,14 @@ const BulkImportExcelDialog = ({ onCompleted }: Props) => {
                 <Stat
                   label='Sólo con precio en pesos'
                   value={report.productsARSOnly}
+                />
+                <Stat
+                  label={report.dryRun ? 'Códigos detectados' : 'Códigos importados'}
+                  value={report.barcodesImported ?? 0}
+                />
+                <Stat
+                  label='Conflictos de códigos'
+                  value={report.barcodeConflicts ?? 0}
                 />
                 <Stat
                   label='Proveedores en el archivo'

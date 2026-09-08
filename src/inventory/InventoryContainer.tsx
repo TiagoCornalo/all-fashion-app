@@ -1,6 +1,6 @@
-import LayoutAdmin from '../layout/LayoutAdmin'
+import LayoutMultiRole from '../layout/LayoutMultiRole'
 import { InventoryProvider } from './context/InventoryContext'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Product,
   PaginatedResponse,
@@ -21,6 +21,7 @@ import { Package } from '../assets'
 
 const InventoryContainer = () => {
   const navigate = useNavigate()
+  const canManageProducts = authService.getCurrentUser()?.role === 'ADMIN'
   const [filters, setFilters] = useState<TableFilters>({
     page: 1,
     pageSize: 10
@@ -35,6 +36,7 @@ const InventoryContainer = () => {
       totalPages: 0
     }
   })
+  const latestProductsRequest = useRef(0)
 
   const fetchProductsData = async (tableFilters: TableFilters) => {
     if (!authService.isAuthenticated()) {
@@ -42,9 +44,12 @@ const InventoryContainer = () => {
       return
     }
 
+    const requestId = ++latestProductsRequest.current
     try {
       const data = await fetchProducts(tableFilters)
-      setTableData(data)
+      if (requestId === latestProductsRequest.current) {
+        setTableData(data)
+      }
     } catch (error) {
       console.error('Error fetching products:', error)
     }
@@ -66,7 +71,7 @@ const InventoryContainer = () => {
   }
 
   return (
-    <LayoutAdmin>
+    <LayoutMultiRole allowedRoles={['ADMIN', 'MANAGER']}>
       <InventoryProvider onRefresh={handleRefresh}>
         <div className='space-y-4 p-2 sm:p-4'>
           <section className='w-full'>
@@ -82,16 +87,18 @@ const InventoryContainer = () => {
               <div className='grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:ml-auto lg:w-auto lg:grid-cols-[220px_220px_auto] lg:items-center'>
                 <ExchangeRateBadge type='blue' />
                 <ExchangeRateBadge type='oficial' />
-                <div className='sm:col-span-2 lg:col-span-1'>
-                  <BulkImportExcelDialog onCompleted={handleRefresh} />
-                </div>
+                {canManageProducts && (
+                  <div className='sm:col-span-2 lg:col-span-1'>
+                    <BulkImportExcelDialog onCompleted={handleRefresh} />
+                  </div>
+                )}
               </div>
             </div>
           </section>
 
           <section className='w-full'>
             <DataTable
-              columns={({ onEdit, onDelete }) => columns({ onEdit, onDelete })}
+              columns={(handlers) => columns({ ...handlers, canManageProducts })}
               data={tableData.data}
               pageCount={tableData.meta.totalPages}
               onPaginationChange={(page: number, pageSize: number) =>
@@ -111,11 +118,12 @@ const InventoryContainer = () => {
               initialPage={tableData.meta.page - 1}
               initialPageSize={tableData.meta.pageSize}
               onRefresh={handleRefresh}
+              canManageProducts={canManageProducts}
             />
           </section>
         </div>
       </InventoryProvider>
-    </LayoutAdmin>
+    </LayoutMultiRole>
   )
 }
 
