@@ -14,8 +14,10 @@ import SuppliersOrders from './components/SuppliersOrders'
 import SuppliersEditDialog from './components/SuppliersEditDialog'
 import DeleteSupplierDialog from './components/DeleteSupplierDialog'
 import { Supplier } from '../types/inventory.types'
+import SupplierPricesDialog from './components/SupplierPricesDialog'
 
 const SuppliersContainer = () => {
+  const [pricingSupplier, setPricingSupplier] = useState<Supplier | null>(null)
   const [pagination, setPagination] = useState({
     page: 1,
     pageSize: 10
@@ -154,6 +156,7 @@ const SuppliersContainer = () => {
               initialPageSize={pagination.pageSize}
               onEdit={handleEditSupplier}
               onDelete={handleDeleteSupplier}
+              onAdjustPrices={setPricingSupplier}
             />
           </TabsContent>
 
@@ -163,6 +166,7 @@ const SuppliersContainer = () => {
         </Tabs>
       </section>
 
+      {pricingSupplier && <SupplierPricesDialog supplier={pricingSupplier} onClose={() => setPricingSupplier(null)} />}
       <SuppliersCreateDialog
         isOpen={isOpenAddSupplier}
         onOpenChange={setIsOpenAddSupplier}

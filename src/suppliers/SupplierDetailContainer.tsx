@@ -13,6 +13,9 @@ import { Product } from '../types/inventory.types'
 import DeleteProductDialog from '../inventory/components/inventory-table/components/DeleteProductDialog'
 import SupplierOrderEditDialog from './components/SupplierOrderEditDialog'
 import DeleteOrderDialog from './components/DeleteOrderDialog'
+import SupplierPricesDialog from './components/SupplierPricesDialog'
+import { Button } from '../components'
+import { useAuth } from '../context/auth/useAuth'
 
 interface OrderProduct {
   _id: string
@@ -49,6 +52,8 @@ interface Order {
 }
 
 const SupplierDetailContainer = () => {
+  const { user } = useAuth()
+  const [pricesOpen, setPricesOpen] = useState(false)
   const { id } = useParams<{ id: string }>()
   const location = useLocation()
   const queryClient = useQueryClient()
@@ -155,6 +160,8 @@ const SupplierDetailContainer = () => {
           <h1 className='text-xl sm:text-2xl font-bold text-center sm:text-left'>{supplier.name}</h1>
         </div>
 
+        {user?.role === 'ADMIN' && <Button className='mb-4' onClick={() => setPricesOpen(true)}>Modificar costos base</Button>}
+        {pricesOpen && user?.role === 'ADMIN' && <SupplierPricesDialog supplier={supplier} onClose={() => setPricesOpen(false)} />}
         {/* Información del proveedor */}
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6'>
           <div className='bg-white p-3 sm:p-4 rounded-lg shadow'>

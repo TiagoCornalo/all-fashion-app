@@ -32,6 +32,7 @@ interface SuppliersTableProps {
   initialPageSize: number
   onEdit?: (supplier: Supplier) => void
   onDelete?: (supplier: Supplier) => void
+  onAdjustPrices?: (supplier: Supplier) => void
 }
 
 const SuppliersTable = ({
@@ -46,7 +47,8 @@ const SuppliersTable = ({
   initialPage,
   initialPageSize,
   onEdit,
-  onDelete
+  onDelete,
+  onAdjustPrices
 }: SuppliersTableProps) => {
   const columns = useMemo<ColumnDef<Supplier>[]>(
     () => [
@@ -130,7 +132,7 @@ const SuppliersTable = ({
                 </Button>
               </Link>
 
-              {(onEdit || onDelete) && (
+              {(onEdit || onDelete || onAdjustPrices) && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant='outline' size='sm'>
@@ -138,6 +140,11 @@ const SuppliersTable = ({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align='end'>
+                    {onAdjustPrices && (
+                      <DropdownMenuItem onClick={() => onAdjustPrices(row.original)}>
+                        Modificar costos base
+                      </DropdownMenuItem>
+                    )}
                     {onEdit && (
                       <DropdownMenuItem onClick={() => onEdit(row.original)}>
                         <Pencil className='mr-2 h-4 w-4' />
@@ -161,7 +168,7 @@ const SuppliersTable = ({
         }
       }
     ],
-    [onEdit, onDelete]
+    [onEdit, onDelete, onAdjustPrices]
   )
 
   return (

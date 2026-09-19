@@ -1,6 +1,33 @@
 import api from './config/axios'
 import { PaginatedResponse, Supplier } from '../types/inventory.types'
 
+export interface SupplierPriceAdjustment {
+  operation: 'increase' | 'decrease'
+  percentage: number
+  useSalePriceForMissingCosts?: boolean
+  updateSalePrices?: boolean
+}
+
+export interface SupplierPricePreview {
+  replacements: { name: string; code: string; oldPrice: number; newPrice: number; currency: 'ARS' | 'USD'; fromSalePrice: boolean }[]
+  total: number
+  excluded: { _id: string; name: string; code: string; reason: string }[]
+  supplier: { _id: string; name: string }
+  count: number
+  revision: string
+  examples: { name: string; code: string; oldPrice: number; newPrice: number; currency: 'ARS' | 'USD'; sale?: { oldPrice: number; newPrice: number; currency: 'ARS' | 'USD'; conversion?: { rateType: string; enabled: boolean; rateValue: number; surchargeArs: number; oldArs: number; newArs: number } } }[]
+}
+
+export const previewSupplierPrices = async (id: string, input: SupplierPriceAdjustment): Promise<SupplierPricePreview> => {
+  const response = await api.post(`/suppliers/${id}/prices/preview`, input)
+  return response.data
+}
+
+export const updateSupplierPrices = async (id: string, input: SupplierPriceAdjustment & { revision: string; skipInvalidCosts?: boolean }): Promise<{ count: number }> => {
+  const response = await api.post(`/suppliers/${id}/prices`, input)
+  return response.data
+}
+
 interface GetSuppliersParams {
   search?: string
   page?: number
