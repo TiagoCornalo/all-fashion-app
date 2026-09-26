@@ -23,6 +23,24 @@ const customerLabel: PreparedProductLabel = {
   barcode: { ...label.barcode, value: 'FIN0AA285A4C2B3' }
 }
 
+it.each([false, true])('leaves side clearance without thinning compact internal bars (price: %s)', includePrice => {
+  const compact = { ...customerLabel, barcode: { ...customerLabel.barcode, value: '291234567890' } }
+  const layout = getLabelLayout(compact, includePrice)
+  expect(layout.barcodeWidth).toBe(25.25)
+  expect(layout.moduleWidth).toBe(0.25)
+  expect(layout.barcodeHeight).toBeGreaterThanOrEqual(15)
+  // Even with a 7 mm horizontal shift, both required quiet zones fit on the label.
+  for (const shift of [-7, 0, 7]) {
+    expect(layout.barcodeX + shift).toBeGreaterThanOrEqual(layout.moduleWidth * 10)
+    expect(50 - layout.barcodeX - layout.barcodeWidth - shift).toBeGreaterThanOrEqual(layout.moduleWidth * 10)
+  }
+  expect(layout.bars.every(bar => Number.isInteger(bar.x * 8) && Number.isInteger(bar.width * 8))).toBe(true)
+  const pdf = createLabelPdf([compact], { p1: 1 }, includePrice)
+  const content = (pdf.internal.pages as unknown as string[][])[1].join('\n')
+  expect(content).toContain('(291234567890)')
+  expect(content).toContain('(Código 103672)')
+})
+
 it.each([false, true])('enlarges the reported barcode without changing its center or page size (price: %s)', includePrice => {
   const layout = getLabelLayout(customerLabel, includePrice)
   expect([layout.width, layout.height]).toEqual([50, 30])
@@ -56,6 +74,7 @@ it('writes vector bars and the unchanged barcode as text on every 50x30 page', (
     const content = (pdf.internal.pages as unknown as string[][])[page].join('\n')
     expect(content).toContain('(FIN0AA285A4C2B3)')
     expect(content).toContain(' re\nf')
+    expect(content.match(/\nf\n/g)).toHaveLength(1)
     expect(content).not.toContain('/I0 Do')
   }
 })

@@ -8,6 +8,7 @@ const MAX_BARCODE_WIDTH_MM = 44
 const CONTENT_OFFSET_X_MM = 0.5
 const MM_PER_POINT = 25.4 / 72
 const QUIET_ZONE_MODULES = 10
+const THERMAL_MODULE_WIDTH_MM = 2 / 8 // Two dots on an 8 dots/mm thermal printer.
 
 const newLabelDocument = () => new jsPDF({
   orientation: 'landscape',
@@ -43,7 +44,10 @@ export function getLabelLayout(label: PreparedProductLabel, includePrice: boolea
   // Reserve at least 10 modules of white space on either side, including for
   // short codes whose bars would otherwise become too wide for the quiet zones.
   const availableWidth = 2 * Math.min(centerX, LABEL_WIDTH_MM - centerX)
-  const moduleWidth = Math.min(MAX_BARCODE_WIDTH_MM / modules.length, availableWidth / (modules.length + QUIET_ZONE_MODULES * 2))
+  const compactInternal = label.barcode.origin === 'INTERNAL' && /^29\d{10}$/.test(label.barcode.value)
+  const moduleWidth = compactInternal
+    ? THERMAL_MODULE_WIDTH_MM
+    : Math.min(MAX_BARCODE_WIDTH_MM / modules.length, availableWidth / (modules.length + QUIET_ZONE_MODULES * 2))
   const barcodeWidth = modules.length * moduleWidth
   const barcodeX = centerX - barcodeWidth / 2
   const barcodeY = codeY + 1.2
@@ -114,12 +118,13 @@ export function createLabelPdf(labels: PreparedProductLabel[], copies: Record<st
       pdf.setFontSize(5.5)
       pdf.text(`Código ${label.product.code}`, layout.centerX, layout.codeY, { align: 'center' })
 
-      // Filled PDF rectangles preserve the encoded bar/space ratios without
-      // resampling a small PNG. Width and height are independent physical sizes.
+      // Fill the bars as one compound path. PDFium rounds individually filled
+      // rectangles differently at thermal resolutions, distorting narrow spaces.
       pdf.setFillColor(0, 0, 0)
       for (const bar of layout.bars) {
-        pdf.rect(bar.x, layout.barcodeY, bar.width, layout.barcodeHeight, 'F')
+        pdf.rect(bar.x, layout.barcodeY, bar.width, layout.barcodeHeight, null)
       }
+      pdf.fill()
       pdf.setFontSize(layout.barcodeTextSize)
       pdf.text(label.barcode.value, layout.centerX, layout.barcodeTextY, { align: 'center' })
       if (includePrice) {
