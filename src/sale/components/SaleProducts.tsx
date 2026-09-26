@@ -94,7 +94,15 @@ const SaleProducts = ({ items, itemPromotions }: SaleProductsProps) => {
                   ? itemPromotions?.find((p) => p.productId === productId)
                   : null
                 const productMissing = !product
-                const pricing = item.pricingSnapshot
+                // El backend puede incluir solo { stale: false } en ventas en pesos.
+                // Mostrar la conversión únicamente si sus importes están completos.
+                const snapshot = item.pricingSnapshot
+                const pricing = snapshot?.currency === 'USD' &&
+                  Number.isFinite(snapshot.priceUSD) &&
+                  Number.isFinite(snapshot.rateValue) &&
+                  Number.isFinite(snapshot.calculatedPriceArs)
+                  ? snapshot
+                  : null
                 const effectiveRate = pricing
                   ? pricing.effectiveRateValue ??
                     getEffectiveUsdRate(pricing.rateValue, pricing.surchargeArs)
