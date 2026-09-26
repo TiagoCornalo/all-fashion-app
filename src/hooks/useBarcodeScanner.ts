@@ -34,6 +34,8 @@ export const useBarcodeScanner = ({
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null
+      if (target?.closest('input, textarea, select, [contenteditable=true]') && !target?.closest('[data-barcode-input]')) { reset(); return }
       if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return
 
       const now = performance.now()

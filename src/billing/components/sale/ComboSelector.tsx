@@ -33,27 +33,30 @@ const ComboSelector = () => {
   const { combos, addCombo, removeCombo, updateComboQuantity } = useSaleStore()
 
   useEffect(() => {
+    let active = true
     const fetchCombos = async () => {
       if (!debouncedSearch) {
         setAvailableCombos([])
+        setLoading(false)
         return
       }
 
       try {
         setLoading(true)
         const response = await api.get(
-          `/combos?search=${debouncedSearch}&pageSize=5`
+          '/combos', { params: { search: debouncedSearch, pageSize: 5 } }
         )
-        setAvailableCombos(response.data.data)
+        if (active) setAvailableCombos(response.data.data)
       } catch (error) {
         console.error('Error buscando combos:', error)
-        setAvailableCombos([])
+        if (active) setAvailableCombos([])
       } finally {
-        setLoading(false)
+        if (active) setLoading(false)
       }
     }
 
     fetchCombos()
+    return () => { active = false }
   }, [debouncedSearch])
 
   const handleAddCombo = (productCombo: ProductCombo) => {
@@ -86,7 +89,7 @@ const ComboSelector = () => {
   }
 
   return (
-    <div className='max-h-[60vh] overflow-y-auto mt-4'>
+    <div className='mt-4'>
       <div className='space-y-4 p-1'>
         <h3 className='font-medium'>Combos y Promociones</h3>
 

@@ -45,12 +45,16 @@ const getPricingLabel = (product: Product | SaleItem) => {
   return `Precio final con ${USD_RATE_LABELS[usdRateType || 'blue'] || 'dólar'}`
 }
 
-const ProductSelector = () => {
+const ProductSelector = ({ scannerEnabled = true }: { scannerEnabled?: boolean }) => {
+  const scanActive = useRef(scannerEnabled)
+  scanActive.current = scannerEnabled
+  useEffect(() => () => { scanActive.current = false }, [])
   const [search, setSearch] = useState('')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const debouncedSearch = useDebounce(search, 450)
   const latestSearchRequest = useRef(0)
+  const scanQueue = useRef<Promise<void>>(Promise.resolve())
 
   const {
     items,
@@ -106,7 +110,7 @@ const ProductSelector = () => {
       return
     }
 
-    const existingItem = items.find((item) => item.product === product._id)
+    const existingItem = useSaleStore.getState().items.find((item) => item.product === product._id)
     const nextQuantity = (existingItem?.quantity || 0) + requestedQuantity
 
     if (nextQuantity > (product.stock || 0)) {
@@ -138,7 +142,8 @@ const ProductSelector = () => {
     setLoading(false)
   }
 
-  const handleScannedCode = async (value: string) => {
+  const lookupScannedCode = async (value: string) => {
+    if (!scanActive.current) return
     const scannedValue = value.trim()
     if (!scannedValue) return
 
@@ -151,7 +156,7 @@ const ProductSelector = () => {
     try {
       const result = await findProductByBarcode(scannedValue)
       const units = Math.max(1, Number(result.barcode.unitsPerScan || 1))
-      handleAddProduct(result.product, units)
+      if (scanActive.current) handleAddProduct(result.product, units)
     } catch (error) {
       const message = error instanceof AxiosError
         ? error.response?.data?.error || error.response?.data?.details
@@ -160,7 +165,12 @@ const ProductSelector = () => {
     }
   }
 
-  useBarcodeScanner({ onScan: handleScannedCode })
+  const handleScannedCode = (value: string) => {
+    scanQueue.current = scanQueue.current.then(() => lookupScannedCode(value))
+    return scanQueue.current
+  }
+
+  useBarcodeScanner({ onScan: handleScannedCode, enabled: scannerEnabled })
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -177,8 +187,8 @@ const ProductSelector = () => {
   }
 
   // Función para aplicar el código de promoción validado
-  const applyPromotionCode = (index: number, code: string) => {
-    addItemPromotion(index, code)
+  const applyPromotionCode = (index: number, code: string, percentage: number) => {
+    addItemPromotion(index, code, percentage)
   }
 
   // Función para determinar si un ítem tiene promoción aplicada
@@ -192,13 +202,15 @@ const ProductSelector = () => {
   }
 
   return (
-    <div className='max-h-[60vh] overflow-y-auto'>
+    <div>
       <div className='space-y-4 p-1'>
         {/* Buscador de productos */}
         <div className='flex flex-col gap-2 sm:flex-row sm:items-center'>
           <div className='relative flex-1'>
             <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
             <Input
+              data-barcode-input
+              aria-label='Buscar o escanear producto'
               placeholder='Buscar o escanear producto...'
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -286,6 +298,7 @@ const ProductSelector = () => {
                       <Button
                         variant='outline'
                         size='icon'
+                        aria-label={`Quitar una unidad de ${item.name}`}
                         onClick={() =>
                           handleQuantityChange(item.product, item.quantity - 1)
                         }
@@ -296,6 +309,7 @@ const ProductSelector = () => {
                       <Button
                         variant='outline'
                         size='icon'
+                        aria-label={`Agregar una unidad de ${item.name}`}
                         onClick={() =>
                           handleQuantityChange(item.product, item.quantity + 1)
                         }
@@ -336,6 +350,7 @@ const ProductSelector = () => {
                     <Button
                       variant='ghost'
                       size='icon'
+                      aria-label={`Eliminar ${item.name}`}
                       onClick={() => removeItem(item.product)}
                     >
                       <Trash className='h-4 w-4' />

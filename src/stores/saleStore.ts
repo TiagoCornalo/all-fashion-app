@@ -90,7 +90,7 @@ interface SaleStore {
   // Nuevas acciones para promociones y combos
   setPromotionCode: (code: string) => void
   removeGlobalPromotion: () => void
-  addItemPromotion: (itemIndex: number, promotionCode: string) => void
+  addItemPromotion: (itemIndex: number, promotionCode: string, percentage?: number) => void
   removeItemPromotion: (itemIndex: number) => void
   addCombo: (combo: Combo) => void
   removeCombo: (comboId: string) => void
@@ -151,17 +151,25 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
   },
 
   removeItem: (productId) => {
-    set((state) => ({
-      items: state.items.filter((item) => item.product !== productId)
-    }))
+    set((state) => {
+      const removedIndex = state.items.findIndex(item => item.product === productId)
+      if (removedIndex < 0) return {}
+      return {
+        items: state.items.filter(item => item.product !== productId),
+        itemPromotions: state.itemPromotions.filter(p => p.itemIndex !== removedIndex)
+          .map(p => ({ ...p, itemIndex: p.itemIndex > removedIndex ? p.itemIndex - 1 : p.itemIndex }))
+      }
+    })
     get().updateTotal()
   },
 
   updateItemQuantity: (productId, quantity) => {
+    const item = get().items.find(i => i.product === productId)
+    if (!Number.isInteger(quantity) || quantity <= 0 || (item?.stock !== undefined && quantity > item.stock)) return
     set((state) => ({
       items: state.items.map((item) =>
         item.product === productId
-          ? { ...item, quantity, subtotal: item.price * quantity }
+          ? { ...item, quantity, subtotal: Math.round(item.price * quantity * 100) / 100 }
           : item
       )
     }))
@@ -170,11 +178,18 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
 
   updateTotal: () => {
     set((state) => {
+      const pricedItems = state.items.map((item, index) => {
+        const base = item.originalPrice ?? item.price
+        const itemDiscount = state.itemPromotions.find(p => p.itemIndex === index)?.discountPercentage || 0
+        const itemPrice = Math.round(base * (1 - itemDiscount / 100) * 100) / 100
+        const price = Math.round(itemPrice * (1 - (state.promotionCode ? state.discount : 0) / 100) * 100) / 100
+        return { ...item, originalPrice: base, price, subtotal: Math.round(price * item.quantity * 100) / 100 }
+      })
       // Calcular el subtotal usando los precios con descuento ya aplicados
       // Si los items tienen subtotal (que ya incluye el descuento), usamos ese valor
       // Si no, usamos price * quantity
-      const itemsTotal = state.items.reduce(
-        (sum, item) => sum + (item.subtotal || item.price * item.quantity),
+      const itemsTotal = pricedItems.reduce(
+        (sum, item) => sum + (item.subtotal ?? item.price * item.quantity),
         0
       )
 
@@ -185,16 +200,17 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
       )
 
       // Sumar ambos subtotales
-      const newTotal = itemsTotal + combosTotal
+      const newTotal = Math.round((itemsTotal + combosTotal) * 100) / 100
 
       // Calcular el total pagado
-      const totalPaid = Object.values(state.paymentAmounts).reduce(
-        (sum, amount) => sum + (amount || 0),
-        0
-      )
+      const paymentAmounts = state.selectedMethods.length === 1
+        ? { [state.selectedMethods[0]]: newTotal } : state.paymentAmounts
+      const totalPaid = state.selectedMethods.reduce((sum, method) => sum + (paymentAmounts[method] || 0), 0)
 
       return {
+        items: pricedItems,
         total: newTotal,
+        paymentAmounts,
         remaining:
           state.selectedMethods.length === 0
             ? newTotal
@@ -215,29 +231,30 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
   setNotes: (notes) => set({ notes }),
 
   setSelectedMethods: (methods) => {
-    set({ selectedMethods: methods })
-    // Si solo hay un método, asignar el total
-    if (methods.length === 1) {
-      get().updatePaymentAmount(methods[0], get().total)
-    }
+    const unique = [...new Set(methods)]
+    set(state => ({ selectedMethods: unique,
+      paymentAmounts: Object.fromEntries(unique.map(method => [method, unique.length === 1 ? state.total : state.paymentAmounts[method] || 0])),
+      paymentBanks: Object.fromEntries(Object.entries(state.paymentBanks).filter(([key]) => unique.includes(key as PaymentType))),
+      transferData: unique.includes('TRANSFER') ? state.transferData : {},
+      paymentDetails: unique.includes('ACCOUNT_PAYABLE') ? state.paymentDetails : {}
+    }))
+    get().calculateRemaining()
   },
 
   updatePaymentAmount: (method, amount) => {
+    if (!Number.isFinite(amount) || amount < 0) return
     set((state) => ({
       paymentAmounts: {
         ...state.paymentAmounts,
-        [method]: amount
+        [method]: Math.round(amount * 100) / 100
       }
     }))
     get().calculateRemaining()
   },
 
   calculateRemaining: () => {
-    const totalPaid = Object.values(get().paymentAmounts).reduce(
-      (sum, amount) => sum + (amount || 0),
-      0
-    )
-    const remaining = get().total - totalPaid
+    const totalPaid = get().selectedMethods.reduce((sum, method) => sum + (get().paymentAmounts[method] || 0), 0)
+    const remaining = Math.round((get().total - totalPaid) * 100) / 100
     set({ remaining })
     return remaining
   },
@@ -299,82 +316,17 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
   },
 
   removeGlobalPromotion: () => {
-    // Restaurar items - eliminar descuentos
-    const items = get().items.map((item) => {
-      // Si el item tiene precio original, restaurarlo
-      console.log(item)
-      if (item.originalPrice) {
-        return {
-          ...item,
-          price: item.originalPrice,
-          subtotal: item.originalPrice * item.quantity,
-          // Eliminar propiedades de descuento
-          originalPrice: undefined,
-          discountAmount: undefined,
-          discountPercentage: undefined,
-          discounted: undefined
-        }
-      }
-      return item
-    })
-
-    // Actualizar el store de una sola vez
-    set({
-      items,
-      promotionCode: '',
-      discount: 0
-    })
-
+    set({ promotionCode: '', discount: 0 })
     get().updateTotal()
   },
-
-  addItemPromotion: (itemIndex, promotionCode) =>
-    set((state) => {
-      const existingPromoIndex = state.itemPromotions.findIndex(
-        (p) => p.itemIndex === itemIndex
-      )
-      const newPromotions = [...state.itemPromotions]
-
-      if (existingPromoIndex >= 0) {
-        // Actualizar promoción existente
-        newPromotions[existingPromoIndex] = { itemIndex, promotionCode }
-      } else {
-        // Agregar nueva promoción
-        newPromotions.push({ itemIndex, promotionCode })
-      }
-
-      return { itemPromotions: newPromotions }
-    }),
-
+  addItemPromotion: (itemIndex, promotionCode, percentage) => {
+    set(state => ({ itemPromotions: [...state.itemPromotions.filter(p => p.itemIndex !== itemIndex),
+      { itemIndex, promotionCode, discountPercentage: percentage || 0 }] }))
+    get().updateTotal()
+  },
   removeItemPromotion: (itemIndex) => {
-    // Obtener el item actual
-    const items = get().items
-    const itemToRestore = items[itemIndex]
-
-    // Si el item tiene precio original, restaurarlo
-    if (itemToRestore && itemToRestore.originalPrice) {
-      const updatedItems = [...items]
-      updatedItems[itemIndex] = {
-        ...itemToRestore,
-        price: itemToRestore.originalPrice,
-        subtotal: itemToRestore.originalPrice * itemToRestore.quantity,
-        // Eliminar propiedades de descuento
-        originalPrice: undefined,
-        discountAmount: undefined,
-        discountPercentage: undefined,
-        discounted: undefined
-      }
-
-      // Actualizar los items
-      get().replaceItems(updatedItems)
-    }
-
-    // Eliminar la promoción del registro
-    set((state) => ({
-      itemPromotions: state.itemPromotions.filter(
-        (p) => p.itemIndex !== itemIndex
-      )
-    }))
+    set(state => ({ itemPromotions: state.itemPromotions.filter(p => p.itemIndex !== itemIndex) }))
+    get().updateTotal()
   },
 
   addCombo: (combo) => {
@@ -392,6 +344,7 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
   },
 
   updateComboQuantity: (comboId, quantity) => {
+    if (!Number.isInteger(quantity) || quantity <= 0) return
     set((state) => ({
       combos: state.combos.map((combo) =>
         combo.comboId === comboId ? { ...combo, quantity } : combo
@@ -412,6 +365,7 @@ export const useSaleStore = create<SaleStore>((set, get) => ({
       total: 0,
       selectedMethods: [],
       paymentAmounts: {},
+      paymentBanks: {},
       transferData: {},
       paymentDetails: {},
       // Limpiar también los nuevos campos

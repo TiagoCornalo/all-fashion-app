@@ -1,3 +1,4 @@
+import FiscalPendingList from './components/FiscalPendingList'
 import { useEffect, useState } from 'react'
 import LayoutMultiRole from '../layout/LayoutMultiRole'
 import { useCashRegisterStore } from '../stores/cashRegisterStore'
@@ -60,7 +61,7 @@ export default function BillingContainer() {
     fetchRegister()
   }, [fetchCurrentRegister, searchParams, navigate])
 
-  if (isLoading) {
+  if (isLoading && !currentRegister) {
     return (
       <div className='flex justify-center items-center h-screen'>
         <Loader />
@@ -77,6 +78,7 @@ export default function BillingContainer() {
   return (
     <LayoutMultiRole allowedRoles={['ADMIN', 'SELLER', 'MANAGER']}>
       <div className='space-y-4 p-2 sm:p-4'>
+        <FiscalPendingList />
         <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4'>
           {/* @ts-ignore */}
           <Receipt className='h-6 w-6 sm:h-8 sm:w-8 mx-auto sm:mx-0' />

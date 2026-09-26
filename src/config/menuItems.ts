@@ -3,12 +3,6 @@ import { CheckCircle, Users, Settings } from 'lucide-react'
 
 export const MENU_ITEMS = [
   {
-    title: 'Inventario',
-    url: '/inventory',
-    icon: Package,
-    roles: ['ADMIN', 'MANAGER']
-  },
-  {
     title: 'Facturación',
     url: '/billing',
     icon: Bill,
@@ -21,9 +15,15 @@ export const MENU_ITEMS = [
     roles: ['ADMIN', 'SELLER', 'MANAGER']
   },
   {
-    title: 'Proveedores',
-    url: '/suppliers',
-    icon: HandShake,
+    title: 'Cuentas Corrientes',
+    url: '/accounts-payable',
+    icon: CreditCard,
+    roles: ['ADMIN', 'MANAGER', 'SELLER']
+  },
+  {
+    title: 'Inventario',
+    url: '/inventory',
+    icon: Package,
     roles: ['ADMIN', 'MANAGER']
   },
   {
@@ -33,10 +33,10 @@ export const MENU_ITEMS = [
     roles: ['ADMIN', 'SELLER', 'MANAGER']
   },
   {
-    title: 'Cuentas Corrientes',
-    url: '/accounts-payable',
-    icon: CreditCard,
-    roles: ['ADMIN', 'MANAGER', 'SELLER']
+    title: 'Proveedores',
+    url: '/suppliers',
+    icon: HandShake,
+    roles: ['ADMIN', 'MANAGER']
   },
   {
     title: 'Servicio Técnico',
@@ -57,6 +57,12 @@ export const MENU_ITEMS = [
     roles: ['ADMIN', 'MANAGER']
   },
   {
+    title: 'Etiquetas de productos',
+    url: '/labels',
+    icon: Label,
+    roles: ['ADMIN', 'SELLER', 'MANAGER']
+  },
+  {
     title: 'Análisis',
     url: '/dashboard',
     icon: BarChart,
@@ -74,4 +80,5 @@ export const MENU_ITEMS = [
     icon: Settings,
     roles: ['ADMIN']
   },
+  { title: 'Configuración de impresión', url: '/printing-settings', icon: Settings, roles: ['ADMIN'] },
 ]

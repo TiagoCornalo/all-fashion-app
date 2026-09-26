@@ -26,8 +26,10 @@ export interface BarcodeLookupResponse {
   barcode: ProductBarcode
 }
 
+export type LabelProduct = Pick<Product, '_id' | 'code' | 'name' | 'price'>
+
 export interface PreparedProductLabel {
-  product: Product
+  product: LabelProduct
   barcode: ProductBarcode
   finalPriceArs?: number
 }

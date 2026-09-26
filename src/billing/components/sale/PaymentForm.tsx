@@ -15,7 +15,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { PaymentType } from '../../../types/sale.types'
 import { Checkbox } from '../../../components'
-import { useSaleForm } from '../hooks/useSaleForm'
 import { useSaleTotals } from '../hooks/useSaleTotals'
 import { useEffect, useState } from 'react'
 import { useSaleStore } from '../../../stores/saleStore'
@@ -32,7 +31,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 
 const PaymentForm = () => {
-  const [accountPayableData, setAccountPayableData] = useState<{
+  const [, setAccountPayableData] = useState<{
     accountPayableId?: string
     customerInfo?: {
       name: string
@@ -50,7 +49,7 @@ const PaymentForm = () => {
     setSelectedMethods,
     paymentAmounts,
     updatePaymentAmount
-  } = useSaleForm()
+  } = useSaleStore()
 
   const {
     discount,
@@ -69,10 +68,10 @@ const PaymentForm = () => {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      selectedMethods: [],
+      selectedMethods,
       amounts: paymentAmounts,
-      customerPhone: '',
-      transferReference: ''
+      customerPhone: getTransferData('TRANSFER').customerPhone || '',
+      transferReference: getTransferData('TRANSFER').transferReference || ''
     }
   })
 
@@ -137,7 +136,7 @@ const PaymentForm = () => {
     setSelectedMethods(updated)
 
     if (!checked) {
-      handleAmountChange(method, 0)
+      form.setValue(`amounts.${method}`, 0)
       // Limpiar datos específicos según el método
       if (method === 'TRANSFER') {
         updateTransferData('TRANSFER', {})
@@ -156,7 +155,7 @@ const PaymentForm = () => {
     form.setValue('amounts', paymentAmounts)
   }, [paymentAmounts])
 
-  const { surchargeByMethod, totalSurcharge, totalToCharge } = useSaleTotals()
+  const { totalSurcharge, totalToCharge } = useSaleTotals()
 
   return (
     <div className='flex flex-col h-full'>
@@ -165,7 +164,7 @@ const PaymentForm = () => {
           <CardTitle>
             <div className='flex flex-col gap-1'>
               <span className='text-sm font-normal text-muted-foreground'>
-                Total a cobrar al cliente
+                Estimación del cobro
               </span>
               <span className='text-2xl sm:text-3xl font-bold'>
                 ${totalToCharge.toFixed(2)}
@@ -302,6 +301,7 @@ const PaymentForm = () => {
                             className='flex items-center space-x-2'
                           >
                             <Checkbox
+                              aria-label={method.label}
                               checked={selectedMethods.includes(
                                 method.value as PaymentType
                               )}
@@ -361,13 +361,15 @@ const PaymentForm = () => {
                                         : 'Cuenta Corriente'}
                                 {isCard && (
                                   <span className='ml-2 text-xs text-muted-foreground'>
-                                    (sin recargo)
+                                    (importe base)
                                   </span>
                                 )}
                               </FormLabel>
                               <FormControl>
                                 <Input
                                   type='number'
+                                  min='0'
+                                  step='0.01'
                                   {...field}
                                   value={field.value || ''}
                                   onChange={(e) => {
@@ -389,6 +391,7 @@ const PaymentForm = () => {
                               Banco emisor de la tarjeta
                             </label>
                             <select
+                              aria-label={`Banco para ${method === 'DEBIT' ? 'débito' : 'crédito'}`}
                               className='w-full rounded-md border bg-background px-2 py-1 text-sm'
                               value={selectedBankId ?? ''}
                               onChange={(e) =>

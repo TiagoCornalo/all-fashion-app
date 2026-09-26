@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useSaleStore } from '../../../stores/saleStore'
 import {
   Input,
@@ -43,12 +43,12 @@ const PromotionApplier = () => {
     itemPromotions,
     addItemPromotion,
     removeItemPromotion,
-    replaceItems,
     removeGlobalPromotion,
-    setPromotionCustomerData,
-    total
+    setPromotionCustomerData
   } = useSaleStore()
 
+  const previousPromotion = useRef<Pick<ReturnType<typeof useSaleStore.getState>, 'promotionCode' | 'discount' | 'itemPromotions' | 'promotionCustomerData'> | null>(null)
+  const snapshotPromotion = () => { const s = useSaleStore.getState(); previousPromotion.current = { promotionCode: s.promotionCode, discount: s.discount, itemPromotions: s.itemPromotions, promotionCustomerData: s.promotionCustomerData } }
   const [validating, setValidating] = useState(false)
   const [showCustomerModal, setShowCustomerModal] = useState(false)
   const [pendingPromotionData, setPendingPromotionData] = useState<{
@@ -93,6 +93,7 @@ const PromotionApplier = () => {
         }
       )
 
+      if (useSaleStore.getState().items !== currentItems) throw new Error('Cambió el carrito. Volvé a aplicar la promoción.')
       if (response.data.valid) {
         const itemsWithDiscount = response.data.items
         const discountPercentage = response.data.promotion?.discountPercentage || 0
@@ -104,6 +105,7 @@ const PromotionApplier = () => {
         )
         const discountAmount = originalAmount - finalAmount
 
+        snapshotPromotion()
         // Guardar datos pendientes y mostrar modal de cliente
         setPendingPromotionData({
           code: values.promotionCode,
@@ -114,7 +116,6 @@ const PromotionApplier = () => {
         })
 
         // Aplicar promoción temporalmente
-        replaceItems(itemsWithDiscount)
         setPromotionCode(values.promotionCode)
         useSaleStore.getState().setDiscount(discountPercentage)
 
@@ -149,6 +150,7 @@ const PromotionApplier = () => {
         }
       )
 
+      if (useSaleStore.getState().items !== currentItems) throw new Error('Cambió el carrito. Volvé a aplicar la promoción.')
       if (response.data.valid) {
         const itemsWithDiscount = response.data.items
         const discountPercentage = response.data.promotion?.discountPercentage || 0
@@ -158,6 +160,7 @@ const PromotionApplier = () => {
         const finalAmount = updatedItem?.subtotal || (updatedItem?.price * updatedItem?.quantity) || 0
         const discountAmount = originalAmount - finalAmount
 
+        snapshotPromotion()
         // Guardar datos pendientes y mostrar modal de cliente
         setPendingPromotionData({
           code: values.promotionCode,
@@ -169,8 +172,7 @@ const PromotionApplier = () => {
         })
 
         // Aplicar promoción temporalmente
-        replaceItems(itemsWithDiscount)
-        addItemPromotion(itemIndex, values.promotionCode)
+        addItemPromotion(itemIndex, values.promotionCode, discountPercentage)
 
         setShowCustomerModal(true)
         itemPromotionForm.reset({
@@ -215,6 +217,7 @@ const PromotionApplier = () => {
       }
     })
 
+    previousPromotion.current = null
     setShowCustomerModal(false)
     setPendingPromotionData(null)
 
@@ -224,11 +227,10 @@ const PromotionApplier = () => {
   }
 
   const handleCustomerModalCancel = () => {
-    // Si el usuario cancela, revertir la promoción
-    if (pendingPromotionData?.isGlobal) {
-      removeGlobalPromotion()
-    } else if (pendingPromotionData?.itemIndex !== undefined) {
-      removeItemPromotion(pendingPromotionData.itemIndex)
+    if (previousPromotion.current) {
+      useSaleStore.setState(previousPromotion.current)
+      useSaleStore.getState().updateTotal()
+      previousPromotion.current = null
     }
 
     setShowCustomerModal(false)
@@ -420,7 +422,7 @@ const PromotionApplier = () => {
       {/* Modal para datos del cliente */}
       <PromotionCustomerModal
         isOpen={showCustomerModal}
-        onOpenChange={setShowCustomerModal}
+        onOpenChange={open => { if (!open) handleCustomerModalCancel(); else setShowCustomerModal(true) }}
         promotionCode={pendingPromotionData?.code || ''}
         discountPercentage={pendingPromotionData?.discountPercentage || 0}
         onSubmit={handleCustomerDataSubmit}

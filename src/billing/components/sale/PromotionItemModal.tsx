@@ -28,7 +28,7 @@ interface PromotionItemModalProps {
   onOpenChange: (open: boolean) => void
   itemIndex: number
   itemName: string
-  onApplyPromotion: (index: number, code: string) => void
+  onApplyPromotion: (index: number, code: string, percentage: number) => void
 }
 
 const PromotionItemModal = ({
@@ -39,7 +39,6 @@ const PromotionItemModal = ({
   onApplyPromotion
 }: PromotionItemModalProps) => {
   const [validating, setValidating] = useState(false)
-  const { items, replaceItems } = useSaleStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -64,12 +63,13 @@ const PromotionItemModal = ({
         }
       )
 
+      if (useSaleStore.getState().items !== currentItems) throw new Error('Cambió el carrito')
       if (response.data.valid) {
         // Reemplazar items en el store
-        replaceItems(response.data.items)
+
 
         // Llamar al callback para registrar la promoción
-        onApplyPromotion(itemIndex, values.promotionCode)
+        onApplyPromotion(itemIndex, values.promotionCode, response.data.promotion?.discountPercentage || 0)
         onOpenChange(false)
         form.reset()
 

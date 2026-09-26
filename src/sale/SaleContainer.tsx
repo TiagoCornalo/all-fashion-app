@@ -63,7 +63,7 @@ const SaleContainer = () => {
   const cashRegisterStatus = (sale as any)?.cashRegister?.status
   const isCancelled = sale?.status === 'CANCELLED'
   const isCashClosed = cashRegisterStatus === 'CLOSED'
-  const canCancel = !!sale && !isCancelled && !isCashClosed
+  const canCancel = !!sale && !isCancelled && !isCashClosed && sale.invoice.type === 'X'
 
   return (
     <LayoutMultiRole
@@ -116,7 +116,7 @@ const SaleContainer = () => {
                   <AlertDialogDescription>
                     Se va a restaurar el stock de cada producto y revertir los
                     pagos en la caja. Si hay pagos en cuenta corriente, se emite
-                    una nota de crédito automática. Esta acción no se puede
+                    un ajuste de saldo interno (no fiscal). Esta acción no se puede
                     deshacer.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
@@ -137,7 +137,7 @@ const SaleContainer = () => {
 
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6'>
               <SaleGeneral sale={sale} />
-              <SaleInvoice invoice={sale.invoice} />
+              <SaleInvoice invoice={sale.invoice} saleId={sale._id} />
             </div>
 
             <SaleProducts

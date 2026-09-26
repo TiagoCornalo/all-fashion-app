@@ -2,9 +2,15 @@ import api from './config/axios'
 import {
   BarcodeLookupResponse,
   InventoryReceiptItemInput,
+  LabelProduct,
   PreparedProductLabel,
   ProductBarcode
 } from '../types/barcode.types'
+
+export async function searchLabelProducts(search: string, exact = false): Promise<LabelProduct[]> {
+  const { data } = await api.get('/products/labels/search', { params: { search, exact } })
+  return data.data
+}
 
 export const findProductByBarcode = async (
   value: string

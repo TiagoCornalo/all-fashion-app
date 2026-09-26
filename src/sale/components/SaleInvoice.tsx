@@ -6,13 +6,15 @@ import {
 } from '../../components/ui/card'
 import { FileText } from 'lucide-react'
 import { Separator } from '../../components/ui/separator'
+import ReceiptActions from '../../billing/components/ReceiptActions'
 import { Invoice } from '../../types/sale.types'
 
 interface SaleInvoiceProps {
   invoice: Invoice
+  saleId?: string
 }
 
-const SaleInvoice = ({ invoice }: SaleInvoiceProps) => {
+const SaleInvoice = ({ invoice, saleId }: SaleInvoiceProps) => {
   return (
     <Card>
       <CardHeader>
@@ -22,11 +24,12 @@ const SaleInvoice = ({ invoice }: SaleInvoiceProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent className='space-y-4'>
+        {saleId && <ReceiptActions saleId={saleId} invoice={invoice} />}
         <div className='grid grid-cols-2 gap-4'>
           <div>
             <p className='text-sm text-gray-500'>Tipo de Comprobante</p>
             <p className='font-medium'>
-              {invoice.type === 'X' ? 'Ticket' : `Factura ${invoice.type}`}
+              {invoice.type === 'X' ? 'Comprobante interno X' : `Factura ${invoice.type}`}
             </p>
           </div>
           <div>

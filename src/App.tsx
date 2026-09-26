@@ -8,6 +8,8 @@ import './App.css'
 const AuthContainer = lazy(() => import('./auth/AuthContainer'))
 const DashboardContainer = lazy(() => import('./dashboard/DashboardContainer'))
 const InventoryContainer = lazy(() => import('./inventory/InventoryContainer'))
+const LabelsContainer = lazy(() => import('./labels/LabelsContainer'))
+const PrintingSettingsContainer = lazy(() => import('./printing/PrintingSettingsContainer'))
 const BarcodeReaderWithCamera = lazy(
   () => import('./components/shared/BarCodeLector')
 )
@@ -63,6 +65,8 @@ function App() {
               <Route path='/home' element={<HomeContainer />} />
               <Route path='/dashboard' element={<DashboardContainer />} />
               <Route path='/inventory' element={<InventoryContainer />} />
+              <Route path='/labels' element={<LabelsContainer />} />
+              <Route path='/printing-settings' element={<PrintingSettingsContainer />} />
               <Route path='/barcode' element={<BarcodeReaderWithCamera />} />
               <Route path='/billing' element={<BillingContainer />} />
               <Route path='/suppliers' element={<SuppliersContainer />} />

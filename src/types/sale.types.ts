@@ -244,6 +244,7 @@ export interface Payment {
   }
   // Campos para cuenta corriente
   accountPayableId?: string
+  installmentPlan?: SaleInstallmentPlan
   installmentPlanIndex?: number | null
   installmentFrequencyOverride?: InstallmentFrequency
   customerInfo?: {
@@ -282,8 +283,14 @@ export interface ItemPromotion {
 export interface Invoice {
   type: 'TICKET' | 'A' | 'B' | 'C' | 'X'
   pointOfSale: number
+  number?: string
+  cae?: string
+  caeExpirationDate?: string
+  status?: string
+  environment?: string
   customerName?: string
   customer?: {
+    vatConditionId?: number
     documentType: 'DNI' | 'CUIT'
     documentNumber: string
     name: string

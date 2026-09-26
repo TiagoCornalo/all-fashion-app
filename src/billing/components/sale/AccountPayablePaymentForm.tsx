@@ -48,6 +48,7 @@ const formatDate = (d: Date) =>
 interface AccountPayablePaymentFormProps {
   onDataChange: (data: {
     accountPayableId?: string
+    displayAccount?: AccountPayable
     installmentPlanIndex?: number | null
     installmentFrequencyOverride?: InstallmentFrequency
     customerInfo?: {
@@ -80,16 +81,17 @@ export const AccountPayablePaymentForm = ({
   onDataChange,
   disabled = false
 }: AccountPayablePaymentFormProps) => {
-  const [selectedAccount, setSelectedAccount] = useState<AccountPayable | null>(null)
-  const [showCreateForm, setShowCreateForm] = useState(false)
-  const [planIndex, setPlanIndex] = useState<number | null>(null)
-  const [frequencyOverride, setFrequencyOverride] = useState<InstallmentFrequency | ''>('')
+  const [saved] = useState(() => useSaleStore.getState().paymentDetails.ACCOUNT_PAYABLE || {})
+  const [selectedAccount, setSelectedAccount] = useState<AccountPayable | null>(saved.displayAccount || null)
+  const [showCreateForm, setShowCreateForm] = useState(Boolean(saved.customerInfo))
+  const [planIndex, setPlanIndex] = useState<number | null>(saved.installmentPlanIndex ?? null)
+  const [frequencyOverride, setFrequencyOverride] = useState<InstallmentFrequency | ''>(saved.installmentFrequencyOverride || '')
 
   const { data: plansData } = useInstallmentPlans()
   const plans = plansData?.plans ?? []
   const defaultFrequency = plansData?.defaultFrequency ?? 'MONTHLY'
 
-  const saleSubtotal = useSaleStore((s) => s.total)
+  const saleSubtotal = useSaleStore((s) => s.paymentAmounts.ACCOUNT_PAYABLE || 0)
 
   // Form para buscar cuenta
   const searchForm = useForm<SearchForm>({
@@ -105,7 +107,8 @@ export const AccountPayablePaymentForm = ({
       documentType: 'DNI',
       documentNumber: '',
       phone: '',
-      email: ''
+      email: '',
+      ...saved.customerInfo
     }
   })
 
@@ -167,6 +170,7 @@ export const AccountPayablePaymentForm = ({
     setShowCreateForm(false)
     onDataChange({
       accountPayableId: account._id,
+      displayAccount: account,
       installmentPlanIndex: planIndex,
       installmentFrequencyOverride: frequencyOverride || undefined
     })
@@ -176,7 +180,7 @@ export const AccountPayablePaymentForm = ({
   useEffect(() => {
     if (!selectedAccount && !showCreateForm) return
     const base = selectedAccount
-      ? { accountPayableId: selectedAccount._id }
+      ? { accountPayableId: selectedAccount._id, displayAccount: selectedAccount }
       : { customerInfo: customerForm.getValues() && {
           name: customerForm.getValues('name'),
           documentType: customerForm.getValues('documentType'),
@@ -192,10 +196,13 @@ export const AccountPayablePaymentForm = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planIndex, frequencyOverride])
 
-  const handleCustomerFormChange = () => {
+  const handleCustomerFormChange = (field?: keyof CustomerForm, value?: string) => {
+    if (field && value !== undefined) customerForm.setValue(field, value as never)
     const formData = customerForm.getValues()
     if (formData.name && formData.documentNumber) {
       onDataChange({
+        installmentPlanIndex: planIndex,
+        installmentFrequencyOverride: frequencyOverride || undefined,
         customerInfo: {
           name: formData.name,
           documentType: formData.documentType,
@@ -204,6 +211,8 @@ export const AccountPayablePaymentForm = ({
           email: formData.email || undefined
         }
       })
+    } else {
+      onDataChange({})
     }
   }
 
@@ -290,6 +299,7 @@ export const AccountPayablePaymentForm = ({
                   />
                   <Button
                     type="button"
+                    aria-label="Buscar cuenta por documento"
                     onClick={handleSearchAccount}
                     disabled={isSearching || disabled}
                     size="sm"
@@ -303,6 +313,7 @@ export const AccountPayablePaymentForm = ({
                 </div>
               </Form>
 
+              <Button type="button" variant="outline" disabled={disabled} onClick={() => { onDataChange({}); setShowCreateForm(true) }}>Crear nuevo cliente</Button>
               {foundAccount && (
                 <div className="border rounded-lg p-3 bg-blue-50">
                   <div className="flex items-center justify-between">
@@ -351,7 +362,7 @@ export const AccountPayablePaymentForm = ({
                             {...field}
                             onChange={(e) => {
                               field.onChange(e)
-                              handleCustomerFormChange()
+                              handleCustomerFormChange(field.name, e.target.value)
                             }}
                           />
                         </FormControl>
@@ -370,7 +381,7 @@ export const AccountPayablePaymentForm = ({
                           <Select
                             onValueChange={(value) => {
                               field.onChange(value)
-                              handleCustomerFormChange()
+                              handleCustomerFormChange(field.name, value)
                             }}
                             value={field.value}
                             disabled={disabled}
@@ -403,7 +414,7 @@ export const AccountPayablePaymentForm = ({
                               {...field}
                               onChange={(e) => {
                                 field.onChange(e)
-                                handleCustomerFormChange()
+                                handleCustomerFormChange(field.name, e.target.value)
                               }}
                             />
                           </FormControl>
@@ -425,7 +436,7 @@ export const AccountPayablePaymentForm = ({
                             {...field}
                             onChange={(e) => {
                               field.onChange(e)
-                              handleCustomerFormChange()
+                              handleCustomerFormChange(field.name, e.target.value)
                             }}
                           />
                         </FormControl>
@@ -440,7 +451,7 @@ export const AccountPayablePaymentForm = ({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setShowCreateForm(false)}
+                  onClick={handleClear}
                   disabled={disabled}
                   size="sm"
                 >
@@ -517,6 +528,7 @@ const InstallmentPicker = ({
             <label className='text-xs font-medium'>Plan</label>
             <select
               className='w-full rounded-md border bg-background px-2 py-2 text-sm'
+              aria-label='Plan de cuotas'
               value={planIndex ?? ''}
               onChange={(e) => onPlanChange(e.target.value === '' ? null : Number(e.target.value))}
               disabled={disabled}
@@ -540,6 +552,7 @@ const InstallmentPicker = ({
             </label>
             <select
               className='w-full rounded-md border bg-background px-2 py-2 text-sm'
+              aria-label='Periodicidad de cuotas'
               value={frequencyOverride}
               onChange={(e) => onFrequencyChange(e.target.value as InstallmentFrequency | '')}
               disabled={disabled || planIndex === null}
