@@ -7,7 +7,7 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
       search: query,
       page: 1,
       pageSize: 100,
-      sortBy: 'name',
+      sortBy: query.trim() ? 'relevance' : 'name',
       sortOrder: 'asc'
     }
   })

@@ -40,7 +40,7 @@ export function DataTableRowActions({
           <span className='sr-only'>Abrir menú</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='w-[160px]'>
+      <DropdownMenuContent align='end' className='w-[200px]'>
         {canManageProducts && (
           <DropdownMenuItem onClick={() => onEdit(product)}>
             <Pencil className='mr-2 h-4 w-4' />
@@ -49,7 +49,7 @@ export function DataTableRowActions({
         )}
         <DropdownMenuItem onClick={() => onBarcodes(product)}>
           <Barcode className='mr-2 h-4 w-4' />
-          Códigos
+          Códigos y stock
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onPrintLabel(product)}>
           <Printer className='mr-2 h-4 w-4' />

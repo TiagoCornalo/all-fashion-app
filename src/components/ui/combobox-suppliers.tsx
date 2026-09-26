@@ -79,11 +79,9 @@ export function ComboboxSuppliers({
     return (
       suppliers
         ?.filter((supplier) => !excludeIds.includes(supplier._id ?? ''))
-        .filter((supplier) =>
-          supplier.name.toLowerCase().includes(debouncedSearch.toLowerCase())
-        ) || []
+        || []
     )
-  }, [suppliers, debouncedSearch, excludeIds])
+  }, [suppliers, excludeIds])
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>

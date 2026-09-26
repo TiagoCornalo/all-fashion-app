@@ -78,6 +78,7 @@ export function DataTable({
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [isReceiptOpen, setIsReceiptOpen] = useState(false)
   const [isLabelPrintOpen, setIsLabelPrintOpen] = useState(false)
+  const [singleLabelProduct, setSingleLabelProduct] = useState(false)
   const [isBarcodeManagerOpen, setIsBarcodeManagerOpen] = useState(false)
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([])
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -104,6 +105,7 @@ export function DataTable({
           setIsBarcodeManagerOpen(true)
         },
         onPrintLabel: (product) => {
+          setSingleLabelProduct(true)
           setSelectedProducts([product])
           setIsLabelPrintOpen(true)
         }
@@ -222,6 +224,7 @@ export function DataTable({
           isRefreshing={isRefreshing}
           onReceiveStock={() => setIsReceiptOpen(true)}
           onPrintLabels={(products) => {
+            setSingleLabelProduct(false)
             setSelectedProducts(products)
             setIsLabelPrintOpen(true)
           }}
@@ -309,6 +312,7 @@ export function DataTable({
           isOpen={isAddOpen}
           onOpenChange={setIsAddOpen}
           onCreated={(product) => {
+            setSingleLabelProduct(true)
             setSelectedProducts([product])
             setIsLabelPrintOpen(true)
           }}
@@ -322,6 +326,7 @@ export function DataTable({
       />
 
       <LabelPrintDialog
+        singleProduct={singleLabelProduct}
         open={isLabelPrintOpen}
         onOpenChange={setIsLabelPrintOpen}
         products={selectedProducts}

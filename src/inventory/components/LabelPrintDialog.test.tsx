@@ -1,6 +1,6 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { beforeEach, expect, it, vi } from 'vitest'
-import { LabelPrintCenter } from './LabelPrintDialog'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, expect, it, vi } from 'vitest'
+import { LabelPrintCenter, LabelPrintDialog } from './LabelPrintDialog'
 import { PreparedProductLabel } from '../../types/barcode.types'
 const mocks = vi.hoisted(() => ({ prepare: vi.fn(), search: vi.fn(), print: vi.fn(), pdf: vi.fn(), autoPrint: vi.fn(), replace: vi.fn() }))
 vi.mock('../../services/barcode.service', () => ({ prepareProductLabels: mocks.prepare, searchLabelProducts: mocks.search }))
@@ -10,6 +10,7 @@ vi.mock('../../services/printerService', () => ({ printTicketDocument: mocks.pri
 vi.mock('../../services/labelDocument', async original => ({ ...(await original<typeof import('../../services/labelDocument')>()), createLabelPdf: mocks.pdf }))
 const product = { _id: 'p1', code: 'P1', name: 'Producto demo', price: 20 }
 const label: PreparedProductLabel = { product, barcode: { value: 'FIN123ABC', normalizedValue: 'FIN123ABC', format: 'CODE128', origin: 'INTERNAL', isPrimary: false, unitsPerScan: 1 } }
+afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks() })
 beforeEach(() => {
   vi.clearAllMocks(); mocks.prepare.mockResolvedValue([label]); mocks.search.mockResolvedValue([product])
   mocks.pdf.mockReturnValue({ autoPrint: mocks.autoPrint, output: () => new Blob(['demo'], { type: 'application/pdf' }) })
@@ -58,10 +59,118 @@ it('PDF preview does not request printing and popup blocking is recoverable', as
 it('searches by name, adds the product and removes it from the printable queue', async () => {
   render(<LabelPrintCenter />)
   fireEvent.change(screen.getByLabelText('Buscar productos para etiquetas'), { target: { value: 'demo' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Buscar' }))
   fireEvent.click(await screen.findByRole('button', { name: 'Agregar' }))
+  expect(mocks.search).toHaveBeenCalledWith('demo', false)
+  expect((screen.getByRole('button', { name: 'Agregado' }) as HTMLButtonElement).disabled).toBe(true)
   await screen.findByLabelText('Copias de Producto demo')
   await waitFor(() => expect(mocks.prepare).toHaveBeenCalledWith(['p1'], 'PRIMARY_OR_INTERNAL'))
   fireEvent.click(screen.getByRole('button', { name: 'Quitar Producto demo' }))
   expect((screen.getByRole('button', { name: 'Imprimir etiquetas' }) as HTMLButtonElement).disabled).toBe(true)
+})
+
+it('debounces typing, clears old results and ignores out-of-order responses', async () => {
+  vi.useFakeTimers()
+  let resolveOld!: (products: typeof product[]) => void
+  mocks.search.mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve }))
+  render(<LabelPrintCenter />)
+  const input = screen.getByLabelText('Buscar productos para etiquetas')
+  fireEvent.change(input, { target: { value: 'pro' } })
+  await act(async () => vi.advanceTimersByTime(200))
+  expect(mocks.search).not.toHaveBeenCalled()
+  fireEvent.change(input, { target: { value: 'producto' } })
+  await act(async () => vi.advanceTimersByTime(300))
+  expect(mocks.search).toHaveBeenCalledTimes(1)
+  mocks.search.mockResolvedValueOnce([{ ...product, _id: 'p2', name: 'Nuevo resultado' }])
+  fireEvent.change(input, { target: { value: 'nuevo' } })
+  await act(async () => vi.advanceTimersByTime(300))
+  expect(screen.getByText('Nuevo resultado')).toBeTruthy()
+  await act(async () => resolveOld([product]))
+  expect(screen.queryByText('Producto demo')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'Limpiar' }))
+  expect(screen.queryByText('Nuevo resultado')).toBeNull()
+  await act(async () => vi.advanceTimersByTime(300))
+  expect(mocks.search).toHaveBeenCalledTimes(2)
+})
+
+it('Enter searches immediately without repeating the debounced request', async () => {
+  vi.useFakeTimers()
+  render(<LabelPrintCenter />)
+  const input = screen.getByLabelText('Buscar productos para etiquetas')
+  fireEvent.change(input, { target: { value: 'demo' } })
+  await act(async () => fireEvent.keyDown(input, { key: 'Enter' }))
+  await act(async () => vi.advanceTimersByTime(500))
+  expect(mocks.search).toHaveBeenCalledTimes(1)
+})
+
+it('a scan supersedes an in-flight name search and adds only one product', async () => {
+  vi.useFakeTimers()
+  let resolveOld!: (products: typeof product[]) => void
+  mocks.search.mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve }))
+  render(<LabelPrintCenter />)
+  fireEvent.change(screen.getByLabelText('Buscar productos para etiquetas'), { target: { value: 'demo' } })
+  await act(async () => vi.advanceTimersByTime(300))
+  let now = 10
+  vi.spyOn(performance, 'now').mockImplementation(() => now += 10)
+  await act(async () => { for (const key of [...'FIN123ABC', 'Enter']) fireEvent.keyDown(document.body, { key }) })
+  expect(mocks.search).toHaveBeenLastCalledWith('FIN123ABC', true)
+  expect(screen.getAllByLabelText('Copias de Producto demo')).toHaveLength(1)
+  await act(async () => resolveOld([{ ...product, name: 'Viejo' }]))
+  expect(screen.queryByText('Viejo')).toBeNull()
+  await act(async () => { for (const key of [...'FIN123ABC', 'Enter']) fireEvent.keyDown(document.body, { key }) })
+  expect(screen.getAllByLabelText('Copias de Producto demo')).toHaveLength(1)
+  expect((screen.getByLabelText('Copias de Producto demo') as HTMLInputElement).value).toBe('1')
+})
+
+it('shows empty and error states, and does not search after unmount', async () => {
+  vi.useFakeTimers()
+  mocks.search.mockResolvedValueOnce([]).mockRejectedValueOnce(new Error('Sin conexión'))
+  const { unmount } = render(<LabelPrintCenter />)
+  const input = screen.getByLabelText('Buscar productos para etiquetas')
+  fireEvent.change(input, { target: { value: 'nada' } })
+  await act(async () => vi.advanceTimersByTime(300))
+  expect(screen.getByText(/No se encontraron productos/)).toBeTruthy()
+  fireEvent.change(input, { target: { value: 'error' } })
+  await act(async () => vi.advanceTimersByTime(300))
+  expect(screen.getByRole('alert').textContent).toContain('Sin conexión')
+  fireEvent.change(input, { target: { value: 'pendiente' } })
+  unmount()
+  await act(async () => vi.advanceTimersByTime(500))
+  expect(mocks.search).toHaveBeenCalledTimes(2)
+})
+
+it('keeps both consecutive scans even when they resolve out of order', async () => {
+  let first!: (products: typeof product[]) => void
+  let second!: (products: typeof product[]) => void
+  mocks.search.mockImplementationOnce(() => new Promise(resolve => { first = resolve }))
+    .mockImplementationOnce(() => new Promise(resolve => { second = resolve }))
+  render(<LabelPrintCenter />)
+  let now = 10
+  vi.spyOn(performance, 'now').mockImplementation(() => now += 10)
+  for (const code of ['FIN123ABC', 'FIN456DEF']) {
+    for (const key of [...code, 'Enter']) fireEvent.keyDown(document.body, { key })
+  }
+  expect(mocks.search).toHaveBeenCalledTimes(2)
+  await act(async () => second([{ ...product, _id: 'p2', name: 'Segundo' }]))
+  expect((screen.getByRole('button', { name: 'Imprimir etiquetas' }) as HTMLButtonElement).disabled).toBe(true)
+  await act(async () => first([product]))
+  expect(screen.getByLabelText('Copias de Producto demo')).toBeTruthy()
+  expect(screen.getByLabelText('Copias de Segundo')).toBeTruthy()
+})
+
+it('row printing is restricted to its product, with copies and no search or product management', async () => {
+  render(<LabelPrintDialog open singleProduct onOpenChange={() => {}} products={[product]} />)
+  const print = screen.getByRole('button', { name: 'Imprimir etiquetas' })
+  await waitFor(() => expect((print as HTMLButtonElement).disabled).toBe(false))
+  expect(screen.queryByLabelText('Buscar productos para etiquetas')).toBeNull()
+  expect(screen.queryByRole('button', { name: 'Buscar' })).toBeNull()
+  expect(screen.queryByRole('button', { name: 'Quitar Producto demo' })).toBeNull()
+  expect(screen.queryByLabelText('Código a imprimir')).toBeNull()
+  let now = 10
+  vi.spyOn(performance, 'now').mockImplementation(() => now += 10)
+  for (const key of ['1', '2', '3', '4', 'Enter']) fireEvent.keyDown(document.body, { key })
+  expect(mocks.search).not.toHaveBeenCalled()
+  fireEvent.change(screen.getByLabelText('Copias de Producto demo'), { target: { value: '4' } })
+  fireEvent.click(print)
+  expect(mocks.pdf).toHaveBeenCalledWith([label], { p1: 4 }, false)
+  expect(mocks.prepare).toHaveBeenCalledWith(['p1'], 'PRIMARY_OR_INTERNAL')
 })

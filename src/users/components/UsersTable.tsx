@@ -19,6 +19,7 @@ import { User } from '../../types/user.types'
 import { formatDateTime } from '../../utils'
 import { MoreHorizontal, Pencil, UserX, Search } from 'lucide-react'
 import { useState } from 'react'
+import { matchesSearch } from '../../utils/textSearch'
 
 interface UsersTableProps {
   users: User[]
@@ -33,12 +34,7 @@ const UsersTable = ({ users, onEdit, onDelete, isLoading = false }: UsersTablePr
   const filteredUsers = useMemo(() => {
     if (!searchTerm) return users
 
-    const search = searchTerm.toLowerCase()
-    return users.filter(user =>
-      user.name.toLowerCase().includes(search) ||
-      user.email.toLowerCase().includes(search) ||
-      user.role.toLowerCase().includes(search)
-    )
+    return users.filter(user => matchesSearch(searchTerm, user.name, user.email, user.role))
   }, [users, searchTerm])
 
   const getRoleLabel = (role: string) => {

@@ -2,6 +2,7 @@ import api from './config/axios'
 import {
   BarcodeLookupResponse,
   InventoryReceiptItemInput,
+  InventoryReceiptResponse,
   LabelProduct,
   PreparedProductLabel,
   ProductBarcode
@@ -23,11 +24,12 @@ export const findProductByBarcode = async (
 
 export const prepareProductLabels = async (
   productIds: string[],
-  preference: 'PRIMARY_OR_INTERNAL' | 'INTERNAL' = 'PRIMARY_OR_INTERNAL'
+  preference: 'PRIMARY_OR_INTERNAL' | 'INTERNAL' = 'PRIMARY_OR_INTERNAL',
+  barcodeIds?: Record<string, string>
 ): Promise<PreparedProductLabel[]> => {
   const response = await api.post<{ data: PreparedProductLabel[] }>(
     '/products/barcodes/prepare',
-    { productIds, preference }
+    { productIds, preference, ...(barcodeIds ? { barcodeIds } : {}) }
   )
   return response.data.data
 }
@@ -82,7 +84,7 @@ export const createInventoryReceipt = async (input: {
   items: InventoryReceiptItemInput[]
   notes?: string
 }) => {
-  const response = await api.post('/inventory/receipts', input, {
+  const response = await api.post<InventoryReceiptResponse>('/inventory/receipts', input, {
     headers: { 'X-Idempotency-Key': input.idempotencyKey }
   })
   return response.data

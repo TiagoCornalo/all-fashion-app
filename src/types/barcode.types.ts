@@ -39,3 +39,17 @@ export interface InventoryReceiptItemInput {
   barcodeValue?: string
   quantity: number
 }
+
+export interface InventoryReceiptResponse {
+  receipt: {
+    _id: string
+    totalUnits: number
+    items: Array<{
+      product: string | { _id: string; stock: number }
+      quantity: number
+      stockBefore: number
+      stockAfter: number
+    }>
+  }
+  repeatedRequest: boolean
+}

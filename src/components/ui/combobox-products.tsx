@@ -15,6 +15,7 @@ import {
 import { findProductByBarcode } from '../../services/barcode.service'
 import { toast } from 'react-toastify'
 import { AxiosError } from 'axios'
+import { matchesSearch } from '../../utils/textSearch'
 
 interface Product {
   _id: string
@@ -110,14 +111,7 @@ export function ComboboxProducts({
       return safeProducts
     }
 
-    const lowercaseSearchTerm = inputValue.toLowerCase()
-    return safeProducts.filter(
-      (product) =>
-        (typeof product?.name === 'string' &&
-          product.name.toLowerCase().includes(lowercaseSearchTerm)) ||
-        (typeof product?.code === 'string' &&
-          product.code.toLowerCase().includes(lowercaseSearchTerm))
-    )
+    return safeProducts.filter(product => matchesSearch(inputValue, product.name, product.code, product.description))
   }, [safeProducts, inputValue, onSearch])
 
   return (
