@@ -1,21 +1,28 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Search, ScanBarcode } from 'lucide-react'
-import JsBarcode from 'jsbarcode'
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '../../components'
 import { useBarcodeScanner } from '../../hooks/useBarcodeScanner'
 import { prepareProductLabels, searchLabelProducts } from '../../services/barcode.service'
-import { createLabelPdf, formatArs, getFinalLabelPrice, validateLabelBatch } from '../../services/labelDocument'
+import { createLabelPdf, formatArs, getFinalLabelPrice, getLabelLayout, validateLabelBatch } from '../../services/labelDocument'
 import { checkoutError } from '../../services/checkout'
 import { LabelProduct, PreparedProductLabel } from '../../types/barcode.types'
 
-function BarcodePreview({ value }: { value: string }) {
-  const ref = useRef<SVGSVGElement>(null)
-  const [error, setError] = useState(false)
-  useEffect(() => {
-    try { if (ref.current) JsBarcode(ref.current, value, { format: 'CODE128', displayValue: true, width: 2, height: 40, margin: 12, fontSize: 12 }); setError(false) }
-    catch { setError(true) }
-  }, [value])
-  return error ? <p className='text-xs text-red-700'>Código incompatible. Elegí código interno.</p> : <svg ref={ref} className='max-h-16 w-full' aria-label={`Código ${value}`} />
+function LabelPreview({ label, includePrice }: { label: PreparedProductLabel; includePrice: boolean }) {
+  const layout = useMemo(() => {
+    try { return getLabelLayout(label, includePrice) }
+    catch { return null }
+  }, [label, includePrice])
+  if (!layout) return <p className='text-xs text-red-700'>Código incompatible. Elegí código interno.</p>
+  const point = 25.4 / 72
+  return <svg viewBox={`0 0 ${layout.width} ${layout.height}`} className='mx-auto block w-[240px] max-w-full border bg-white text-black' role='img' aria-label={`Etiqueta de ${label.product.name}`}>
+    <g fill='black' fontFamily='Helvetica, Arial, sans-serif' textAnchor='middle'>
+      {layout.nameLines.map((line, index) => <text key={index} x={layout.centerX} y={layout.nameY + index * layout.nameLineHeight} fontSize={layout.nameFontSize * point} fontWeight='bold'>{line}</text>)}
+      <text x={layout.centerX} y={layout.codeY} fontSize={5.5 * point}>Código {label.product.code}</text>
+      {layout.bars.map((bar, index) => <rect key={index} x={bar.x} y={layout.barcodeY} width={bar.width} height={layout.barcodeHeight} />)}
+      <text x={layout.centerX} y={layout.barcodeTextY} fontSize={layout.barcodeTextSize * point}>{label.barcode.value}</text>
+      {includePrice && <text x={layout.centerX} y={layout.priceY} fontSize={8 * point} fontWeight='bold'>{formatArs(getFinalLabelPrice(label))}</text>}
+    </g>
+  </svg>
 }
 
 export function LabelPrintCenter({ initialProducts = [], active = true, initialCopies = {}, barcodeIds, fixedProducts = false }: {
@@ -170,7 +177,7 @@ export function LabelPrintCenter({ initialProducts = [], active = true, initialC
         </div>
         {preparing && <p role='status'>Preparando códigos y precios…</p>}
         {!!queued.length && <Button variant='outline' disabled={printing || preparing} onClick={() => setRetry(n => n + 1)}>Actualizar códigos y precios</Button>}
-        {preview && <div className='mx-auto flex w-[240px] flex-col items-center overflow-hidden border bg-white p-2 text-black' style={{ aspectRatio: '50/30' }}><p className='line-clamp-2 text-center text-xs font-bold'>{preview.product.name}</p><p className='text-[9px]'>{preview.product.code}</p><BarcodePreview value={preview.barcode.value} />{includePrice && <p className='text-xs font-bold'>{formatArs(getFinalLabelPrice(preview))}</p>}</div>}
+        {preview && <LabelPreview label={preview} includePrice={includePrice} />}
       </div>
     </div>
     {error && <p role='alert' className='text-sm text-red-700'>{error}</p>}

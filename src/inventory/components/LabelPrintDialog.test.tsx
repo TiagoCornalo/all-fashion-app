@@ -5,7 +5,6 @@ import { PreparedProductLabel } from '../../types/barcode.types'
 const mocks = vi.hoisted(() => ({ prepare: vi.fn(), search: vi.fn(), print: vi.fn(), pdf: vi.fn(), autoPrint: vi.fn(), replace: vi.fn() }))
 vi.mock('../../services/barcode.service', () => ({ prepareProductLabels: mocks.prepare, searchLabelProducts: mocks.search }))
 vi.mock('../../components/shared/PrinterSettings', () => ({ default: () => <p>Printer settings</p> }))
-vi.mock('jsbarcode', () => ({ default: vi.fn() }))
 vi.mock('../../services/printerService', () => ({ printTicketDocument: mocks.print }))
 vi.mock('../../services/labelDocument', async original => ({ ...(await original<typeof import('../../services/labelDocument')>()), createLabelPdf: mocks.pdf }))
 const product = { _id: 'p1', code: 'P1', name: 'Producto demo', price: 20 }
@@ -17,6 +16,19 @@ beforeEach(() => {
   vi.spyOn(window, 'open').mockReturnValue({ opener: null, location: { replace: mocks.replace }, close: vi.fn() } as unknown as Window)
   Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: vi.fn(() => 'blob:labels') })
   Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() })
+})
+it('previews tall vector bars and makes room for the optional price', async () => {
+  render(<LabelPrintCenter initialProducts={[product]} />)
+  const preview = await screen.findByRole('img', { name: 'Etiqueta de Producto demo' })
+  expect(preview.getAttribute('viewBox')).toBe('0 0 50 30')
+  const bar = preview.querySelector('rect')!
+  const originalHeight = Number(bar.getAttribute('height'))
+  expect(originalHeight).toBeGreaterThan(15)
+  expect(preview.textContent).toContain('FIN123ABC')
+  fireEvent.click(screen.getByLabelText('Incluir precio final de venta'))
+  expect(Number(preview.querySelector('rect')!.getAttribute('height'))).toBeLessThan(originalHeight)
+  expect(Number(preview.querySelector('rect')!.getAttribute('height'))).toBeGreaterThanOrEqual(12)
+  expect(preview.textContent).toContain('20,00')
 })
 it('failed refresh clears the previous printable batch and allows explicit recovery', async () => {
   render(<LabelPrintCenter initialProducts={[product]} />)

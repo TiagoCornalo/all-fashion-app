@@ -8,7 +8,6 @@ vi.mock('../../services/barcode.service', () => ({
   getProductBarcodes: mocks.get, addProductBarcode: mocks.add, generateInternalProductBarcode: mocks.generate,
   deactivateProductBarcode: mocks.deactivate, createInventoryReceipt: mocks.receipt, prepareProductLabels: mocks.prepare, searchLabelProducts: vi.fn()
 }))
-vi.mock('jsbarcode', () => ({ default: vi.fn() }))
 vi.mock('../../services/labelDocument', async original => ({ ...(await original<typeof import('../../services/labelDocument')>()), createLabelPdf: mocks.pdf }))
 const product = { _id: 'p1', code: 'P1', name: 'Producto demo', price: 20, stock: 5 } as Product
 const barcode = { _id: 'b1', value: 'FIN123ABC', normalizedValue: 'FIN123ABC', format: 'CODE128', origin: 'INTERNAL', unitsPerScan: 1 }
